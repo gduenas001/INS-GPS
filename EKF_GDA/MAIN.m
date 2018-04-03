@@ -49,8 +49,8 @@ for testNum= testInit:testLast
     % ---------------- Read data ---------------- 
 %     file= strcat('../DATA_STATIC/24x120k/20180228_12', num2str(testNum),'.txt');
 %     file= strcat('../DATA_STATIC/1x20k_125Hz/20180326_184641_1.txt');
-    file= strcat('../DATA_STATIC/5x1min_125Hz/20180327_', num2str(testNum),'.txt');
-%     file= strcat('../DATA_STATIC/5x1min_250Hz/20180327_', num2str(testNum),'.txt');
+%     file= strcat('../DATA_STATIC/5x1min_125Hz/20180327_', num2str(testNum),'.txt');
+    file= strcat('../DATA_STATIC/5x1min_250Hz/20180327_', num2str(testNum),'.txt');
 
     [timeIMU, gyrox, gyroy, gyroz, accx, accy, accz,...
         ~, ~, ~, gyroSts, accSts, ~, ~, ~, ~]= DataRead(file); % rads
@@ -89,6 +89,7 @@ for testNum= testInit:testLast
     
     % Allocate variables
     P_store= zeros(15, N_GNSS);
+    P_store_time= zeros(1,N_GNSS);
     x= zeros(15,N_IMU);
     
     % Initialize estimate
@@ -97,7 +98,8 @@ for testNum= testInit:testLast
     x(10:15,1)= b0;        % Initial biases
     
     % Initialize loop variables
-    t_sum= 0;
+    timeSim= timeIMU(1);
+    timeSum= 0;
     k_update= 1;
     
     % Compute the F and G matrices (linear continuous time)
@@ -114,11 +116,12 @@ for testNum= testInit:testLast
         P= Phi*P*Phi' + D_bar;
         
         % KF update
-        if t_sum >= dT_GNSS
+        if timeSum >= dT_GNSS
             
             % Store cov matrix
             P_store(:,k_update) = diag(P);
-            
+            P_store_time(k_update)= timeSim;
+
             % Compute the F and G matrices (linear continuous time)
             [F,G]= FG_fn(u(1,k),u(2,k),u(3,k),u(5,k),u(6,k),x(7,k+1),x(8,k+1),x(9,k+1),x(10,k+1),x(11,k+1),x(12,k+1),x(14,k+1),x(15,k+1),tau,tau);
             
@@ -134,16 +137,21 @@ for testNum= testInit:testLast
                 x(:,k+1)= x(:,k+1) + L*innov;
                 P= P - L*H*P;
             end
-            t_sum= 0;
+            % Time counters
+            timeSum= 0;
             k_update= k_update+1;
         end
-        t_sum= t_sum + dt(k);
+        
+        % Increase time count
+        timeSim= timeSim + dt(k);
+        timeSum= timeSum + dt(k);
                 
     end
     % --------------------- END LOOP ---------------------
     
     % Store final variance
     P_store(:, k_update)= diag(P);
+    P_store_time(k_update)= timeSim;
     
     % Plot errors for this run
     figure(1); hold on;
@@ -184,48 +192,48 @@ for testNum= testInit:testLast
     plot(timeIMU,rad2deg(x(9,:)))
     ylabel('\psi [deg]');
     
-    
 end
 
-TT = dT_GNSS:dT_GNSS:timeIMU(end);
-std = 3*sqrt(P_store);
+% P_store_time= dT_GNSS:dT_GNSS:timeIMU(end);
+std= 3*sqrt(P_store(:,1:k_update));
+P_store_time= P_store_time(1:k_update);
 
 % Plots
 subplot(3,3,1); hold on;
-plot(TT, std(1,:), 'r.')
-plot(TT, -std(1,:), 'r.')
+plot(P_store_time, std(1,:), 'r.')
+plot(P_store_time, -std(1,:), 'r.')
 
 subplot(3,3,2); hold on;
-plot(TT, std(2,:), 'r.')
-plot(TT, -std(2,:), 'r.')
+plot(P_store_time, std(2,:), 'r.')
+plot(P_store_time, -std(2,:), 'r.')
 
 subplot(3,3,3); hold on;
-plot(TT, std(3,:), 'r.')
-plot(TT, -std(3,:), 'r.')
+plot(P_store_time, std(3,:), 'r.')
+plot(P_store_time, -std(3,:), 'r.')
 
 subplot(3,3,4); hold on;
-plot(TT, std(4,:), 'r.')
-plot(TT, -std(4,:), 'r.')
+plot(P_store_time, std(4,:), 'r.')
+plot(P_store_time, -std(4,:), 'r.')
 
 subplot(3,3,5); hold on;
-plot(TT, std(5,:), 'r.')
-plot(TT, -std(5,:), 'r.')
+plot(P_store_time, std(5,:), 'r.')
+plot(P_store_time, -std(5,:), 'r.')
 
 subplot(3,3,6); hold on;
-plot(TT, std(6,:), 'r.')
-plot(TT, -std(6,:), 'r.')
+plot(P_store_time, std(6,:), 'r.')
+plot(P_store_time, -std(6,:), 'r.')
 
 subplot(3,3,7); hold on;
-plot(TT,rad2deg(x(7,1) + std(7,:)), 'r.')
-plot(TT,rad2deg(x(7,1) - std(7,:)), 'r.')
+plot(P_store_time,rad2deg(x(7,1) + std(7,:)), 'r.')
+plot(P_store_time,rad2deg(x(7,1) - std(7,:)), 'r.')
 
 subplot(3,3,8); hold on;
-plot(TT,rad2deg(x(8,1) + std(8,:)), 'r.')
-plot(TT,rad2deg(x(8,1) - std(8,:)), 'r.')
+plot(P_store_time,rad2deg(x(8,1) + std(8,:)), 'r.')
+plot(P_store_time,rad2deg(x(8,1) - std(8,:)), 'r.')
 
 subplot(3,3,9); hold on;
-plot(TT,rad2deg(std(9,:)), 'r.')
-plot(TT,-rad2deg(std(9,:)), 'r.')
+plot(P_store_time,rad2deg(std(9,:)), 'r.')
+plot(P_store_time,-rad2deg(std(9,:)), 'r.')
 
 
 
