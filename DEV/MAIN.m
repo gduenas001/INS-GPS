@@ -2,10 +2,36 @@ clear; format short; clc; close all;
 
 % Parameters
 dT_GNSS= 1; % KF Update period
-dT_IMU= 1/2000;
+dT_IMU= 1/125;
+g_val= 9.80279;
+numEpochStatic= 5200;
+SWITCH_GPS= 1/50;
+sig_GPS_pos= 0.001; % 5cm
+sig_GPS_vel= 0.001; % m/s
+sig_E= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
+sig_ba= 0.5; % m/s2 -- Initial acc bias uncertainty
+sig_bw= deg2rad(1); % 0.1 deg -- Initial gyros bias uncertainty
 
-% Observation matrix
-H= [eye(3), zeros(3,12)];
+% --------------- Initial biases ---------------
+% Without LPF 125Hz
+% invC= [ diag([0.994903778878319, 1.000610776153152, 0.995712486712822]), zeros(3);
+%         zeros(3), eye(3)];
+% b0= [-0.073230349005496; -0.029256994675470; 0.032181184395398;...
+%       -0.000971671383361; 0.000168722253567; 0.000040755306224];
+% With LPF 125Hz
+invC= [ diag([0.999730138420152, 1.005885117649553 , 0.983767954068044]), zeros(3);
+        zeros(3), eye(3)];
+b0= [-0.021760161883734; 0.020787087269599; -0.089159163008672;...
+      -0.000968802390264; 0.000129944741751; 0.000110380074963];
+% ---------------------------------------------
+
+% G estimation
+g_N= [0; 0; g_val];
+
+% Build parameters
+R= [diag([sig_GPS_pos, sig_GPS_pos, sig_GPS_pos]), zeros(3);
+   zeros(3), diag([sig_GPS_vel, sig_GPS_vel, sig_GPS_vel])].^2; % GPS noise
+H= [eye(6), zeros(6,9)]; % Observation matrix
 
 % White noise specs
 VRW= 0.07; %
@@ -18,7 +44,7 @@ V= diag([sig_IMU_acc; sig_IMU_acc; sig_IMU_acc; sig_IMU_gyr; sig_IMU_gyr; sig_IM
 Sv= V * dT_IMU;
 
 % Tau for bias -- from manufacturer
-tau= 3600;
+tau= 3000;
 
 % PSD for bias random noise
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; Sn_f= diag([sn_f, sn_f, sn_f]);
@@ -29,7 +55,7 @@ Sn= blkdiag(Sn_f, Sn_w);
 S= blkdiag(Sv, Sn);
 
 % ---------------- Read data ----------------
-file= strcat('../DATA_MOVE/1line_hand_2000Hz/20180403_1.txt');
+file= strcat('../DATA_MOVE/1_line_cart_125Hz_LPF16/20180404_1.txt');
 
 [~, gyrox, gyroy, gyroz, accx, accy, accz,...
     ~, ~, ~, gyroSts, accSts, ~, ~, ~, ~]= DataRead(file); % rads
@@ -40,21 +66,13 @@ u= [accx, accy, accz, gyrox, gyroy, gyroz]';
 N_IMU= length(accx);
 N_GNSS= round( N_IMU*dT_IMU / dT_GNSS );
 
-% Rotate to body frame (NED)
+% Rotation to nav frame (NED)
 R_NB= R_NB_rot(0,deg2rad(180),0);
 R_NB_init= blkdiag(R_NB,R_NB);
-u= R_NB_init * u;
-accx= u(1,:);  accy= u(2,:);  accz= u(3,:);
-gyrox= u(4,:); gyroy= u(5,:); gyroz= u(6,:);
 
-% G estimation
-g_val= 9.7226; %9.8593 %9.80279
-g_N= [0; 0; g_val];
-
-% Initial biases (gravity excluded)
-b0= [-0.0193; -0.0005; 0.0000; 0.0003; 0.0001; 0.0000];
-% b0= [-0.0319; 0.2930; 0.0045; 0.0009; 0.0002; -0.0007];
-% b0= [ 0.0880; -0.1269; 0        ; -0.0011; 0.0002; 0.0006]; % mine
+% calibrate with constant bias and scale factor
+u= (invC * u) - b0;
+% u= R_NB_init * u;
 
 % Allocate variables
 P_store= zeros(15, N_GNSS);
@@ -62,9 +80,11 @@ P_store_time= zeros(1,N_GNSS);
 x= zeros(15,N_IMU);
 
 % Initialize estimate
-P= zeros(15);
+P= zeros(15); 
+P(7:9,7:9)= diag( [sig_E,sig_E,sig_E] ).^2;
+P(10:12,10:12)= diag( [sig_ba,sig_ba,sig_ba] ).^2;
+P(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
 x(:,1)= zeros(15,1);
-x(10:15,1)= b0;        % Initial biases
 
 % Initialize loop variables
 timeSim= 0;
@@ -81,33 +101,55 @@ k_update= 1;
 % --------------------- LOOP ---------------------
 for k= 1:N_IMU-1
     
+    % Turn off GPS updates if start moving
+    if k > numEpochStatic
+        SWITCH_GPS= 0; 
+        tau= 3000;
+    end
+    
     % Increase time count
     timeSim= timeSim + dT_IMU;
-%     timeSum= timeSum + dT_IMU;    
+    timeSum= timeSum + dT_IMU;
     
     % Update position mean
     x(:,k+1)= IMU_update(x(:,k),u(:,k),g_N,tau,dT_IMU);
-%     % Update cov matrix
-%     P= Phi*P*Phi' + D_bar;
-%     
-%     % KF update
-%     if timeSum >= dT_GNSS
-%         
-%         % Compute the F and G matrices (linear continuous time)
-%         [F,G]= FG_fn(u(1,k),u(2,k),u(3,k),u(5,k),u(6,k),x(7,k+1),x(8,k+1),x(9,k+1),x(10,k+1),x(11,k+1),x(12,k+1),x(14,k+1),x(15,k+1),tau,tau);
-%         
-%         % Discretize system for IMU time (only for variance calculations)
-%         [Phi,D_bar]= discretize(F, G, H, S, dT_IMU);
-%                 
-%         % Store cov matrix
-%         P_store(:,k_update) = diag(P);
-%         P_store_time(k_update)= timeSim;
-%         
-%         % Time counters
-%         timeSum= 0;
-%         k_update= k_update+1;
-%     end
-%     
+    
+    % Update cov matrix
+    P= Phi*P*Phi' + D_bar;
+    
+    % KF update
+    if timeSum >= dT_GNSS
+        
+        % Compute the F and G matrices (linear continuous time)
+        [F,G]= FG_fn(u(1,k),u(2,k),u(3,k),u(5,k),u(6,k),...
+            x(7,k+1),x(8,k+1),x(9,k+1),x(10,k+1),x(11,k+1),x(12,k+1),x(14,k+1),x(15,k+1),tau,tau);
+        
+        % Discretize system for IMU time (only for variance calculations)
+        [Phi,D_bar]= discretize(F, G, H, S, dT_IMU);
+        
+        if SWITCH_GPS
+            L= P*H' / (H*P*H' + R);
+            z= zeros(6,1);
+            z_hat= H*x(:,k+1);
+            innov= z - z_hat;
+            x(:,k+1)= x(:,k+1) + L*innov;
+            P= P - L*H*P;
+            
+            % If GPS is calibrating initial biases, increse bias variance
+            D_bar(10:12,10:12)= diag( [sig_ba,sig_ba,sig_ba] ).^2;
+            D_bar(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
+            tau= 10;
+        end
+        
+        % Store cov matrix
+        P_store(:,k_update) = diag(P);
+        P_store_time(k_update)= timeSim;
+        
+        % Time counters
+        timeSum= 0;
+        k_update= k_update+1;
+    end
+    
 end
 % Store final variance
 P_store(:, k_update)= diag(P);
@@ -163,11 +205,17 @@ plot(x_time,rad2deg(x(9,:)))
 ylabel('\psi [deg]');
 
 
-% check plot
-figure; hold on;
-plot(x_time, accx)
-plot(x_time, accy)
-plot(x_time, accz)
+figure; hold on; grid on; title('biases in accelerometers');
+plot(x_time, x(10,:), 'linewidth',2)
+plot(x_time, x(11,:), 'linewidth',2)
+plot(x_time, x(12,:), 'linewidth',2)
+legend('x','y','z')
+
+figure; hold on; grid on; title('biases in gyros');
+plot(x_time, rad2deg(x(13,:)), 'linewidth',2)
+plot(x_time, rad2deg(x(14,:)), 'linewidth',2)
+plot(x_time, rad2deg(x(15,:)), 'linewidth',2)
+legend('w_x','w_y','w_z')
 
 
 %{

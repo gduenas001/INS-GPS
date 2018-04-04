@@ -5,7 +5,7 @@ function [ T, gyroX, gyroY, gyroZ, accX, accY, accZ, incX, incY, incZ,...
 % Data id in columns
 
 Data= importdata(string,'\t',1);
-g0= 9.80279; % m/s^2
+g0= 9.80665; % m/s^2 -- by manufacturerw
 
 T       = Data(1).data(:,1);
 gyroX   = Data(1).data(:,2)/180*pi;
