@@ -1,5 +1,5 @@
 
-function x= IMU_update(x, u, g_N, tau, dt)
+function x= IMU_update(x, u, g_N, taua, tauw, dt)
 
 % Create variables (for clarity)
 v= x(4:6);
@@ -17,8 +17,8 @@ E_BE= invQ_BE_fn(phi,theta);
 r_dot= v;
 v_dot= R_NB * ( f - b_f ) + g_N;
 E_dot= E_BE * ( w - b_w );
-b_f_dot= -eye(3) / tau * b_f;
-b_w_dot= -eye(3) / tau * b_w;
+b_f_dot= -eye(3) / taua * b_f;
+b_w_dot= -eye(3) / tauw * b_w;
 x_dot= [r_dot; v_dot; E_dot; b_f_dot; b_w_dot];
 
 % Return new pose
