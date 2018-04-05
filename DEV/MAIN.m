@@ -2,15 +2,18 @@ clear; format short; clc; close all;
 
 % Parameters
 dT_GNSS= 1; % KF Update period
-dT_IMU= 1/125;
+dT_IMU= 1/250;
 g_val= 9.80279;
 numEpochStatic= 5200;
-SWITCH_GPS= 1/50;
+SWITCH_GPS= 1;
 sig_GPS_pos= 0.001; % 5cm
 sig_GPS_vel= 0.001; % m/s
 sig_E= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
 sig_ba= 0.5; % m/s2 -- Initial acc bias uncertainty
 sig_bw= deg2rad(1); % 0.1 deg -- Initial gyros bias uncertainty
+tau0= 3000; % Tau for bias -- from manufacturer
+tau_calibration= 50; % Tau value during initial calibration
+
 
 % --------------- Initial biases ---------------
 % Without LPF 125Hz
@@ -33,20 +36,15 @@ R= [diag([sig_GPS_pos, sig_GPS_pos, sig_GPS_pos]), zeros(3);
    zeros(3), diag([sig_GPS_vel, sig_GPS_vel, sig_GPS_vel])].^2; % GPS noise
 H= [eye(6), zeros(6,9)]; % Observation matrix
 
-% White noise specs
+% IMU -- white noise specs
 VRW= 0.07; %
 sig_IMU_acc= VRW * sqrt( 2000 / 3600 );
 ARW= 0.15; % deg
 sig_IMU_gyr= deg2rad( ARW * sqrt( 2000 / 2600 ) ); % rad
 V= diag([sig_IMU_acc; sig_IMU_acc; sig_IMU_acc; sig_IMU_gyr; sig_IMU_gyr; sig_IMU_gyr]).^2;
+Sv= V * dT_IMU; % Convert to PSD
 
-% Convert to PSD
-Sv= V * dT_IMU;
-
-% Tau for bias -- from manufacturer
-tau= 3000;
-
-% PSD for bias random noise
+% Biases -- PSD of white noise
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; Sn_f= diag([sn_f, sn_f, sn_f]);
 sn_w= ( deg2rad(0.3/3600) )^2;     Sn_w= diag([sn_w, sn_w, sn_w]);
 Sn= blkdiag(Sn_f, Sn_w);
@@ -55,7 +53,7 @@ Sn= blkdiag(Sn_f, Sn_w);
 S= blkdiag(Sv, Sn);
 
 % ---------------- Read data ----------------
-file= strcat('../DATA_MOVE/1_line_cart_125Hz_LPF16/20180404_1.txt');
+file= strcat('../DATA_MOVE/1line_cart_250Hz_LPF262/20180404_1.txt');
 
 [~, gyrox, gyroy, gyroz, accx, accy, accz,...
     ~, ~, ~, gyroSts, accSts, ~, ~, ~, ~]= DataRead(file); % rads
@@ -93,7 +91,7 @@ k_update= 1;
 
 % Compute the F and G matrices (linear continuous time)
 [F,G]= FG_fn(u(1,1),u(2,1),u(3,1),u(5,1),u(6,1),...
-             x(7,1),x(8,1),x(9,1),x(10,1),x(11,1),x(12,1),x(14,1),x(15,1),tau,tau);
+             x(7,1),x(8,1),x(9,1),x(10,1),x(11,1),x(12,1),x(14,1),x(15,1),tau0,tau0);
 
 % Discretize system for IMU (only for variance calculations)
 [Phi,D_bar]= discretize(F, G, H, S, dT_IMU);
@@ -104,7 +102,7 @@ for k= 1:N_IMU-1
     % Turn off GPS updates if start moving
     if k > numEpochStatic
         SWITCH_GPS= 0; 
-        tau= 3000;
+        tau= tau0;
     end
     
     % Increase time count
@@ -138,7 +136,7 @@ for k= 1:N_IMU-1
             % If GPS is calibrating initial biases, increse bias variance
             D_bar(10:12,10:12)= diag( [sig_ba,sig_ba,sig_ba] ).^2;
             D_bar(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
-            tau= 10;
+            tau= tau_calibration;
         end
         
         % Store cov matrix
