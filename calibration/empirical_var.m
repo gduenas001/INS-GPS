@@ -1,22 +1,19 @@
+% This script measures the standard deviation of the white noise in the
+% IMU sensors (both accelerometers and gyros). The VRW and ARW are
+% empirically obtained from the data and compared with the ones given in
+% the specifications. Usually, the empirically calculated are smaller than
+% the given by the manufacturer. 
+
 clear; clc; close all;
 
 % Paramters
 g= 9.80665;
-
+% 9.80279
 % Read data
-Data= importdata('../DATA_STATIC/1x2M/2M_static.txt','\t',1);
+[ T, wx, wy, wz, ax, ay, az, incx, incy, incz,...
+    gyroSts, accSts, incSts, ~, ~]= DataRead('../DATA_STATIC/1x2M/2M_static.txt');
 
-T= Data.data(:,1);
-wx= (Data.data(:,2));
-wy= (Data.data(:,3));
-wz= (Data.data(:,4));
-wsts= Data.data(:,5);
-ax= Data.data(:,6).*g;
-ay= Data.data(:,7).*g;
-az= Data.data(:,8).*g;
-asts= Data.data(:,9);
-
-if any(asts) || any(wsts)
+if any(accSts) || any(gyroSts)
     error('some corrupt readings');
 end
 

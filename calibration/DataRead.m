@@ -1,11 +1,10 @@
 function [ T, gyroX, gyroY, gyroZ, accX, accY, accZ, incX, incY, incZ,...
-    gyroSts, accSts, incSts, counter, latency, g0 ] = DataRead( string )
+    gyroSts, accSts, incSts, counter, latency ] = DataRead( string )
 
 %DATAREAD Reads a datafile and outputs a series of vectors of the data
 % Data id in columns
 
 Data= importdata(string,'\t',1);
-% g0= 9.80279; % m/s^2
 g0= 9.80665; % m/s^2 from manufacturer
 
 

@@ -2,19 +2,21 @@
 clear; format short; clc; close all;
 
 % Parameters
-dT_GNSS= 1/10; % KF Update period
-dT_IMU= 1/125;
-g_val= 9.80279;
+dT_IMU= 1/125; % IMU sampling time
+dT_cal= 1/10; % KF Update period
+dT_virt= 1/1; % Virtual msmt update period
+g_val= 9.80279; % value of g [m/s2] at the IIT
 numEpochStatic= 20000;
 numEpochInclCalibration= round(numEpochStatic/2);
-SWITCH_GPS= 1;
-sig_GPS_pos= 0.001; % 5cm
-sig_GPS_vel= 0.001; % m/s
-sig_GPS_E= deg2rad(0.1); % 0.1 deg
+SWITCH_CALIBRATION= 1;
+sig_cal_pos= 0.03; % 3cm   -- do not reduce too much or bias get instable
+sig_cal_vel= 0.03; % 3cm/s -- do not reduce too much or bias get instable
+sig_cal_E= deg2rad(0.1); % 0.1 deg
 sig_E= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
 sig_ba= 0.1; % m/s2 -- Initial acc bias uncertainty
-sig_bw= deg2rad(0.1); % 0.1 deg -- Initial gyros bias uncertainty
-taua0= 3600; % Tau for acc bias -- from manufacturer
+sig_bw= deg2rad(0.2); % 0.1 deg -- Initial gyros bias uncertainty
+sig_virt_vz= 0.05; % 5cm/s -- virtual msmt SD in z
+taua0= 6000; % Tau for acc bias -- from manufacturer
 tauw0= 3600; % Tau for gyro bias -- from manufacturer
 taua_calibration= 200; % acc tau value during initial calibration
 tauw_calibration= 200; % gyro tau value during initial calibration
@@ -38,13 +40,12 @@ ib0= [-0.044470763684614; -0.066164936056311; 0.099883152249655];
 g_N= [0; 0; g_val];
 
 % Build parameters
-sig_GPS_pos_blkMAtrix= diag([sig_GPS_pos, sig_GPS_pos, sig_GPS_pos]);
-sig_GPS_vel_blkMAtrix= diag([sig_GPS_vel, sig_GPS_vel, sig_GPS_vel]);
-sig_GPS_E_blkMAtrix= diag([sig_GPS_E, sig_GPS_E, sig_GPS_E]).^2;
-R= blkdiag(sig_GPS_pos_blkMAtrix, sig_GPS_vel_blkMAtrix, sig_GPS_E_blkMAtrix);
-% R= [diag([sig_GPS_pos, sig_GPS_pos, sig_GPS_pos]), zeros(3);
-%    zeros(3), diag([sig_GPS_vel, sig_GPS_vel, sig_GPS_vel]); ].^2; % GPS noise
-H= [eye(9), zeros(9,6)]; % Observation matrix
+sig_cal_pos_blkMAtrix= diag([sig_cal_pos, sig_cal_pos, sig_cal_pos]);
+sig_cal_vel_blkMAtrix= diag([sig_cal_vel, sig_cal_vel, sig_cal_vel]);
+sig_cal_E_blkMAtrix= diag([sig_cal_E, sig_cal_E, sig_cal_E]);
+R_cal= blkdiag(sig_cal_pos_blkMAtrix, sig_cal_vel_blkMAtrix, sig_cal_E_blkMAtrix).^2;
+H_cal= [eye(9), zeros(9,6)]; % Observation matrix
+R_virt= sig_virt_vz.^2;
 
 % IMU -- white noise specs
 VRW= 0.07; %
@@ -64,7 +65,9 @@ S= blkdiag(Sv, Sn);
 S= S*0;
 
 % ---------------- Read data ----------------
-file= strcat('../DATA_MOVE/1longline_cart_125Hz_LPF262/20180405_1.txt');
+% file= strcat('../DATA_MOVE/1longline_cart_125Hz_LPF262/20180405_1.txt');
+file= strcat('../DATA_MOVE/2turns_cart_125Hz_LPF262/20180406_1.txt');
+
 
 [~, gyrox, gyroy, gyroz, accx, accy, accz,...
     incx, incy, incz, gyroSts, accSts, ~, ~, ~, ~]= DataRead(file); % rads
@@ -74,7 +77,7 @@ file= strcat('../DATA_MOVE/1longline_cart_125Hz_LPF262/20180405_1.txt');
 iu= [incx, incy, incz]';
 u= [accx, accy, accz, gyrox, gyroy, gyroz]';
 N_IMU= length(accx);
-N_GNSS= round( N_IMU*dT_IMU / dT_GNSS );
+% N_GPS= round( N_IMU*dT_IMU / dT_calibration );
 
 % Rotation to nav frame (NED)
 R_NB= R_NB_rot(0,deg2rad(180),0);
@@ -89,8 +92,8 @@ u= (invC * u) - b0;
 [phi0, theta0]= initial_attitude(iu(:,numEpochInclCalibration));
 
 % Allocate variables
-P_store= zeros(15, N_GNSS);
-P_store_time= zeros(1,N_GNSS);
+P_store= zeros(15, N_IMU);
+P_store_time= zeros(1,N_IMU);
 x= zeros(15,N_IMU);
 
 % Initialize estimate
@@ -113,14 +116,14 @@ tauw= tauw_calibration;
              x(7,1),x(8,1),x(9,1),x(10,1),x(11,1),x(12,1),x(14,1),x(15,1),taua,tauw);
 
 % Discretize system for IMU (only for variance calculations)
-[Phi,D_bar]= discretize(F, G, H, S, dT_IMU);
+[Phi,D_bar]= discretize(F, G, H_cal, S, dT_IMU);
 
 % --------------------- LOOP ---------------------
 for k= 1:N_IMU-1
     
     % Turn off GPS updates if start moving
     if k > numEpochStatic
-        SWITCH_GPS= 0; 
+        SWITCH_CALIBRATION= 0; 
         taua= taua0;
         tauw= tauw0;
     end
@@ -136,27 +139,53 @@ for k= 1:N_IMU-1
     P= Phi*P*Phi' + D_bar;
     
     % KF update
-    if timeSum >= dT_GNSS
+    if timeSum >= dT_cal && SWITCH_CALIBRATION
         
         % Compute the F and G matrices (linear continuous time)
         [F,G]= FG_fn(u(1,k),u(2,k),u(3,k),u(5,k),u(6,k),...
             x(7,k+1),x(8,k+1),x(9,k+1),x(10,k+1),x(11,k+1),x(12,k+1),x(14,k+1),x(15,k+1),taua,tauw);
         
         % Discretize system for IMU time (only for variance calculations)
-        [Phi,D_bar]= discretize(F, G, H, S, dT_IMU);
+        [Phi,D_bar]= discretize(F, G, H_cal, S, dT_IMU);
         
-        if SWITCH_GPS
-            L= P*H' / (H*P*H' + R);
-            z= [zeros(6,1); phi0; theta0; 0];
-            z_hat= H*x(:,k+1);
-            innov= z - z_hat;
-            x(:,k+1)= x(:,k+1) + L*innov;
-            P= P - L*H*P;
-            
-            % If GPS is calibrating initial biases, increse bias variance
-            D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [sig_ba,sig_ba,sig_ba] ).^2;
-            D_bar(13:15,13:15)= D_bar(13:15,13:15) + diag( [sig_bw,sig_bw,sig_bw] ).^2;
-        end
+        % Calibration msmt update
+        L= P*H_cal' / (H_cal*P*H_cal' + R_cal);
+        z= [zeros(6,1); phi0; theta0; 0];
+        z_hat= H_cal*x(:,k+1);
+        innov= z - z_hat;
+        x(:,k+1)= x(:,k+1) + L*innov;
+        P= P - L*H_cal*P;
+        
+        % If GPS is calibrating initial biases, increse bias variance
+        D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [sig_ba,sig_ba,sig_ba] ).^2;
+        D_bar(13:15,13:15)= D_bar(13:15,13:15) + diag( [sig_bw,sig_bw,sig_bw] ).^2;
+        
+        
+        % Store cov matrix
+        P_store(:,k_update) = diag(P);
+        P_store_time(k_update)= timeSim;
+        
+        % Time counters
+        timeSum= 0;
+        k_update= k_update+1;
+        
+    elseif timeSum >= dT_virt && ~SWITCH_CALIBRATION
+        % Compute the F and G matrices (linear continuous time)
+        [F,G]= FG_fn(u(1,k),u(2,k),u(3,k),u(5,k),u(6,k),...
+            x(7,k+1),x(8,k+1),x(9,k+1),x(10,k+1),x(11,k+1),x(12,k+1),x(14,k+1),x(15,k+1),taua,tauw);
+        
+        % Discretize system for IMU time (only for variance calculations)
+        [Phi,D_bar]= discretize(F, G, H_cal, S, dT_IMU);
+        
+        % Virtual msmt update
+        R_BN= R_NB_rot( x(7,k+1), x(8,k+1), x(9,k+1) )';
+        H_virt= H_fn(x(4,k+1), x(5,k+1), x(6,k+1), x(7,k+1), x(8,k+1), x(9,k+1));
+        L= P*H_virt' / (H_virt*P*H_virt' + R_virt);
+        z= 0;
+        z_hat=  [0,0,1] * R_BN * x(4:6,k+1);
+        innov= z - z_hat;
+        x(:,k+1)= x(:,k+1) + L*innov;
+        P= P - L*H_virt*P;
         
         % Store cov matrix
         P_store(:,k_update) = diag(P);

@@ -87,6 +87,22 @@ G= [Gv, Gn];
 % Substitute for zero noise
 F= subs(F, [vx_f, vy_f, vy_w, vz_f, vz_w], zeros(1,5));
 
+
+%% Virtual measurement update Jacobians
+h= simplify( [ 0, 0, 1 ] * R_BN * v );
+H= simplify( [diff(h, rx),   diff(h, ry),    diff(h, rz)...
+              diff(h, vx),   diff(h, vy),    diff(h, vz)...
+              diff(h, phi),  diff(h, theta), diff(h, psi)...
+              diff(h, bx_f), diff(h, by_f),  diff(h, bz_f)...
+              diff(h, bx_w), diff(h, by_w),  diff(h, bz_w) ] )
+
+
 %% This generates fucntion files automatically
 % matlabFunction(F, 'file', 'F_fn')
 % matlabFunction(G, 'file', 'G_fn')
+matlabFunction(H, 'file', 'H_fn')
+
+
+
+
+
