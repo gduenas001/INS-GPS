@@ -3,19 +3,20 @@ clear; format short; clc; close all;
 
 % Parameters
 dT_IMU= 1/125; % IMU sampling time
-dT_cal= 1/10; % KF Update period
+dT_cal= 1/10; % KF Update period during initial calibration
 dT_virt= 1/1; % Virtual msmt update period
 g_val= 9.80279; % value of g [m/s2] at the IIT
 numEpochStatic= 20000;
 numEpochInclCalibration= round(numEpochStatic/2);
 SWITCH_CALIBRATION= 1;
+SWITCH_VIRT_UPDATE= 1;
 sig_cal_pos= 0.03; % 3cm   -- do not reduce too much or bias get instable
 sig_cal_vel= 0.03; % 3cm/s -- do not reduce too much or bias get instable
 sig_cal_E= deg2rad(0.1); % 0.1 deg
 sig_E= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
 sig_ba= 0.1; % m/s2 -- Initial acc bias uncertainty
 sig_bw= deg2rad(0.2); % 0.1 deg -- Initial gyros bias uncertainty
-sig_virt_vz= 0.05; % 5cm/s -- virtual msmt SD in z
+sig_virt_vz= 0.5; % 5cm/s -- virtual msmt SD in z
 taua0= 6000; % Tau for acc bias -- from manufacturer
 tauw0= 3600; % Tau for gyro bias -- from manufacturer
 taua_calibration= 200; % acc tau value during initial calibration
@@ -62,11 +63,16 @@ Sn= blkdiag(Sn_f, Sn_w);
 
 % PSD for continuous model
 S= blkdiag(Sv, Sn);
-S= S*0;
 
 % ---------------- Read data ----------------
 % file= strcat('../DATA_MOVE/1longline_cart_125Hz_LPF262/20180405_1.txt');
-file= strcat('../DATA_MOVE/2turns_cart_125Hz_LPF262/20180406_1.txt');
+% file= strcat('../DATA_MOVE/2turns_cart_125Hz_LPF262/20180406_1.txt');
+% file= strcat('../DATA_MOVE/outside/pavement/1line_125Hz_LPF262/20180412_1.txt');
+% file= strcat('../DATA_MOVE/outside/pavement/1line_125Hz_LPF16/20180412_1.txt');
+file= strcat('../DATA_MOVE/outside/grassfield/1line_125Hz_LPF16/20180412_1.txt');
+% file= strcat('../DATA_MOVE/outside/grassfield/1line_125Hz_LPF262/20180412_1.txt');
+% file= strcat('../DATA_MOVE/outside/grassfield/2curves_125Hz_LPF16/20180412_1.txt');
+% file= strcat('../DATA_MOVE/outside/grassfield/2curves_125Hz_LPF262/20180412_1.txt');
 
 
 [~, gyrox, gyroy, gyroz, accx, accy, accz,...
@@ -133,7 +139,7 @@ for k= 1:N_IMU-1
     timeSum= timeSum + dT_IMU;
     
     % Update position mean
-    x(:,k+1)= IMU_update(x(:,k),u(:,k),g_N,taua, tauw,dT_IMU);
+    x(:,k+1)= IMU_update( x(:,k), u(:,k), g_N, taua, tauw, dT_IMU );
     
     % Update cov matrix
     P= Phi*P*Phi' + D_bar;
@@ -169,7 +175,7 @@ for k= 1:N_IMU-1
         timeSum= 0;
         k_update= k_update+1;
         
-    elseif timeSum >= dT_virt && ~SWITCH_CALIBRATION
+    elseif timeSum >= dT_virt && SWITCH_VIRT_UPDATE && ~SWITCH_CALIBRATION
         % Compute the F and G matrices (linear continuous time)
         [F,G]= FG_fn(u(1,k),u(2,k),u(3,k),u(5,k),u(6,k),...
             x(7,k+1),x(8,k+1),x(9,k+1),x(10,k+1),x(11,k+1),x(12,k+1),x(14,k+1),x(15,k+1),taua,tauw);
@@ -182,7 +188,7 @@ for k= 1:N_IMU-1
         H_virt= H_fn(x(4,k+1), x(5,k+1), x(6,k+1), x(7,k+1), x(8,k+1), x(9,k+1));
         L= P*H_virt' / (H_virt*P*H_virt' + R_virt);
         z= 0;
-        z_hat=  [0,0,1] * R_BN * x(4:6,k+1);
+        z_hat= [0,0,1] * R_BN * x(4:6,k+1);
         innov= z - z_hat;
         x(:,k+1)= x(:,k+1) + L*innov;
         P= P - L*H_virt*P;
@@ -202,8 +208,10 @@ P_store(:, k_update)= diag(P);
 P_store_time(k_update)= timeSim;
 % --------------------- END LOOP ---------------------
 
-x_time= 0:dT_IMU:timeSim+dT_IMU/2;
+numEpochInitPlot= numEpochStatic - round(2*dT_IMU);
 
+x_time= 0:dT_IMU:timeSim+dT_IMU/2;
+x_time= x_time(numEpochInitPlot:end);
 
 % Plot estimates
 figure; hold on; grid on;
@@ -214,56 +222,64 @@ axis equal
 % Plot estimates
 figure; hold on;
 
-subplot(3,3,1); hold on;
-plot(x_time,x(1,:));
+subplot(3,3,1); hold on; grid on;
+plot(x_time,x(1,numEpochInitPlot:end));
 ylabel('x [m]');
 
-subplot(3,3,2); hold on;
-plot(x_time,x(2,:));
+subplot(3,3,2); hold on; grid on;
+plot(x_time,x(2,numEpochInitPlot:end));
 ylabel('y [m]');
 
-subplot(3,3,3); hold on;
-plot(x_time,x(3,:))
+subplot(3,3,3); hold on; grid on; 
+plot(x_time,x(3,numEpochInitPlot:end))
 ylabel('z [m]');
 
-subplot(3,3,4); hold on;
-plot(x_time,x(4,:))
+subplot(3,3,4); hold on; grid on;
+plot(x_time,x(4,numEpochInitPlot:end))
 ylabel('v_x [m/s]');
 
-subplot(3,3,5); hold on;
-plot(x_time,x(5,:))
+subplot(3,3,5); hold on; grid on;
+plot(x_time,x(5,numEpochInitPlot:end))
 ylabel('v_y [m/s]');
 
-subplot(3,3,6); hold on;
-plot(x_time,x(6,:));
+subplot(3,3,6); hold on; grid on;
+plot(x_time,x(6,numEpochInitPlot:end));
 ylabel('v_z [m/s]');
 
-subplot(3,3,7); hold on;
-plot(x_time,rad2deg(x(7,:)))
+subplot(3,3,7); hold on; grid on;
+plot(x_time,rad2deg(x(7,numEpochInitPlot:end)))
 ylabel('\phi [deg]');
 
-subplot(3,3,8); hold on;
-plot(x_time,rad2deg(x(8,:)))
+subplot(3,3,8); hold on; grid on;
+plot(x_time,rad2deg(x(8,numEpochInitPlot:end)))
 ylabel('\theta [deg]');
 
-subplot(3,3,9); hold on;
-plot(x_time,rad2deg(x(9,:)))
+subplot(3,3,9); hold on; grid on;
+plot(x_time,rad2deg(x(9,numEpochInitPlot:end)))
 ylabel('\psi [deg]');
 
+% % Plot biases
+% figure; hold on; grid on; title('biases in accelerometers');
+% plot(x_time, x(10,numEpochInitPlot:end), 'linewidth',2)
+% plot(x_time, x(11,numEpochInitPlot:end), 'linewidth',2)
+% plot(x_time, x(12,numEpochInitPlot:end), 'linewidth',2)
+% ylabel('m/s^2')
+% legend('x','y','z')
+% 
+% figure; hold on; grid on; title('biases in gyros');
+% plot(x_time, rad2deg(x(13,numEpochInitPlot:end)), 'linewidth',2)
+% plot(x_time, rad2deg(x(14,numEpochInitPlot:end)), 'linewidth',2)
+% plot(x_time, rad2deg(x(15,numEpochInitPlot:end)), 'linewidth',2)
+% ylabel('deg');
+% legend('w_x','w_y','w_z')
 
-figure; hold on; grid on; title('biases in accelerometers');
-plot(x_time, x(10,:), 'linewidth',2)
-plot(x_time, x(11,:), 'linewidth',2)
-plot(x_time, x(12,:), 'linewidth',2)
-ylabel('m/s^2')
-legend('x','y','z')
-
-figure; hold on; grid on; title('biases in gyros');
-plot(x_time, rad2deg(x(13,:)), 'linewidth',2)
-plot(x_time, rad2deg(x(14,:)), 'linewidth',2)
-plot(x_time, rad2deg(x(15,:)), 'linewidth',2)
-ylabel('deg');
-legend('w_x','w_y','w_z')
+% Plot measurements
+figure; hold on; grid on;
+u_ax_filter= filter(ones(1,500)/500,1,u(1,:));
+u_ay_filter= filter(ones(1,500)/500,1,u(2,:));
+plot(x_time, u_ax_filter(numEpochInitPlot:end));
+plot(x_time, u_ay_filter(numEpochInitPlot:end));
+legend('accX','accY')
 
 
 
