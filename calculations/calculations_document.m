@@ -38,25 +38,30 @@ n_w= [nx_w;ny_w;nz_w];
 g_N= [0; 0; g]; % where g is positive
 
 
-% From body rates to Euler rates
-Q_EB= [1, sin(phi)*tan(theta), cos(phi)*tan(theta);
-          0, cos(phi), -sin(phi);
-          0, sin(phi)/cos(theta), cos(phi)/cos(theta)];
-      
 % Rotation matrices for each axis
-R_psi= [cos(psi), -sin(psi), 0;
-        sin(psi), cos(psi), 0;
+R_psi= [cos(psi), sin(psi), 0;
+        -sin(psi), cos(psi), 0;
         0, 0, 1];
-R_theta= [cos(theta), 0, sin(theta);
+R_theta= [cos(theta), 0, -sin(theta);
           0, 1, 0;
-          -sin(theta), 0, cos(theta)];
+          sin(theta), 0, cos(theta)];
 R_phi= [1, 0, 0;
-        0, cos(phi), -sin(phi);
-        0, sin(phi), cos(phi)];
+        0, cos(phi), sin(phi);
+        0, -sin(phi), cos(phi)];
 
 % Rotation matrices B to N and N to B
 R_NB= simplify( R_psi*R_theta*R_phi );
 R_BN= R_NB';
+
+% From body rates to Euler rates
+Q_EB= simplify( inv( [1, 0, sin(theta);
+                0, cos(phi), -sin(phi)*cos(theta);
+                0, sin(phi), cos(phi)*cos(theta)] ) );
+
+% Q_EB= [1, sin(phi)*tan(theta), cos(phi)*tan(theta);
+%           0, cos(phi), -sin(phi);
+%           0, sin(phi)/cos(theta), cos(phi)/cos(theta)];
+
 
 
 %% Continuous nonlinear model
@@ -94,13 +99,16 @@ H= simplify( [diff(h, rx),   diff(h, ry),    diff(h, rz)...
               diff(h, vx),   diff(h, vy),    diff(h, vz)...
               diff(h, phi),  diff(h, theta), diff(h, psi)...
               diff(h, bx_f), diff(h, by_f),  diff(h, bz_f)...
-              diff(h, bx_w), diff(h, by_w),  diff(h, bz_w) ] )
+              diff(h, bx_w), diff(h, by_w),  diff(h, bz_w) ] );
 
 
 %% This generates fucntion files automatically
-% matlabFunction(F, 'file', 'F_fn')
-% matlabFunction(G, 'file', 'G_fn')
-matlabFunction(H, 'file', 'H_fn')
+% matlabFunction(R_NB, 'file', 'R_NB_fn')
+matlabFunction(Q_EB, 'file', 'Q_EB_fn')
+% matlabFunction(F,    'file', 'F_fn')
+% matlabFunction(G,    'file', 'G_fn')
+% matlabFunction(H,    'file', 'H_fn')
+
 
 
 
