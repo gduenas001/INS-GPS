@@ -7,7 +7,7 @@ dT_cal= 1/10; % KF Update period during initial calibration
 dT_virt= 1/1; % Virtual msmt update period
 g_val= 9.80279; % value of g [m/s2] at the IIT
 numEpochStatic= 10000; % Number of epochs the cart is static initially
-numEpochInclCalibration= round(numEpochStatic/2);
+numEpochInclCalibration= round(numEpochStatic);
 SWITCH_CALIBRATION= 1;
 SWITCH_VIRT_UPDATE= 0;
 sig_cal_pos= 0.03; % 3cm   -- do not reduce too much or bias get instable
@@ -73,7 +73,9 @@ S= blkdiag(Sv, Sn);
 % file= strcat('../DATA_MOVE/outside/grassfield/1line_125Hz_LPF262/20180412_1.txt');
 % file= strcat('../DATA_MOVE/outside/grassfield/2curves_125Hz_LPF16/20180412_1.txt');
 % file= strcat('../DATA_MOVE/outside/grassfield/2curves_125Hz_LPF262/20180412_1.txt');
-file= strcat('../DATA_COMPLETE/20180417/IMU/20180417_1.txt');
+% file= strcat('../DATA_COMPLETE/20180417/IMU/20180417_1.txt');
+% file= strcat('../DATA_MOVE/2turns_cart_125Hz_LPF16/20180420_1.txt');
+file= strcat('../DATA_MOVE/2turns_cart_125Hz_LPF16/20180420_2.txt');
 
 
 [~, gyrox, gyroy, gyroz, accx, accy, accz,...
@@ -84,20 +86,24 @@ file= strcat('../DATA_COMPLETE/20180417/IMU/20180417_1.txt');
 iu= [incx, incy, incz]';
 u= [accx, accy, accz, gyrox, gyroy, gyroz]';
 N_IMU= length(accx);
-% N_GPS= round( N_IMU*dT_IMU / dT_calibration );
 
-% Rotation to nav frame (NED)
-R_NB= R_NB_rot(deg2rad(180),0,0);
-R_NB_init= blkdiag(R_NB,R_NB);
+% Initial rotation to get: x=foward & z=down
+R_init= [ 0, -1, 0;
+         -1, 0, 0;
+          0, 0, -1];
+R_init_block= blkdiag(R_init,R_init);
 
 % calibrate with constant bias and scale factor
 iu= (iinvC * iu) - ib0;
 u= (invC * u) - b0;
-u= R_NB_init * u;
-iu= R_NB * iu;
+u= R_init_block * u;
+iu= R_init * iu;
 
 % Initial attitude from inclinometers
 [phi0, theta0]= initial_attitude(iu(:,numEpochInclCalibration));
+phi0= deg2rad(1.2); theta0= deg2rad(0.4);
+rad2deg(phi0)
+rad2deg(theta0)
 
 % Allocate variables
 P_store= zeros(15, N_IMU);
@@ -130,7 +136,7 @@ tauw= tauw_calibration;
 for k= 1:N_IMU-1
     
     % Turn off GPS updates if start moving
-    if k > numEpochStatic
+    if k == numEpochStatic
         SWITCH_CALIBRATION= 0; 
         taua= taua0;
         tauw= tauw0;
@@ -212,11 +218,11 @@ P_store_time(k_update)= timeSim;
 
 numEpochInitPlot= numEpochStatic;
 
-x_time= 0:dT_IMU:timeSim+dT_IMU/2;
-x_time= x_time(numEpochInitPlot:end);
+timeComplete= 0:dT_IMU:timeSim+dT_IMU/2;
+timeMove= timeComplete(numEpochInitPlot:end);
 
 % Plot estimated path
-figure; hold on; grid on;
+figPath= figure; hold on; grid on;
 plot3(x(1,:),x(2,:),x(3,:),'b.');
 xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 axis equal
@@ -225,53 +231,53 @@ axis equal
 figure; hold on;
 
 subplot(3,3,1); hold on; grid on;
-plot(x_time,x(1,numEpochInitPlot:end));
+plot(timeComplete,x(1,:));
 ylabel('x [m]');
 
 subplot(3,3,2); hold on; grid on;
-plot(x_time,x(2,numEpochInitPlot:end));
+plot(timeComplete,x(2,:));
 ylabel('y [m]');
 
 subplot(3,3,3); hold on; grid on; 
-plot(x_time,x(3,numEpochInitPlot:end))
+plot(timeComplete,x(3,:))
 ylabel('z [m]');
 
 subplot(3,3,4); hold on; grid on;
-plot(x_time,x(4,numEpochInitPlot:end))
+plot(timeComplete,x(4,:))
 ylabel('v_x [m/s]');
 
 subplot(3,3,5); hold on; grid on;
-plot(x_time,x(5,numEpochInitPlot:end))
+plot(timeComplete,x(5,:))
 ylabel('v_y [m/s]');
 
 subplot(3,3,6); hold on; grid on;
-plot(x_time,x(6,numEpochInitPlot:end));
+plot(timeComplete,x(6,:));
 ylabel('v_z [m/s]');
 
 subplot(3,3,7); hold on; grid on;
-plot(x_time,rad2deg(x(7,numEpochInitPlot:end)))
+plot(timeComplete,rad2deg(x(7,:)))
 ylabel('\phi [deg]');
 
 subplot(3,3,8); hold on; grid on;
-plot(x_time,rad2deg(x(8,numEpochInitPlot:end)))
+plot(timeComplete,rad2deg(x(8,:)))
 ylabel('\theta [deg]');
 
 subplot(3,3,9); hold on; grid on;
-plot(x_time,rad2deg(x(9,numEpochInitPlot:end)))
+plot(timeComplete,rad2deg(x(9,:)))
 ylabel('\psi [deg]');
 
 % Plot biases
 figure; hold on; grid on; title('biases in accelerometers');
-plot(x_time, x(10,numEpochInitPlot:end), 'linewidth',2)
-plot(x_time, x(11,numEpochInitPlot:end), 'linewidth',2)
-plot(x_time, x(12,numEpochInitPlot:end), 'linewidth',2)
+plot(timeComplete, x(10,:), 'linewidth',2)
+plot(timeComplete, x(11,:), 'linewidth',2)
+plot(timeComplete, x(12,:), 'linewidth',2)
 ylabel('m/s^2')
 legend('x','y','z')
 
 figure; hold on; grid on; title('biases in gyros');
-plot(x_time, rad2deg(x(13,numEpochInitPlot:end)), 'linewidth',2)
-plot(x_time, rad2deg(x(14,numEpochInitPlot:end)), 'linewidth',2)
-plot(x_time, rad2deg(x(15,numEpochInitPlot:end)), 'linewidth',2)
+plot(timeComplete, rad2deg(x(13,:)), 'linewidth',2)
+plot(timeComplete, rad2deg(x(14,:)), 'linewidth',2)
+plot(timeComplete, rad2deg(x(15,:)), 'linewidth',2)
 ylabel('deg');
 legend('w_x','w_y','w_z')
 
@@ -297,6 +303,8 @@ legend('w_x','w_y','w_z')
 % legend('x','y','z');
 
 
+% Plot attitude at some epochs
+plot_attitude( x(1:9,1:200:end), figPath )
 
 
 

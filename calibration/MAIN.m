@@ -1,10 +1,13 @@
-clear; format short; clc; close all;      
+clear; format short;% clc; close all;      
 
 
 % ---------------- Read data X gravity ----------------
-file= '../DATA_STATIC/3axis_calibration_125Hz_LPF262/X_gravity/20180403_1.txt';
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF262/X_gravity/20180403_1.txt';
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180404_1.txt';
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180423_1.txt';
+file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180423_2.txt';
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
-    ~, ~, ~, ~, ~, ~]= DataRead(file); % rads
+    ~, ~, ~, ~, ~]= DataRead(file); % rads
 % -------------------------------------------
 
 % Set paramters
@@ -12,7 +15,7 @@ u= [accx, accy, accz, gyrox, gyroy, gyroz]';
 N_x= length(accx);
 
 % accelerometers
-g_x= mean(accx);
+g_x= abs(mean(accx));
 mux_y= mean(accy);
 mux_z= mean(accz);
 
@@ -22,15 +25,18 @@ wx_y= mean(gyroy);
 wx_z= mean(gyroz);
 
 % inclinometers
-ig_x= mean(incx);
+ig_x= abs(mean(incx));
 imux_y= mean(incy);
 imux_z= mean(incz);
 
 
 % ---------------- Read data Y gravity ----------------
-file= strcat('../DATA_STATIC/3axis_calibration_125Hz_LPF262/Y_gravity/20180403_1.txt');
+% file= strcat('../DATA_STATIC/3axis_calibration_125Hz_LPF262/Y_gravity/20180403_1.txt');
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Y_gravity/20180404_1.txt';
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Y_gravity/20180423_1.txt';
+file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Y_gravity/20180423_2.txt';
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
-    ~, ~, ~, ~, ~, ~]= DataRead(file); % rads
+    ~, ~, ~, ~, ~]= DataRead(file); % rads
 % -------------------------------------------
 
 % Set paramters
@@ -38,7 +44,7 @@ u= [accx, accy, accz, gyrox, gyroy, gyroz]';
 N_y= length(accx);
 
 % accelerometers
-g_y= -mean(accy);
+g_y= abs(-mean(accy));
 muy_x= mean(accx);
 muy_z= mean(accz);
 
@@ -48,15 +54,18 @@ wy_y= mean(gyroy);
 wy_z= mean(gyroz);
 
 % inclinometers
-ig_y= -mean(incy);
+ig_y= abs(-mean(incy));
 imuy_x= mean(incx);
 imuy_z= mean(incz);
 
 
 % ---------------- Read data Z gravity ----------------
-file= strcat('../DATA_STATIC/3axis_calibration_125Hz_LPF262/Z_gravity/20180403_1.txt');
+% file= strcat('../DATA_STATIC/3axis_calibration_125Hz_LPF262/Z_gravity/20180403_1.txt');
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180404_1.txt';
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180423_1.txt';
+file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180423_2.txt';
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
-    ~, ~, ~, ~, ~, ~]= DataRead(file); % rads
+    ~, ~, ~, ~, ~]= DataRead(file); % rads
 % -------------------------------------------
 
 % Set paramters
@@ -64,7 +73,7 @@ u= [accx, accy, accz, gyrox, gyroy, gyroz]';
 N_z= length(accx);
 
 % accelerometers
-g_z= -mean(accz);
+g_z= abs(-mean(accz));
 muz_x= mean(accx);
 muz_y= mean(accy);
 
@@ -74,7 +83,7 @@ wz_y= mean(gyroy);
 wz_z= mean(gyroz);
 
 % inclinometers
-ig_z= -mean(incz);
+ig_z= abs(-mean(incz));
 imuz_x= mean(incx);
 imuz_y= mean(incy);
 

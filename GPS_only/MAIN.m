@@ -1,5 +1,5 @@
 
-clear; format short; clc; close all;
+clear; format short; clc; %close all;
 
 % Switches (options)
 SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
@@ -28,17 +28,19 @@ g_val= 9.80279; % value of g [m/s2] at the IIT
 
 % --------------- Initial biases ---------------
 % Without LPF 125Hz
-invC= [ diag([0.994903778878319, 1.000610776153152, 0.995712486712822]), zeros(3);
-        zeros(3), eye(3)];
-b0= [-0.073230349005496; -0.029256994675470; 0.032181184395398;...
-      -0.000971671383361; 0.000168722253567; 0.000040755306224];
-iinvC= diag([0.994586564371092, 0.992541425246288, 1.009732096070968]);
-ib0= [-0.044470763684614; -0.066164936056311; 0.099883152249655];
+% invC= [ diag([0.994903778878319, 1.000610776153152, 0.995712486712822]), zeros(3);
+%         zeros(3), eye(3)];
+% b0= [-0.073230349005496; -0.029256994675470; 0.032181184395398;...
+%       -0.000971671383361; 0.000168722253567; 0.000040755306224];
+% iinvC= diag([0.994586564371092, 0.992541425246288, 1.009732096070968]);
+% ib0= [-0.044470763684614; -0.066164936056311; 0.099883152249655];
 % With LPF 125Hz
 % invC= [ diag([0.999730138420152, 1.005885117649553 , 0.983767954068044]), zeros(3);
 %         zeros(3), eye(3)];
 % b0= [-0.021760161883734; 0.020787087269599; -0.089159163008672;...
 %       -0.000968802390264; 0.000129944741751; 0.000110380074963];
+load('../calibration/calibration.mat');
+invC= [invC, zeros(3); zeros(3), eye(3)];
 % ---------------------------------------------
 
 % G estimation (sense is same at grav acceleration in nav-frame)
@@ -70,8 +72,16 @@ Sn= blkdiag(Sn_f, Sn_w);
 S= blkdiag(Sv, Sn);
 
 % ---------------- Read data ----------------
-fileIMU= strcat('../DATA_COMPLETE/20180417/IMU/IMU.mat');
-fileGPS= strcat('../DATA_COMPLETE/20180417/GPS/GPS.mat');
+% fileIMU= strcat('../DATA_COMPLETE/20180417/IMU/IMU.mat');
+% fileGPS= strcat('../DATA_COMPLETE/20180417/GPS/GPS.mat');
+
+% fileIMU= strcat('../DATA_COMPLETE/20180419/Smooth_turn/IMU/IMU.mat');
+% fileGPS= strcat('../DATA_COMPLETE/20180419/Smooth_turn/GPS/GPS.mat');
+
+
+fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/IMU/IMU.mat');
+fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/GPS/GPS.mat');
+
 
 [T_IMU,u,iu]= DataReadIMU(fileIMU);
 [T_GPS,z_GPS,R_GPS,R_NE]= dataReadGPS(fileGPS,numEpochStatic*dT_IMU);
@@ -88,8 +98,8 @@ R_init= [ 0, -1, 0;
 R_init_block= blkdiag(R_init,R_init);
 
 % calibrate with constant bias and scale factor
-iu= (iinvC * iu) - ib0;
-u= (invC * u) - b0;
+iu= (iinvC * iu) - ib_0;
+u= (invC * u) - b_0;
 u= R_init_block * u;
 iu= R_init * iu;
 
@@ -143,11 +153,16 @@ for k= 1:N_IMU-1
     timeSum= timeSum + dT_IMU;
     timeSumVirt= timeSumVirt + dT_IMU;
     
-    % Update position mean
-    x(:,k+1)= IMU_update( x(:,k), u(:,k), g_N, taua, tauw, dT_IMU );
-    
-    % Update cov matrix
-    P= Phi*P*Phi' + D_bar;
+    if SWITCH_CALIBRATION
+        % Update position mean with IMU
+        x(:,k+1)= IMU_update( x(:,k), u(:,k), g_N, taua, tauw, dT_IMU );
+        
+        % Update cov matrix
+        P= Phi*P*Phi' + D_bar;
+    else
+        % Update position mean with IMU
+        [x(:,k+1),P]= vehicle_model_update( x(:,k), P, dT_IMU );
+    end
     
     % KF update
     if timeSum >= dT_cal && SWITCH_CALIBRATION
@@ -210,6 +225,7 @@ for k= 1:N_IMU-1
     if (timeSim + dT_IMU) > timeGPS && SWITCH_GPS_UPDATE 
         
         if ~SWITCH_CALIBRATION
+            
             
             % GPS msmt update
             R= diag( R_GPS(:,k_GPS) );

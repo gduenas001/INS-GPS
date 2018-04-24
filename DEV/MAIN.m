@@ -9,7 +9,7 @@ SWITCH_GPS_UPDATE= 1; % update of the GPS
 % Parameters
 dT_IMU= 1/125; % IMU sampling time
 dT_cal= 1/10; % KF Update period during initial calibration
-dT_virt= 1/1; % Virtual msmt update period
+dT_virt= 1/10; % Virtual msmt update period
 numEpochStatic= 10000; % Number of epochs the cart is static initially
 numEpochInclCalibration= round(numEpochStatic);
 sig_cal_pos= 0.03; % 3cm   -- do not reduce too much or bias get instable
@@ -18,7 +18,7 @@ sig_cal_E= deg2rad(0.1); % 0.1 deg
 sig_E= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
 sig_ba= 0.1; % m/s2 -- Initial acc bias uncertainty
 sig_bw= deg2rad(0.2); % 0.1 deg -- Initial gyros bias uncertainty
-sig_virt_vz= 0.1; % 5cm/s -- virtual msmt SD in z
+sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
 taua0= 6000; % Tau for acc bias -- from manufacturer
 tauw0= 3600; % Tau for gyro bias -- from manufacturer
 taua_calibration= 200; % acc tau value during initial calibration
@@ -27,18 +27,8 @@ g_val= 9.80279; % value of g [m/s2] at the IIT
 
 
 % --------------- Initial biases ---------------
-% Without LPF 125Hz
-invC= [ diag([0.994903778878319, 1.000610776153152, 0.995712486712822]), zeros(3);
-        zeros(3), eye(3)];
-b0= [-0.073230349005496; -0.029256994675470; 0.032181184395398;...
-      -0.000971671383361; 0.000168722253567; 0.000040755306224];
-iinvC= diag([0.994586564371092, 0.992541425246288, 1.009732096070968]);
-ib0= [-0.044470763684614; -0.066164936056311; 0.099883152249655];
-% With LPF 125Hz
-% invC= [ diag([0.999730138420152, 1.005885117649553 , 0.983767954068044]), zeros(3);
-%         zeros(3), eye(3)];
-% b0= [-0.021760161883734; 0.020787087269599; -0.089159163008672;...
-%       -0.000968802390264; 0.000129944741751; 0.000110380074963];
+load('../calibration/calibration.mat');
+invC= [invC, zeros(3); zeros(3), eye(3)];
 % ---------------------------------------------
 
 % G estimation (sense is same at grav acceleration in nav-frame)
@@ -51,6 +41,7 @@ sig_cal_E_blkMAtrix= diag([sig_cal_E, sig_cal_E, sig_cal_E]);
 R_cal= blkdiag(sig_cal_pos_blkMAtrix, sig_cal_vel_blkMAtrix, sig_cal_E_blkMAtrix).^2;
 H_cal= [eye(9), zeros(9,6)]; % Calibration observation matrix
 H_GPS= [eye(6), zeros(6,9)]; % GPS observation matrix
+% H_GPS= [eye(3), zeros(3,12)]; % GPS observation matrix - no velocity
 R_virt= sig_virt_vz.^2;
 
 % IMU -- white noise specs
@@ -70,8 +61,12 @@ Sn= blkdiag(Sn_f, Sn_w);
 S= blkdiag(Sv, Sn);
 
 % ---------------- Read data ----------------
-fileIMU= strcat('../DATA_COMPLETE/20180417/IMU/IMU.mat');
-fileGPS= strcat('../DATA_COMPLETE/20180417/GPS/GPS.mat');
+% fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/IMU.mat');
+% fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/GPS/GPS.mat');
+
+fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/IMU/IMU.mat');
+fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/GPS/GPS.mat');
+
 
 [T_IMU,u,iu]= DataReadIMU(fileIMU);
 [T_GPS,z_GPS,R_GPS,R_NE]= dataReadGPS(fileGPS,numEpochStatic*dT_IMU);
@@ -88,8 +83,8 @@ R_init= [ 0, -1, 0;
 R_init_block= blkdiag(R_init,R_init);
 
 % calibrate with constant bias and scale factor
-iu= (iinvC * iu) - ib0;
-u= (invC * u) - b0;
+iu= (iinvC * iu) - ib_0;
+u= (invC * u) - b_0;
 u= R_init_block * u;
 iu= R_init * iu;
 
@@ -108,7 +103,7 @@ P(10:12,10:12)= diag( [sig_ba,sig_ba,sig_ba] ).^2;
 P(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
 x(7,1)= phi0;
 x(8,1)= theta0;
-yaw0= deg2rad(190); % set the initial yaw angle manually
+yaw0= deg2rad(180); % set the initial yaw angle manually
 x(9,1)= yaw0;
 
 % Initialize loop variables
@@ -132,11 +127,15 @@ tauw= tauw_calibration;
 for k= 1:N_IMU-1
     
     % Turn off GPS updates if start moving
-    if k > numEpochStatic
+    if k == numEpochStatic
         SWITCH_CALIBRATION= 0; 
+        P(9,9)= sig_E^2;
         taua= taua0;
         tauw= tauw0;
     end
+    
+%     if k == 14100, SWITCH_GPS_UPDATE = 0; end;
+    
     
     % Increase time count
     timeSim= timeSim + dT_IMU;
@@ -164,6 +163,7 @@ for k= 1:N_IMU-1
         z= [zeros(6,1); phi0; theta0; yaw0];
         z_hat= H_cal*x(:,k+1);
         innov= z - z_hat;
+        innov(end)= pi_to_pi(innov(end));
         x(:,k+1)= x(:,k+1) + L*innov;
         P= P - L*H_cal*P;
         
@@ -180,14 +180,7 @@ for k= 1:N_IMU-1
         k_update= k_update+1;
     end
     % Vehicle moving - no calibration and virtual msmts    
-    if timeSumVirt >= dT_virt && SWITCH_VIRT_UPDATE && ~SWITCH_CALIBRATION
-        % Compute the F and G matrices (linear continuous time)
-        [F,G]= FG_fn(u(1,k),u(2,k),u(3,k),u(5,k),u(6,k),...
-            x(7,k+1),x(8,k+1),x(9,k+1),x(10,k+1),x(11,k+1),x(12,k+1),x(14,k+1),x(15,k+1),taua,tauw);
-        
-        % Discretize system for IMU time (only for variance calculations)
-        [Phi,D_bar]= discretize(F, G, H_cal, S, dT_IMU);
-        
+    if timeSumVirt >= dT_virt && SWITCH_VIRT_UPDATE && ~SWITCH_CALIBRATION        
         % Virtual msmt update
         R_BN= R_NB_rot( x(7,k+1), x(8,k+1), x(9,k+1) )';
         H_virt= H_fn(x(4,k+1), x(5,k+1), x(6,k+1), x(7,k+1), x(8,k+1), x(9,k+1));
@@ -198,13 +191,8 @@ for k= 1:N_IMU-1
         x(:,k+1)= x(:,k+1) + L*innov;
         P= P - L*H_virt*P;
         
-        % Store cov matrix
-        P_store(:,k_update) = diag(P);
-        P_store_time(k_update)= timeSim;
-        
-        % Time counters
+        % Time counter
         timeSumVirt= 0;
-        k_update= k_update+1;
     end
     % Vehicle moving - GPS update
     if (timeSim + dT_IMU) > timeGPS && SWITCH_GPS_UPDATE 
@@ -213,8 +201,10 @@ for k= 1:N_IMU-1
             
             % GPS msmt update
             R= diag( R_GPS(:,k_GPS) );
+%             R= diag( R_GPS(1:3,k_GPS) );
             L= P*H_GPS' / (H_GPS*P*H_GPS' + R);
             innov= z_GPS(:,k_GPS) - H_GPS*x(:,k+1);
+%             innov= z_GPS(1:3,k_GPS) - H_GPS*x(:,k+1);
             x(9,k+1)= pi_to_pi(x(9,k+1));
             x(:,k+1)= x(:,k+1) + L*innov;
             P= P - L*H_GPS*P;
@@ -295,19 +285,20 @@ ylabel('\psi [deg]');
 % plot(timeComplete, x(12,:), 'linewidth',2)
 % ylabel('m/s^2')
 % legend('x','y','z')
-
+% 
 % figure; hold on; grid on; title('biases in gyros');
-% plot(x_time, rad2deg(x(13,numEpochInitPlot:end)), 'linewidth',2)
-% plot(x_time, rad2deg(x(14,numEpochInitPlot:end)), 'linewidth',2)
-% plot(x_time, rad2deg(x(15,numEpochInitPlot:end)), 'linewidth',2)
+% plot(timeComplete, rad2deg(x(13,:)), 'linewidth',2)
+% plot(timeComplete, rad2deg(x(14,:)), 'linewidth',2)
+% plot(timeComplete, rad2deg(x(15,:)), 'linewidth',2)
 % ylabel('deg');
 % legend('w_x','w_y','w_z')
 
 % Plot GPS+IMU estimated path
-figure; hold on; grid on;
+figPath= figure; hold on; grid on;
 plot3(x(1,:),x(2,:),x(3,:),'b.');
 plot3(z_GPS(1,:),z_GPS(2,:),z_GPS(3,:),'r*');
 xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
+plot_attitude( x(1:9,1:300:end), figPath ) % Plot attitude at some epochs
 axis equal
 
 % % Plot GPS positions
@@ -331,8 +322,8 @@ axis equal
 % figure; hold on; grid on;
 % u_ax_filter= filter(ones(1,500)/500,1,u(1,:));
 % u_ay_filter= filter(ones(1,500)/500,1,u(2,:));
-% plot(x_time, u_ax_filter(numEpochInitPlot:end));
-% plot(x_time, u_ay_filter(numEpochInitPlot:end));
+% plot(timeComplete, u_ax_filter(:));
+% plot(timeComplete, u_ay_filter(:));
 % legend('accX','accY')
 
 
@@ -347,6 +338,10 @@ axis equal
 % xlabel('Time epochs')
 % ylabel('m');
 % legend('x','y','z');
+
+
+
+
 
 
 

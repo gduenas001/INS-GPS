@@ -1,15 +1,16 @@
 
 function [phi,theta]= initial_attitude(iu)
 
-mu= mean(iu,2);
+g_bar= mean(iu,2);
 
-theta=  atan2( mu(1) , abs(mu(3)) ); % for z-axis pointing down (accz < 0)
-phi=   -atan2( mu(2) , abs(mu(3)) );
+% My method -- works for z-axis pointing down (accz < 0)
+% theta=  atan2( g_bar(1) , abs(g_bar(3)) ); 
+% phi=   -atan2( g_bar(2) , abs(g_bar(3)) );
 
-
-
-
-
+% Books method
+g_bar= -g_bar;
+phi= atan2( g_bar(2),g_bar(3) );
+theta= atan2( -g_bar(1), sqrt( g_bar(2)^2 + g_bar(3)^2 ) );
 
 
 
