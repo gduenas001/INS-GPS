@@ -1,5 +1,5 @@
 
-function [T,z,R,R_NE]= dataReadGPS(string,timeStatic)
+function [T,z,R,R_NE,timeInit]= dataReadGPS(string,timeStatic)
 
 numEpochStaticGPS= ceil(timeStatic);
 
@@ -18,6 +18,9 @@ sigPosZ= data(:,13);
 sigVelX= data(:,14);
 sigVelY= data(:,15);
 sigVelZ= data(:,16);
+
+% Save the initial time as reference for other sensors
+timeInit= T(1);
 
 % Make time start at zero
 T= T - T(1);

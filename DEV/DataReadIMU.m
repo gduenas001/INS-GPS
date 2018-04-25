@@ -1,7 +1,7 @@
-function [ T, u, iu ] = DataReadIMU( string )
+function [ T, u, iu ] = DataReadIMU( fileName, timeInit )
 %DATAREAD Reads a datafile and outputs a series of vectors of the data
 % Data id in columns
-load(string);
+load(fileName);
 
 g0= 9.80665; % m/s^2 -- by manufacturerw
 
@@ -19,8 +19,8 @@ incY    = data(:,14) *g0;
 incZ    = data(:,15) *g0;
 % incSts  = data(:,16);
 
-% start time at zero
-T= T - T(1);
+% Use the first GPS reading time as reference
+T= T - timeInit;
 
 % Set paramters
 iu= [incX, incY, incZ]';
