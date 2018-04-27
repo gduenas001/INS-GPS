@@ -117,24 +117,17 @@ for k= 1:N_IMU-1
         % Read the lidar features
         z= dataReadLIDAR(fileLIDAR, lidarRange, epochLIDAR, SWITCH_REMOVE_FAR_FEATURES);
         
-        R_NB= R_NB_rot(x(7,k+1),x(8,k+1),x(9,k+1));
-        z= ( R_NB * z' )';
-        z(:,1)= z(:,1) + x(1,k+1);
-        z(:,2)= z(:,2) + x(2,k+1);
-        z(:,3)= z(:,3) + x(3,k+1);
-
+        % Convert to navigation frame
+        z= body2nav(z,x(1:9,k+1));
+  
         % Remove people-features
-        inX= (z(:,1) > 0) & (z(:,1) < 8);
-        inY= (z(:,2) > 0) & (z(:,2) < 15);
-        z( inX & inY, :)= [];
+        z= removeFeatureInArea(z, 0,8,0,15);
+        z= removeFeatureInArea(z, -28,15,-24,-18);
         
-        % Remove people-features
-        inX= (z(:,1) > -28) & (z(:,1) < 15);
-        inY= (z(:,2) > -24) & (z(:,2) < -18);
-        z( inX & inY, :)= [];
-
+        % Add to landmarks
         LM= [LM; z];
         
+        % Increase counters
         k_LIDAR= k_LIDAR + 1;
         timeLIDAR= T_LIDAR(k_LIDAR,2);
     end
