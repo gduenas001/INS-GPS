@@ -5,13 +5,12 @@ fileName= strcat(fileLIDAR,'matFiles/Epoch',num2str(epoch),'.mat');
 
 load(fileName);
 
-% Add the z component
-height= 0;
-z= [z, -height*ones(size(z,1),1)];
+if SWITCH_REMOVE_FAR_FEATURES, z= removeFarFeatures(z, lidarRange); end
 
-if SWITCH_REMOVE_FAR_FEATURES
-    z= removeFarFeatures(z, lidarRange);
-end
+% Add height
+height= 1.5;
+z= [z, ones(size(z,1),1)*height];
+
 
 end
 

@@ -15,7 +15,6 @@ for i= 1:size(x,2)
     
     plot3(xyz_N(1,:), xyz_N(2,:), xyz_N(3,:), 'g-', 'linewidth', 2);
     
-    
 end
 
 

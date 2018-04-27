@@ -1,21 +1,23 @@
 
-clear; format short; clc; close all;
+clear all; format short; clc; close all;
 
 configureFile;
 
 % Initial discretization for cov. propagation
-[Phi,D_bar]= linearize_discretize(x(:,1),u(:,1),S,taua,tauw,dT_IMU);
+[Phi,D_bar]= linearize_discretize(XX,u(:,1),S,taua,tauw,dT_IMU);
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
 for k= 1:N_IMU-1
+%     disp(strcat('Epoch -> ', num2str(k)));
+    
     
     % Turn off GPS updates if start moving
     if k == numEpochStatic
         SWITCH_CALIBRATION= 0; 
-        P(7,7)= sig_phi0^2;
-        P(8,8)= sig_phi0^2;
-        P(9,9)= sig_yaw0^2;
+        PX(7,7)= sig_phi0^2;
+        PX(8,8)= sig_phi0^2;
+        PX(9,9)= sig_yaw0^2;
         taua= taua0;
         tauw= tauw0;
     end
@@ -27,25 +29,30 @@ for k= 1:N_IMU-1
     timeSumVirt_Y= timeSumVirt_Y + dT_IMU;
     
     % ------------- IMU -------------
-    x(:,k+1)= IMU_update( x(:,k), u(:,k), g_N, taua, tauw, dT_IMU );
-    P= Phi*P*Phi' + D_bar; 
+    XX(1:15)= IMU_update( XX(1:15), u(:,k), g_N, taua, tauw, dT_IMU );
+    PX(1:15,1:15)= Phi*PX(1:15,1:15)*Phi' + D_bar; 
     % -------------------------------
+    
+    DATA.pred.XX(:,k)= XX(1:15);
+    DATA.pred.time(k)= timeSim;
     
     % ------------- Calibration -------------
     if timeSum >= dT_cal && SWITCH_CALIBRATION
         
         z= [zeros(6,1); phi0; theta0; yaw0];
-        [x(:,k+1),P]= calibration(x(:,k+1),P,z,H_cal,R_cal);
+        [XX(1:15),PX(1:15,1:15)]= calibration(XX(1:15),PX(1:15,1:15),z,H_cal,R_cal);
         
-        [Phi,D_bar]= linearize_discretize(x(:,k+1),u(:,k),S,taua,tauw,dT_IMU);
+        [Phi,D_bar]= linearize_discretize(XX,u(:,k),S,taua,tauw,dT_IMU);
         
         % If GPS is calibrating initial biases, increse bias variance
         D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [sig_ba,sig_ba,sig_ba] ).^2;
         D_bar(13:15,13:15)= D_bar(13:15,13:15) + diag( [sig_bw,sig_bw,sig_bw] ).^2;
-        
-        % Store cov matrix
-        P_store(:,k_update) = diag(P); 
-        P_store_time(k_update)= timeSim;
+                
+        % Store data
+        DATA.update.time(k_update)= timeSim;
+        DATA.udpate.PX(:,k_update)= diag(PX(1:15,1:15));
+        DATA.update.XX(:,k_update)= XX(1:15);
+        DATA.update.LM{k_update}= XX(16:end);
         
         % Time counters
         timeSum= 0;
@@ -55,7 +62,7 @@ for k= 1:N_IMU-1
     
     % ------------- virtual msmt update >> Z vel  -------------  
     if timeSumVirt_Z >= dT_virt_Z && SWITCH_VIRT_UPDATE_Z && ~SWITCH_CALIBRATION
-        [x(:,k+1),P]= zVelocityUpdate(x(:,k+1),P,R_virt_Z);
+        [XX,PX]= zVelocityUpdate(XX,PX,R_virt_Z);
         
         % Reset counter
         timeSumVirt_Z= 0;
@@ -66,10 +73,10 @@ for k= 1:N_IMU-1
     if timeSumVirt_Y >= dT_virt_Y && SWITCH_VIRT_UPDATE_Y && ~SWITCH_CALIBRATION        
          
         % Yaw update
-        if SWITCH_YAW_UPDATE && norm(x(4:6,k+1)) > minVelocityYaw
+        if SWITCH_YAW_UPDATE && norm(XX(4:6)) > minVelocityYaw
             disp('yaw udpate');
-            [x(:,k+1),P]= yawUpdate(x(:,k+1),P,u(4:6,k),H_yaw,...
-                                    R_yaw_fn(norm(x(4:6,k+1))),r_IMU2rearAxis);
+            [XX(1:15),PX(1:15,1:15)]= yawUpdate(XX(1:15),PX(1:15,1:15),...
+                            u(4:6,k),H_yaw, R_yaw_fn(norm(XX(4:6))),r_IMU2rearAxis);
         else
             disp('--------no yaw update------');
         end
@@ -84,23 +91,26 @@ for k= 1:N_IMU-1
         
         if ~SWITCH_CALIBRATION && SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
-            [x(:,k+1),P]= GPS_update(x(:,k+1),P,z_GPS(:,k_GPS),R_GPS(:,k_GPS),...
+            [XX(1:15),PX(1:15,1:15)]= GPS_update(XX(1:15),PX(1:15,1:15),z_GPS(:,k_GPS),R_GPS(:,k_GPS),...
                 minVelocityGPS,SWITCH_GPS_VEL_UPDATE);
             
             % Yaw update
-            if SWITCH_YAW_UPDATE && norm(x(4:6,k+1)) > minVelocityYaw
+            if SWITCH_YAW_UPDATE && norm(XX(4:6)) > minVelocityYaw
                 disp('yaw udpate');
-                [x(:,k+1),P]= yawUpdate(x(:,k+1),P,u(4:6,k),H_yaw,...
-                                        R_yaw_fn(norm(x(4:6,k+1))),r_IMU2rearAxis);
+                [XX(1:15),PX(1:15,1:15)]= yawUpdate(XX(1:15),PX(1:15,1:15),...
+                                u(4:6,k),H_yaw, R_yaw_fn(norm(XX(4:6))),r_IMU2rearAxis);
             else
                 disp('--------no yaw update------');
             end
-            [Phi,D_bar]= linearize_discretize(x(:,k+1),u(:,k),S,taua,tauw,dT_IMU);
-            D_bar= D_bar + diag( diag(D_bar) * 4 ); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+            [Phi,D_bar]= linearize_discretize(XX,u(:,k),S,taua,tauw,dT_IMU);
             
-            % Store cov matrix
-            P_store(:,k_update)= diag(P);
-            P_store_time(k_update)= timeSim;
+            % Store data
+            DATA.update.time(k_update)= timeSim;
+            DATA.update.PX(:,k_update)= diag(PX(1:15,1:15));
+            DATA.update.XX(:,k_update)= XX(1:15);
+            DATA.update.LM{k_update}= XX(16:end);
+            
+            % Increase counter
             k_update= k_update+1;
         end
         
@@ -118,11 +128,17 @@ for k= 1:N_IMU-1
         z= dataReadLIDAR(fileLIDAR, lidarRange, epochLIDAR, SWITCH_REMOVE_FAR_FEATURES);
         
         % Convert to navigation frame
-        z= body2nav(z,x(1:9,k+1));
+        z= body2nav(z,XX(1:9));
   
         % Remove people-features
         z= removeFeatureInArea(z, 0,8,0,15);
         z= removeFeatureInArea(z, -28,15,-24,-18);
+        
+        % NN data association
+        association= nearestNeighbor(z,XX,PX,R_lidar,T_NN);
+        
+        % Add new landmarks
+        [XX,PX]= addNewLM( z(association' == -1,:), XX, PX, R_lidar );
         
         % Add to landmarks
         LM= [LM; z];
@@ -134,11 +150,17 @@ for k= 1:N_IMU-1
     % ---------------------------------
     
 end
-% Store final variance
-P_store(:, k_update)= diag(P);
-P_store_time(k_update)= timeSim;
+% Store data
+DATA.update.time(k_update)= timeSim;
+DATA.update.PX(:,k_update)= diag(PX(1:15,1:15));
+DATA.update.XX(:,k_update)= XX(1:15);
+DATA.update.LM{k_update}= XX(16:end);
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------
+
+
+
+
 
 
 % ------------- PLOTS -------------
@@ -187,54 +209,65 @@ timeMove= timeComplete(numEpochInitPlot:end);
 
 % Plot GPS+IMU estimated path
 figPath= figure; hold on; grid on;
-plot3(x(1,:),x(2,:),x(3,:),'b.');
+plot3(DATA.pred.XX(1,:), DATA.pred.XX(2,:), DATA.pred.XX(3,:), 'b.');
+plot3(DATA.update.XX(1,1:k_update), DATA.update.XX(2,1:k_update), DATA.update.XX(3,1:k_update), 'b*');
 plot3(z_GPS(1,:),z_GPS(2,:),z_GPS(3,:),'r*');
-if SWITCH_LIDAR_UPDATE,  plot3(LM(:,1),LM(:,2),LM(:,3),'k.'); end % Plot landmarks
+if SWITCH_LIDAR_UPDATE % Plot landmarks
+    plot3(LM(:,1),LM(:,2),zeros(size(LM,1),1),'k.'); 
+    plot3(DATA.update.LM{k_update}(1:2:end) ,DATA.update.LM{k_update}(2:2:end),zeros((length(XX)-15)/2,1),...
+    'g+', 'markersize',20);
+end 
+for i= 1:N_IMU
+    if rem(i,100) == 0
+        R_NB= R_NB_rot(DATA.pred.XX(7,i),DATA.pred.XX(8,i),DATA.pred.XX(9,i));
+        xyz_N= R_NB*xyz_B + DATA.pred.XX(1:3,i);
+        plot3(xyz_N(1,:), xyz_N(2,:), xyz_N(3,:), 'g-', 'linewidth', 2);
+    end
+end
 xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
-plot_attitude( x(1:9,1:100:end), figPath ) % Plot attitude at some epochs
 axis equal
 
 % Plot variance estimates
-SD= sqrt(P_store(:,1:k_update));
-P_store_time= P_store_time(1:k_update);
+SD= sqrt( DATA.update.PX(:,1:k_update) );
+update_time= DATA.update.time(1:k_update);
 
 % Plot SD -- pose
 figure; hold on; title('Standard Deviations');
 
 subplot(3,3,1); hold on; grid on;
-plot(P_store_time, SD(1,:),'b-','linewidth',2);
+plot(update_time, SD(1,:),'b-','linewidth',2);
 ylabel('x [m]');
 
 subplot(3,3,2); hold on; grid on;
-plot(P_store_time, SD(2,:),'r-','linewidth',2);
+plot(update_time, SD(2,:),'r-','linewidth',2);
 ylabel('y [m]');
 
 subplot(3,3,3); hold on; grid on;
-plot(P_store_time, SD(3,:),'g-','linewidth',2);
+plot(update_time, SD(3,:),'g-','linewidth',2);
 ylabel('z [m]');
 
 subplot(3,3,4); hold on; grid on;
-plot(P_store_time, SD(4,:),'b-','linewidth',2);
+plot(update_time, SD(4,:),'b-','linewidth',2);
 ylabel('v_x [m/s]');
 
 subplot(3,3,5); hold on; grid on;
-plot(P_store_time, SD(5,:),'r-','linewidth',2);
+plot(update_time, SD(5,:),'r-','linewidth',2);
 ylabel('v_y [m/s]');
 
 subplot(3,3,6); hold on; grid on;
-plot(P_store_time, SD(6,:),'g-','linewidth',2);
+plot(update_time, SD(6,:),'g-','linewidth',2);
 ylabel('v_z [m/s]');
 
 subplot(3,3,7); hold on; grid on;
-plot(P_store_time, rad2deg(SD(7,:)),'b-','linewidth',2);
+plot(update_time, rad2deg(SD(7,:)),'b-','linewidth',2);
 ylabel('\phi [deg]'); xlabel('Time [s]');
 
 subplot(3,3,8); hold on; grid on;
-plot(P_store_time, rad2deg(SD(8,:)),'r-','linewidth',2);
+plot(update_time, rad2deg(SD(8,:)),'r-','linewidth',2);
 ylabel('\theta [deg]'); xlabel('Time [s]');
 
 subplot(3,3,9); hold on; grid on;
-plot(P_store_time, rad2deg(SD(9,:)),'g-','linewidth',2);
+plot(update_time, rad2deg(SD(9,:)),'g-','linewidth',2);
 ylabel('\psi [deg]'); xlabel('Time [s]');
 
 % % Plot SD -- Biases

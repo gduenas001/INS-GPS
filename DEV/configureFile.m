@@ -1,4 +1,6 @@
 
+global DATA
+
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/IMU/IMU.mat');
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/GPS/GPS.mat');
 
@@ -18,7 +20,7 @@ invC= [invC, zeros(3); zeros(3), eye(3)];
 % --------------- Switches (options) ---------------
 SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
 SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
-SWITCH_VIRT_UPDATE_Y= 1; % virtual update for the y-vel in the body frame
+SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
 SWITCH_YAW_UPDATE= 1;
 SWITCH_GPS_UPDATE= 1; % update of the GPS
 SWITCH_GPS_VEL_UPDATE= 1; % update of the GPS
@@ -42,8 +44,8 @@ sig_ba= 0.05; % 0.1 m/s2 -- Initial acc bias uncertainty
 sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
 sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
 sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
-% sig_yaw= deg2rad(0.5); % vehicle model yaw update SD
-sig_yaw_fn= @(v) deg2rad(0.5) + ( exp(6.6035*v)-1 )^(-1); %%%%%%%%%%%%%%%%%%%%%%%%%5%%%%% CAREFUL
+sig_lidar= 0.5; % 20cm -- lidar measurement in the nav frame
+sig_yaw_fn= @(v) deg2rad(5) + ( exp(8.6035*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
 minVelocityGPS= 2/3.6; % 2 km/h
 minVelocityYaw= 2/3.6; % 2 km/h
 taua0= 3000; % Tau for acc bias -- from manufacturer
@@ -53,11 +55,13 @@ tauw_calibration= 100; % 200 gyro tau value during initial calibration
 g_val= 9.80279; % value of g [m/s2] at the IIT
 r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
 lidarRange= 25; % [m]
+alpha_NN= 0.1; % prob of discard good features in NN
 % -------------------------------------------
 
 % ---------------- Read data ----------------
 [T_GPS,z_GPS,R_GPS,R_NE,timeInit]= dataReadGPS(fileGPS,numEpochStatic*dT_IMU);
-R_GPS(4:6,:)= R_GPS(4:6,:)*5; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+R_GPS(1:3,:)= R_GPS(1:3,:)*(8^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+R_GPS(4:6,:)= R_GPS(4:6,:)*(15^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
 [T_IMU,u,iu]= DataReadIMU(fileIMU, timeInit);    
 T_LIDAR= dataReadLIDARtime(strcat(fileLIDAR,'T_LIDAR.mat'), timeInit);
 % -------------------------------------------
@@ -73,12 +77,19 @@ H_cal= [eye(9), zeros(9,6)]; % Calibration observation matrix
 H_yaw= [zeros(1,8),1,zeros(1,6)];
 R_virt_Z= sig_virt_vz.^2;
 R_virt_Y= sig_virt_vy.^2;
+R_lidar= diag( [sig_lidar, sig_lidar] ).^2;
 R_yaw_fn= @(v) sig_yaw_fn(v)^2;  %%%%%%%%%%%%%%%%%%%%%%%%%5%%%%% CAREFUL
+T_NN= 4.605; %chi2inv(1-alpha_NN,2);
+xPlot= [-0.3; 0; -0.3];
+yPlot= [0.1; 0; -0.1];
+zPlot= [0; 0; 0];
+xyz_B= [xPlot, yPlot, zPlot]';
+
 
 % IMU -- white noise specs
-VRW= 0.07 * 2;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+VRW= 0.07 * 10;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_acc= VRW * sqrt( 2000 / 3600 );
-ARW= 0.15; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+ARW= 0.15 * 15; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_gyr= deg2rad( ARW * sqrt( 2000 / 3600 ) ); % rad
 V= diag([sig_IMU_acc; sig_IMU_acc; sig_IMU_acc; sig_IMU_gyr; sig_IMU_gyr; sig_IMU_gyr]).^2;
 Sv= V * dT_IMU; % Convert to PSD
@@ -114,19 +125,22 @@ yaw0= deg2rad(180); % set the initial yaw angle manually
 % -------------------------------------------
 
 % Allocate variables
-P_store= zeros(15, N_IMU);
-P_store_time= zeros(1,N_IMU);
-x= zeros(15,N_IMU);
+DATA.pred.XX= zeros(15,N_IMU);
+DATA.pred.time= zeros(N_IMU,1);
+DATA.update.XX= zeros(15,N_IMU);
+DATA.update.PX= zeros(15,N_IMU);
+DATA.update.time= zeros(N_IMU,1);
 LM= [];
 
 % Initialize estimate
-P= zeros(15); 
-% P(7:9,7:9)= diag( [sig_E,sig_E,sig_E] ).^2;
-P(10:12,10:12)= diag( [sig_ba,sig_ba,sig_ba] ).^2;
-P(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
-x(7,1)= phi0;
-x(8,1)= theta0;
-x(9,1)= yaw0;
+XX= zeros(15,1);
+PX= zeros(15); 
+% PX(7:9,7:9)= diag( [sig_E,sig_E,sig_E] ).^2;
+PX(10:12,10:12)= diag( [sig_ba,sig_ba,sig_ba] ).^2;
+PX(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
+XX(7)= phi0;
+XX(8)= theta0;
+XX(9)= yaw0;
 
 % Initialize loop variables
 timeSim= 0;
@@ -140,12 +154,6 @@ k_GPS= 1;
 k_LIDAR= 1;
 taua= taua_calibration;
 tauw= tauw_calibration;
-
-
-
-
-
-
 
 
 
