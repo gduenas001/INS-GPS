@@ -44,7 +44,7 @@ for k= 1:N_IMU-1
         D_bar(13:15,13:15)= D_bar(13:15,13:15) + diag( [sig_bw,sig_bw,sig_bw] ).^2;
         
         % Store cov matrix
-        P_store(:,k_update) = diag(P);
+        P_store(:,k_update) = diag(P); 
         P_store_time(k_update)= timeSim;
         
         % Time counters
@@ -68,7 +68,8 @@ for k= 1:N_IMU-1
         % Yaw update
         if SWITCH_YAW_UPDATE && norm(x(4:6,k+1)) > minVelocityYaw
             disp('yaw udpate');
-            [x(:,k+1),P]= yawUpdate(x(:,k+1),P,u(4:6,k),H_yaw,R_yaw,r_IMU2rearAxis);
+            [x(:,k+1),P]= yawUpdate(x(:,k+1),P,u(4:6,k),H_yaw,...
+                                    R_yaw_fn(norm(x(4:6,k+1))),r_IMU2rearAxis);
         else
             disp('--------no yaw update------');
         end
@@ -79,27 +80,29 @@ for k= 1:N_IMU-1
     % ---------------------------------------------------------
     
     % ------------- GPS -------------
-    if (timeSim + dT_IMU) > timeGPS 
+    if (timeSim + dT_IMU) > timeGPS
         
-        if ~SWITCH_CALIBRATION && SWITCH_GPS_UPDATE 
+        if ~SWITCH_CALIBRATION && SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
             [x(:,k+1),P]= GPS_update(x(:,k+1),P,z_GPS(:,k_GPS),R_GPS(:,k_GPS),...
-                                     minVelocityGPS,SWITCH_GPS_VEL_UPDATE);
+                minVelocityGPS,SWITCH_GPS_VEL_UPDATE);
             
-            % Yaw update 
+            % Yaw update
             if SWITCH_YAW_UPDATE && norm(x(4:6,k+1)) > minVelocityYaw
                 disp('yaw udpate');
-                [x(:,k+1),P]= yawUpdate(x(:,k+1),P,u(4:6,k),H_yaw,R_yaw,r_IMU2rearAxis);
+                [x(:,k+1),P]= yawUpdate(x(:,k+1),P,u(4:6,k),H_yaw,...
+                                        R_yaw_fn(norm(x(4:6,k+1))),r_IMU2rearAxis);
             else
                 disp('--------no yaw update------');
-            end      
+            end
+            [Phi,D_bar]= linearize_discretize(x(:,k+1),u(:,k),S,taua,tauw,dT_IMU);
+            D_bar= D_bar + diag( diag(D_bar) * 4 ); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+            
+            % Store cov matrix
+            P_store(:,k_update)= diag(P);
+            P_store_time(k_update)= timeSim;
+            k_update= k_update+1;
         end
-        [Phi,D_bar]= linearize_discretize(x(:,k+1),u(:,k),S,taua,tauw,dT_IMU);
-                                  
-        % Store cov matrix
-        P_store(:,k_update)= diag(P);
-        P_store_time(k_update)= timeSim;
-        k_update= k_update+1;
         
         % Time GPS counter
         k_GPS= k_GPS + 1;
@@ -112,15 +115,25 @@ for k= 1:N_IMU-1
         epochLIDAR= T_LIDAR(k_LIDAR,1);
         
         % Read the lidar features
-        z_LIDAR= dataReadLIDAR(fileLIDAR, epochLIDAR);
+        z= dataReadLIDAR(fileLIDAR, lidarRange, epochLIDAR, SWITCH_REMOVE_FAR_FEATURES);
         
         R_NB= R_NB_rot(x(7,k+1),x(8,k+1),x(9,k+1));
-        z_LIDAR= ( R_NB * z_LIDAR' )';
-        z_LIDAR(:,1)= z_LIDAR(:,1) + x(1,k+1);
-        z_LIDAR(:,2)= z_LIDAR(:,2) + x(2,k+1);
-        z_LIDAR(:,3)= z_LIDAR(:,3) + x(3,k+1);
+        z= ( R_NB * z' )';
+        z(:,1)= z(:,1) + x(1,k+1);
+        z(:,2)= z(:,2) + x(2,k+1);
+        z(:,3)= z(:,3) + x(3,k+1);
+
+        % Remove people-features
+        inX= (z(:,1) > 0) & (z(:,1) < 8);
+        inY= (z(:,2) > 0) & (z(:,2) < 15);
+        z( inX & inY, :)= [];
         
-        LM= [LM; z_LIDAR];
+        % Remove people-features
+        inX= (z(:,1) > -28) & (z(:,1) < 15);
+        inY= (z(:,2) > -24) & (z(:,2) < -18);
+        z( inX & inY, :)= [];
+
+        LM= [LM; z];
         
         k_LIDAR= k_LIDAR + 1;
         timeLIDAR= T_LIDAR(k_LIDAR,2);
@@ -140,44 +153,124 @@ numEpochInitPlot= numEpochStatic;
 timeComplete= 0:dT_IMU:timeSim+dT_IMU/2;
 timeMove= timeComplete(numEpochInitPlot:end);
 
-% Plot estimates
-figure; hold on;
+% % Plot estimates
+% figure; hold on;
+% 
+% subplot(3,3,1); hold on; grid on;
+% plot(timeComplete,x(1,:));
+% ylabel('x [m]');
+% 
+% subplot(3,3,2); hold on; grid on;
+% plot(timeComplete,x(2,:));
+% ylabel('y [m]');
+% 
+% subplot(3,3,3); hold on; grid on; 
+% plot(timeComplete,x(3,:))
+% ylabel('z [m]');
+% 
+% subplot(3,3,4); hold on; grid on;
+% plot(timeComplete,x(4,:))
+% ylabel('v_x [m/s]');
+% 
+% subplot(3,3,5); hold on; grid on;
+% plot(timeComplete,x(5,:))
+% ylabel('v_y [m/s]');
+% 
+% subplot(3,3,6); hold on; grid on;
+% plot(timeComplete,x(6,:));
+% ylabel('v_z [m/s]');
+% 
+% subplot(3,3,7); hold on; grid on;
+% plot(timeComplete,rad2deg(x(7,:)))
+% ylabel('\phi [deg]');
+% 
+% subplot(3,3,8); hold on; grid on;
+% plot(timeComplete,rad2deg(x(8,:)))
+% ylabel('\theta [deg]');
+% 
+% subplot(3,3,9); hold on; grid on;
+% plot(timeComplete,rad2deg(x(9,:)))
+% ylabel('\psi [deg]');
+
+% Plot GPS+IMU estimated path
+figPath= figure; hold on; grid on;
+plot3(x(1,:),x(2,:),x(3,:),'b.');
+plot3(z_GPS(1,:),z_GPS(2,:),z_GPS(3,:),'r*');
+if SWITCH_LIDAR_UPDATE,  plot3(LM(:,1),LM(:,2),LM(:,3),'k.'); end % Plot landmarks
+xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
+plot_attitude( x(1:9,1:100:end), figPath ) % Plot attitude at some epochs
+axis equal
+
+% Plot variance estimates
+SD= sqrt(P_store(:,1:k_update));
+P_store_time= P_store_time(1:k_update);
+
+% Plot SD -- pose
+figure; hold on; title('Standard Deviations');
 
 subplot(3,3,1); hold on; grid on;
-plot(timeComplete,x(1,:));
+plot(P_store_time, SD(1,:),'b-','linewidth',2);
 ylabel('x [m]');
 
 subplot(3,3,2); hold on; grid on;
-plot(timeComplete,x(2,:));
+plot(P_store_time, SD(2,:),'r-','linewidth',2);
 ylabel('y [m]');
 
-subplot(3,3,3); hold on; grid on; 
-plot(timeComplete,x(3,:))
+subplot(3,3,3); hold on; grid on;
+plot(P_store_time, SD(3,:),'g-','linewidth',2);
 ylabel('z [m]');
 
 subplot(3,3,4); hold on; grid on;
-plot(timeComplete,x(4,:))
+plot(P_store_time, SD(4,:),'b-','linewidth',2);
 ylabel('v_x [m/s]');
 
 subplot(3,3,5); hold on; grid on;
-plot(timeComplete,x(5,:))
+plot(P_store_time, SD(5,:),'r-','linewidth',2);
 ylabel('v_y [m/s]');
 
 subplot(3,3,6); hold on; grid on;
-plot(timeComplete,x(6,:));
+plot(P_store_time, SD(6,:),'g-','linewidth',2);
 ylabel('v_z [m/s]');
 
 subplot(3,3,7); hold on; grid on;
-plot(timeComplete,rad2deg(x(7,:)))
-ylabel('\phi [deg]');
+plot(P_store_time, rad2deg(SD(7,:)),'b-','linewidth',2);
+ylabel('\phi [deg]'); xlabel('Time [s]');
 
 subplot(3,3,8); hold on; grid on;
-plot(timeComplete,rad2deg(x(8,:)))
-ylabel('\theta [deg]');
+plot(P_store_time, rad2deg(SD(8,:)),'r-','linewidth',2);
+ylabel('\theta [deg]'); xlabel('Time [s]');
 
 subplot(3,3,9); hold on; grid on;
-plot(timeComplete,rad2deg(x(9,:)))
-ylabel('\psi [deg]');
+plot(P_store_time, rad2deg(SD(9,:)),'g-','linewidth',2);
+ylabel('\psi [deg]'); xlabel('Time [s]');
+
+% % Plot SD -- Biases
+% figure; hold on;
+% 
+% subplot(2,3,1); hold on; grid on;
+% plot(P_store_time, SD(10,:),'b-','linewidth',2);
+% ylabel('a_x');
+% 
+% subplot(2,3,2); hold on; grid on;
+% plot(P_store_time, SD(11,:),'r-','linewidth',2);
+% ylabel('a_y');
+% 
+% subplot(2,3,3); hold on; grid on;
+% plot(P_store_time, SD(12,:),'g-','linewidth',2);
+% ylabel('a_z');
+% 
+% subplot(2,3,4); hold on; grid on;
+% plot(P_store_time, SD(13,:),'b--','linewidth',2);
+% ylabel('w_x'); xlabel('Time [s]')
+% 
+% subplot(2,3,5); hold on; grid on;
+% plot(P_store_time, SD(14,:),'r--','linewidth',2);
+% ylabel('w_y'); xlabel('Time [s]')
+% 
+% subplot(2,3,6); hold on; grid on;
+% plot(P_store_time, SD(15,:),'g--','linewidth',2);
+% ylabel('w_z'); xlabel('Time [s]')
+
 
 % % Plot biases
 % figure; hold on; grid on; title('biases in accelerometers');
@@ -193,15 +286,6 @@ ylabel('\psi [deg]');
 % plot(timeComplete, rad2deg(x(15,:)), 'linewidth',2)
 % ylabel('deg');
 % legend('w_x','w_y','w_z')
-
-% Plot GPS+IMU estimated path
-figPath= figure; hold on; grid on;
-plot3(x(1,:),x(2,:),x(3,:),'b.');
-plot3(z_GPS(1,:),z_GPS(2,:),z_GPS(3,:),'r*');
-if SWITCH_LIDAR_UPDATE,  plot3(LM(:,1),LM(:,2),LM(:,3),'k.'); end % Plot landmarks
-xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
-plot_attitude( x(1:9,1:100:end), figPath ) % Plot attitude at some epochs
-axis equal
 
 
 % % Plot GPS positions
@@ -228,41 +312,6 @@ axis equal
 % plot(timeComplete, u_ax_filter(:));
 % plot(timeComplete, u_ay_filter(:));
 % legend('accX','accY')
-
-
-% Plot variance estimates
-SD= sqrt(P_store(:,1:k_update));
-P_store_time= P_store_time(1:k_update);
-
-figure; hold on; grid on;
-plot(P_store_time, SD(1,:),'b-','linewidth',2);
-plot(P_store_time, SD(2,:),'r-','linewidth',2);
-plot(P_store_time, SD(3,:),'g-','linewidth',2);
-plot(P_store_time, SD(4,:),'b--','linewidth',2);
-plot(P_store_time, SD(5,:),'r--','linewidth',2);
-plot(P_store_time, SD(6,:),'g--','linewidth',2);
-xlabel('Time epochs')
-ylabel('m');
-legend('x','y','z','v_x','v_y','v_z');
-
-figure; hold on; grid on;
-plot(P_store_time, rad2deg(SD(7,:)),'b-','linewidth',2);
-plot(P_store_time, rad2deg(SD(8,:)),'r-','linewidth',2);
-plot(P_store_time, rad2deg(SD(9,:)),'g-','linewidth',2);
-xlabel('Time epochs')
-ylabel('deg');
-legend('\phi','\theta','\psi');
-
-% figure; hold on; grid on;
-% plot(P_store_time, SD(10,:),'b-','linewidth',2);
-% plot(P_store_time, SD(11,:),'r-','linewidth',2);
-% plot(P_store_time, SD(12,:),'g-','linewidth',2);
-% plot(P_store_time, SD(13,:),'b--','linewidth',2);
-% plot(P_store_time, SD(14,:),'r--','linewidth',2);
-% plot(P_store_time, SD(15,:),'g--','linewidth',2);
-% xlabel('Time epochs')
-% ylabel('');
-% legend('a_x','a_y','a_z','w_x','w_y','w_z');
 
 
 

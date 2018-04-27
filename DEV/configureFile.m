@@ -18,11 +18,12 @@ invC= [invC, zeros(3); zeros(3), eye(3)];
 % --------------- Switches (options) ---------------
 SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
 SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
-SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
+SWITCH_VIRT_UPDATE_Y= 1; % virtual update for the y-vel in the body frame
 SWITCH_YAW_UPDATE= 1;
 SWITCH_GPS_UPDATE= 1; % update of the GPS
 SWITCH_GPS_VEL_UPDATE= 1; % update of the GPS
 SWITCH_LIDAR_UPDATE= 1;
+SWITCH_REMOVE_FAR_FEATURES= 1;
 % --------------------------------------------------
 
 % --------------- Parameters ---------------
@@ -32,29 +33,31 @@ dT_virt_Z= 1/10; % Virtual msmt update period
 dT_virt_Y= 1/10; % Virtual msmt update period
 numEpochStatic= 10000; % Number of epochs the cart is static initially
 numEpochInclCalibration= round(numEpochStatic);
-sig_cal_pos= 0.01; % 3cm   -- do not reduce too much or bias get instable
-sig_cal_vel= 0.01; % 3cm/s -- do not reduce too much or bias get instable
+sig_cal_pos= 0.005; % 3cm   -- do not reduce too much or bias get instable
+sig_cal_vel= 0.005; % 3cm/s -- do not reduce too much or bias get instable
 sig_cal_E= deg2rad(0.1); % 0.1 deg
 sig_yaw0= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
 sig_phi0= deg2rad(2); % 2 deg -- Initial uncertatinty in attitude
-sig_ba= 0.1; % m/s2 -- Initial acc bias uncertainty
-sig_bw= deg2rad(0.2); % 0.1 deg -- Initial gyros bias uncertainty
+sig_ba= 0.05; % 0.1 m/s2 -- Initial acc bias uncertainty
+sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
 sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
 sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
-sig_yaw= deg2rad(0.5); % vehicle model yaw update SD
+% sig_yaw= deg2rad(0.5); % vehicle model yaw update SD
+sig_yaw_fn= @(v) deg2rad(0.5) + ( exp(6.6035*v)-1 )^(-1); %%%%%%%%%%%%%%%%%%%%%%%%%5%%%%% CAREFUL
 minVelocityGPS= 2/3.6; % 2 km/h
 minVelocityYaw= 2/3.6; % 2 km/h
-taua0= 6000; % Tau for acc bias -- from manufacturer
-tauw0= 6000; % Tau for gyro bias -- from manufacturer
-taua_calibration= 80; % 200 acc tau value during initial calibration
-tauw_calibration= 80; % 200 gyro tau value during initial calibration
+taua0= 3000; % Tau for acc bias -- from manufacturer
+tauw0= 3000; % Tau for gyro bias -- from manufacturer
+taua_calibration= 100; % 200 acc tau value during initial calibration
+tauw_calibration= 100; % 200 gyro tau value during initial calibration
 g_val= 9.80279; % value of g [m/s2] at the IIT
 r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
+lidarRange= 25; % [m]
 % -------------------------------------------
 
 % ---------------- Read data ----------------
 [T_GPS,z_GPS,R_GPS,R_NE,timeInit]= dataReadGPS(fileGPS,numEpochStatic*dT_IMU);
-R_GPS(4:6,:)= R_GPS(4:6,:);%*4; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+R_GPS(4:6,:)= R_GPS(4:6,:)*5; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
 [T_IMU,u,iu]= DataReadIMU(fileIMU, timeInit);    
 T_LIDAR= dataReadLIDARtime(strcat(fileLIDAR,'T_LIDAR.mat'), timeInit);
 % -------------------------------------------
@@ -70,10 +73,10 @@ H_cal= [eye(9), zeros(9,6)]; % Calibration observation matrix
 H_yaw= [zeros(1,8),1,zeros(1,6)];
 R_virt_Z= sig_virt_vz.^2;
 R_virt_Y= sig_virt_vy.^2;
-R_yaw= sig_yaw^2;
+R_yaw_fn= @(v) sig_yaw_fn(v)^2;  %%%%%%%%%%%%%%%%%%%%%%%%%5%%%%% CAREFUL
 
 % IMU -- white noise specs
-VRW= 0.07; 
+VRW= 0.07 * 2;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_acc= VRW * sqrt( 2000 / 3600 );
 ARW= 0.15; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_gyr= deg2rad( ARW * sqrt( 2000 / 3600 ) ); % rad
@@ -89,7 +92,7 @@ Sn= blkdiag(Sn_f, Sn_w);
 S= blkdiag(Sv, Sn);
 
 % Number of readings
-N_IMU= size(u,2); N_IMU= 12500; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+N_IMU= size(u,2); N_IMU= 13500; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 N_GPS= size(z_GPS,2);
 
 % Initial rotation to get: x=foward & z=down
