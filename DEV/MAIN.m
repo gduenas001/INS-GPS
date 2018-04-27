@@ -1,5 +1,5 @@
 
-clear all; format short; clc; close all;
+clear; format short; clc; close all;
 
 configureFile;
 
@@ -33,6 +33,7 @@ for k= 1:N_IMU-1
     PX(1:15,1:15)= Phi*PX(1:15,1:15)*Phi' + D_bar; 
     % -------------------------------
     
+    % Store data
     DATA.pred.XX(:,k)= XX(1:15);
     DATA.pred.time(k)= timeSim;
     
@@ -47,16 +48,12 @@ for k= 1:N_IMU-1
         % If GPS is calibrating initial biases, increse bias variance
         D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [sig_ba,sig_ba,sig_ba] ).^2;
         D_bar(13:15,13:15)= D_bar(13:15,13:15) + diag( [sig_bw,sig_bw,sig_bw] ).^2;
-                
-        % Store data
-        DATA.update.time(k_update)= timeSim;
-        DATA.udpate.PX(:,k_update)= diag(PX(1:15,1:15));
-        DATA.update.XX(:,k_update)= XX(1:15);
-        DATA.update.LM{k_update}= XX(16:end);
         
-        % Time counters
+        % Store data
+        k_update= storeData(XX,PX,timeSim,k_update);
+
+        % Reset counter
         timeSum= 0;
-        k_update= k_update+1;
     end
     % ------------------------------------
     
@@ -105,13 +102,7 @@ for k= 1:N_IMU-1
             [Phi,D_bar]= linearize_discretize(XX,u(:,k),S,taua,tauw,dT_IMU);
             
             % Store data
-            DATA.update.time(k_update)= timeSim;
-            DATA.update.PX(:,k_update)= diag(PX(1:15,1:15));
-            DATA.update.XX(:,k_update)= XX(1:15);
-            DATA.update.LM{k_update}= XX(16:end);
-            
-            % Increase counter
-            k_update= k_update+1;
+            k_update= storeData(XX,PX,timeSim,k_update);
         end
         
         % Time GPS counter
@@ -150,11 +141,9 @@ for k= 1:N_IMU-1
     % ---------------------------------
     
 end
+
 % Store data
-DATA.update.time(k_update)= timeSim;
-DATA.update.PX(:,k_update)= diag(PX(1:15,1:15));
-DATA.update.XX(:,k_update)= XX(1:15);
-DATA.update.LM{k_update}= XX(16:end);
+storeData(XX,PX,timeSim,k_update);
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------
 

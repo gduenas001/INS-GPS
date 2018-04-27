@@ -45,7 +45,7 @@ sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
 sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
 sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
 sig_lidar= 0.5; % 20cm -- lidar measurement in the nav frame
-sig_yaw_fn= @(v) deg2rad(5) + ( exp(8.6035*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+sig_yaw_fn= @(v) deg2rad(10) + ( exp(10*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
 minVelocityGPS= 2/3.6; % 2 km/h
 minVelocityYaw= 2/3.6; % 2 km/h
 taua0= 3000; % Tau for acc bias -- from manufacturer
@@ -60,8 +60,8 @@ alpha_NN= 0.1; % prob of discard good features in NN
 
 % ---------------- Read data ----------------
 [T_GPS,z_GPS,R_GPS,R_NE,timeInit]= dataReadGPS(fileGPS,numEpochStatic*dT_IMU);
-R_GPS(1:3,:)= R_GPS(1:3,:)*(8^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
-R_GPS(4:6,:)= R_GPS(4:6,:)*(15^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+R_GPS(1:3,:)= R_GPS(1:3,:)*(10^2);  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+R_GPS(4:6,:)= R_GPS(4:6,:)*(20^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
 [T_IMU,u,iu]= DataReadIMU(fileIMU, timeInit);    
 T_LIDAR= dataReadLIDARtime(strcat(fileLIDAR,'T_LIDAR.mat'), timeInit);
 % -------------------------------------------
@@ -78,7 +78,7 @@ H_yaw= [zeros(1,8),1,zeros(1,6)];
 R_virt_Z= sig_virt_vz.^2;
 R_virt_Y= sig_virt_vy.^2;
 R_lidar= diag( [sig_lidar, sig_lidar] ).^2;
-R_yaw_fn= @(v) sig_yaw_fn(v)^2;  %%%%%%%%%%%%%%%%%%%%%%%%%5%%%%% CAREFUL
+R_yaw_fn= @(v) sig_yaw_fn(v)^2; 
 T_NN= 4.605; %chi2inv(1-alpha_NN,2);
 xPlot= [-0.3; 0; -0.3];
 yPlot= [0.1; 0; -0.1];
@@ -87,7 +87,7 @@ xyz_B= [xPlot, yPlot, zPlot]';
 
 
 % IMU -- white noise specs
-VRW= 0.07 * 10;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+VRW= 0.07 * 15;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_acc= VRW * sqrt( 2000 / 3600 );
 ARW= 0.15 * 15; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_gyr= deg2rad( ARW * sqrt( 2000 / 3600 ) ); % rad
