@@ -1,6 +1,8 @@
 
 clear; format short; clc; close all;
 
+dbstop if error
+
 configureFile;
 
 % Initial discretization for cov. propagation
@@ -118,20 +120,28 @@ for k= 1:N_IMU-1
         % Read the lidar features
         z= dataReadLIDAR(fileLIDAR, lidarRange, epochLIDAR, SWITCH_REMOVE_FAR_FEATURES);
         
-        % Convert to navigation frame
-        z= body2nav(z,XX(1:9));
-  
         % Remove people-features
-        z= removeFeatureInArea(z, 0,8,0,15);
-        z= removeFeatureInArea(z, -28,15,-24,-18);
+        z= removeFeatureInArea(XX(1:9), z, 0,8,0,15);
+        z= removeFeatureInArea(XX(1:9), z, -28,15,-24,-18);
         
+        % Convert to navigation frame
+%         z= body2nav(z,XX(1:9));
+
         % NN data association
-        association= nearestNeighbor(z,XX,PX,R_lidar,T_NN);
+        [association,appearances]= nearestNeighbor2(z(:,1:2),XX,PX,appearances,R_lidar,T_NN);
+        
+        % Lidar update
+        [XX,PX]= lidarUpdate2(XX,PX,z,association,appearances,R_lidar,SWITCH_CALIBRATION);
+        
+        % Increae landmark covariance to the minimum
+        PX= increaseLandmarkCov(PX,R_minLM);
         
         % Add new landmarks
-        [XX,PX]= addNewLM( z(association' == -1,:), XX, PX, R_lidar );
+%         [XX,PX]= addNewLM( z(association' == -1,:), XX, PX, R_lidar );
+        [XX,PX]= addNewLM2( z(association' == -1,:), XX, PX, R_lidar );
         
         % Add to landmarks
+        z= body2nav(z,XX(1:9));
         LM= [LM; z];
         
         % Increase counters

@@ -1,25 +1,31 @@
 
-function z= removeFeatureInArea(z, minX, maxX, minY, maxY)
+function zBody= removeFeatureInArea(x, zBody, minX, maxX, minY, maxY)
+
+zNav= body2nav(zBody,x);
 
 % Remove people-features
-inX= (z(:,1) > minX) & (z(:,1) < maxX);
-inY= (z(:,2) > minY) & (z(:,2) < maxY);
+inX= (zNav(:,1) > minX) & (zNav(:,1) < maxX);
+inY= (zNav(:,2) > minY) & (zNav(:,2) < maxY);
 
-z( inX & inY, :)= [];
+zBody( inX & inY, :)= [];
 
-
-
-
+end
 
 
 
+function z= body2nav(z,x)
 
+% Convert in 3D
+R_NB= R_NB_rot(x(7),x(8),x(9));
+z= ( R_NB * z' + x(1:3) )';
 
+% % Convert in 2D
+% z= z(:,1:2);
+% R_NB= R_NB_rot(0,0,x(9));
+% R_NB= R_NB(1:2,1:2);
+% z= ( R_NB * z' + x(1:2) )';
 
+% Put the back into 2D
+z= z(:,1:2);
 
-
-
-
-
-
-
+end

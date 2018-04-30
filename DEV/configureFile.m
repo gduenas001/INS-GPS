@@ -56,6 +56,7 @@ g_val= 9.80279; % value of g [m/s2] at the IIT
 r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
 lidarRange= 25; % [m]
 alpha_NN= 0.1; % prob of discard good features in NN
+sig_minLM= 0.1; % minimum SD for the landmarks
 % -------------------------------------------
 
 % ---------------- Read data ----------------
@@ -84,6 +85,7 @@ xPlot= [-0.3; 0; -0.3];
 yPlot= [0.1; 0; -0.1];
 zPlot= [0; 0; 0];
 xyz_B= [xPlot, yPlot, zPlot]';
+R_minLM= sig_minLM.^2;
 
 
 % IMU -- white noise specs
@@ -103,7 +105,7 @@ Sn= blkdiag(Sn_f, Sn_w);
 S= blkdiag(Sv, Sn);
 
 % Number of readings
-N_IMU= size(u,2); N_IMU= 13500; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+N_IMU= size(u,2); N_IMU= 14000; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 N_GPS= size(z_GPS,2);
 
 % Initial rotation to get: x=foward & z=down
@@ -141,6 +143,7 @@ PX(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
 XX(7)= phi0;
 XX(8)= theta0;
 XX(9)= yaw0;
+appearances= zeros(1,200);
 
 % Initialize loop variables
 timeSim= 0;
