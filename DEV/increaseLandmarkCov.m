@@ -1,5 +1,7 @@
 
-function [PX]= increaseLandmarkCov(PX,minPXLM)
+function increaseLandmarkCov(minPXLM)
+
+global PX
 
 if length(PX) == 15, return, end
 

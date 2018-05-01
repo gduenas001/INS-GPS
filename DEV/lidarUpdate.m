@@ -1,31 +1,54 @@
 
-function [XX,PX]= lidarUpdate(XX,PX,z,association,appearances,R,SWITCH_CALIBRATION)
+function lidarUpdate(z,association,appearances,R,SWITCH_CALIBRATION)
+
+global XX PX
+
 XX(9)= pi_to_pi(XX(9));
+
 
 if all(association == -1), return; end
 
 % Eliminate the non-associated features
-z(association == -1,:)= [];
-association(association == -1) = [];
+z(association == -1 | association == 0,:)= []; 
+association(association == -1 | association == 0) = []; 
 
 lenz= length(association);
 lenx= length(XX);
 
 R= kron(R,eye(lenz));
 H= zeros(2*lenz,lenx);
-% H(:,1:2)= ones(2*lenz,2); % This artificially adds the uncertainty in x
 
-
-for i= 1:length(association)    
+%Build Jacobian H
+spsi= sin(XX(9));
+cpsi= cos(XX(9));
+zHat= zeros(2*lenz,1);
+for i= 1:length(association)
+    % Indexes 
     indz= 2*i + (-1:0);
     indx= 15 + 2*association(i) + (-1:0);
-    H(indz,indx)= eye(2);
+    
+    dx= XX(indx(1)) - XX(1);
+    dy= XX(indx(2)) - XX(2);
+    
+    % Predicted measurement
+    zHat(indz)= [dx*cpsi + dy*spsi;
+                 -dx*spsi + dy*cpsi];
+    
+    % Jacobian -- H
+    H(indz,1)= [-cpsi; spsi];
+    H(indz,2)= [-spsi; -cpsi];
+    H(indz,9)= [-dx * spsi + dy * cpsi;
+                -dx * cpsi - dy * spsi];
+    H(indz,indx)= [cpsi, spsi;
+                  -spsi, cpsi];
+    
 end
 
 % Update
-L= PX*H' / (H*PX*H' + kron(PX(1:2,1:2),eye(lenz)) + R);
+Y= H*PX*H' + R;
+L= PX * H' / Y;
 zVector= z'; zVector= zVector(:);
-innov= zVector - H*XX;
+innov= zVector - zHat;
 
 % If it is calibrating, update only landmarks
 if SWITCH_CALIBRATION

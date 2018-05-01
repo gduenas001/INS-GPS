@@ -1,9 +1,11 @@
 
-function [Phi,D_bar]= linearize_discretize(x,u,S,taua,tauw,dT)
+function [Phi,D_bar]= linearize_discretize(u,S,taua,tauw,dT)
+
+global XX
 
 % Compute the F and G matrices (linear continuous time)
 [F,G]= FG_fn(u(1),u(2),u(3),u(5),u(6),...
-    x(7),x(8),x(9),x(10),x(11),x(12),x(14),x(15),taua,tauw);
+    XX(7),XX(8),XX(9),XX(10),XX(11),XX(12),XX(14),XX(15),taua,tauw);
 
 % Discretize system for IMU time (only for variance calculations)
 [Phi,D_bar]= discretize(F, G, S, dT);

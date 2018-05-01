@@ -1,5 +1,5 @@
 
-global DATA
+global DATA XX PX
 
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/IMU/IMU.mat');
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/GPS/GPS.mat');
@@ -44,8 +44,8 @@ sig_ba= 0.05; % 0.1 m/s2 -- Initial acc bias uncertainty
 sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
 sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
 sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
-sig_lidar= 0.5; % 20cm -- lidar measurement in the nav frame
-sig_yaw_fn= @(v) deg2rad(10) + ( exp(10*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+sig_lidar= 0.3; % 20cm -- lidar measurement in the nav frame
+sig_yaw_fn= @(v) deg2rad(5) + ( exp(10*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
 minVelocityGPS= 2/3.6; % 2 km/h
 minVelocityYaw= 2/3.6; % 2 km/h
 taua0= 3000; % Tau for acc bias -- from manufacturer
@@ -55,8 +55,9 @@ tauw_calibration= 100; % 200 gyro tau value during initial calibration
 g_val= 9.80279; % value of g [m/s2] at the IIT
 r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
 lidarRange= 25; % [m]
-alpha_NN= 0.1; % prob of discard good features in NN
-sig_minLM= 0.1; % minimum SD for the landmarks
+alpha_NN= 0.05; % prob of discard good features in NN
+T_newLM= 15; % Threshold in NIS to create a new landmark
+sig_minLM= 0.2; % minimum SD for the landmarks
 % -------------------------------------------
 
 % ---------------- Read data ----------------
@@ -80,7 +81,7 @@ R_virt_Z= sig_virt_vz.^2;
 R_virt_Y= sig_virt_vy.^2;
 R_lidar= diag( [sig_lidar, sig_lidar] ).^2;
 R_yaw_fn= @(v) sig_yaw_fn(v)^2; 
-T_NN= 4.605; %chi2inv(1-alpha_NN,2);
+T_NN= 4.5; %chi2inv(1-alpha_NN,2);
 xPlot= [-0.3; 0; -0.3];
 yPlot= [0.1; 0; -0.1];
 zPlot= [0; 0; 0];
@@ -89,9 +90,9 @@ R_minLM= sig_minLM.^2;
 
 
 % IMU -- white noise specs
-VRW= 0.07 * 15;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+VRW= 0.07 * 200;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_acc= VRW * sqrt( 2000 / 3600 );
-ARW= 0.15 * 15; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+ARW= 0.15 * 200; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_gyr= deg2rad( ARW * sqrt( 2000 / 3600 ) ); % rad
 V= diag([sig_IMU_acc; sig_IMU_acc; sig_IMU_acc; sig_IMU_gyr; sig_IMU_gyr; sig_IMU_gyr]).^2;
 Sv= V * dT_IMU; % Convert to PSD
@@ -105,7 +106,7 @@ Sn= blkdiag(Sn_f, Sn_w);
 S= blkdiag(Sv, Sn);
 
 % Number of readings
-N_IMU= size(u,2); N_IMU= 14000; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+N_IMU= size(u,2); %N_IMU= 16000; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 N_GPS= size(z_GPS,2);
 
 % Initial rotation to get: x=foward & z=down

@@ -1,22 +1,30 @@
 
-function [x,P]= yawUpdate(x,P,w,H,R,r_IMU2rearAxis)
+function yawUpdate(w,R,r_IMU2rearAxis)
 
-z= yawMeasurement(x,w,r_IMU2rearAxis);
-L= P*H' / (H*P*H' + R);
-innov= z - H*x;
+global XX PX
+
+n_L= (length(XX) - 15) / 2;
+H= zeros(1, 15 + 2*n_L);
+H(9)= 1;
+
+z= yawMeasurement(w,r_IMU2rearAxis);
+L= PX*H' / (H*PX*H' + R);
+innov= z - H*XX;
 innov= pi_to_pi(innov);
-x(9)= pi_to_pi(x(9));
-x= x + L*innov;
-P= P - L*H*P;
+XX(9)= pi_to_pi(XX(9));
+XX= XX + L*innov;
+PX= PX - L*H*PX;
 
 
 
 
-function yaw= yawMeasurement(x,w,r_IMU2rearAxis)
+function yaw= yawMeasurement(w,r_IMU2rearAxis)
+
+global XX
 
 r= [-r_IMU2rearAxis;0;0];
-v_o= x(4:6);
-R_NB= R_NB_rot(x(7),x(8),x(9));
+v_o= XX(4:6);
+R_NB= R_NB_rot(XX(7),XX(8),XX(9));
 
 v_a= v_o + R_NB * cross(w,r);
 v_a= v_a / norm(v_a);
