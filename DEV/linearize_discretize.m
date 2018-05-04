@@ -16,22 +16,22 @@ function [Phi, D_bar]= discretize( F, G, S, dT)
 %works for either the GPS or IMU discretization times.
 
 
-% sysc= ss(F, zeros(15,1), H, 0);
-% sysd= c2d(sysc, dT);
-% Phi= sysd.A;
+sysc= ss(F, zeros(15,1), zeros(1,15), 0);
+sysd= c2d(sysc, dT);
+Phi= sysd.A;
 
-% Methdo to obtain covariance matrix for dicrete system
-C= [-F, G*S*G';
-     zeros(15), F'];
-
-% Proper method
-EXP= expm(C*dT);
-Phi= EXP(16:end,16:end)';
-D_bar= Phi * EXP(1:15,16:end);
+% % Methdo to obtain covariance matrix for dicrete system
+% C= [-F, G*S*G';
+%      zeros(15), F'];
+% 
+% % Proper method
+% EXP= expm(C*dT);
+% Phi= EXP(16:end,16:end)';
+% D_bar= Phi * EXP(1:15,16:end);
 
 
 % Simplified method
-% D_bar= (G*dT) * (S/dT) * (G*dT)'; % simplified version
+D_bar= (G*dT) * (S/dT) * (G*dT)'; % simplified version
 end
 
 

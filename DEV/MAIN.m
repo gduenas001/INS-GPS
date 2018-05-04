@@ -20,13 +20,13 @@ for k= 1:N_IMU-1
         PX(7,7)= sig_phi0^2;
         PX(8,8)= sig_phi0^2;
         PX(9,9)= sig_yaw0^2;
-%         increaseLandmarkCov(5^2);    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
         taua= taua0;
         tauw= tauw0;
     end
         
     % Increase time count
-    timeSim= timeSim + dT_IMU;
+    timeSim= T_IMU(k) - 0.75;
+%     timeSim= timeSim + dT_IMU;
     timeSum= timeSum + dT_IMU;
     timeSumVirt_Z= timeSumVirt_Z + dT_IMU;
     timeSumVirt_Y= timeSumVirt_Y + dT_IMU;
@@ -46,7 +46,7 @@ for k= 1:N_IMU-1
         z= [zeros(6,1); phi0; theta0; yaw0];
         calibration(z,H_cal,R_cal);
         
-        [Phi,D_bar]= linearize_discretize(u(:,k),S,taua,tauw,dT_IMU);
+        [Phi,D_bar]= linearize_discretize(u(:,k),S_cal,taua,tauw,dT_IMU);
         
         % If GPS is calibrating initial biases, increse bias variance
         D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [sig_ba,sig_ba,sig_ba] ).^2;

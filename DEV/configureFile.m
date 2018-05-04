@@ -4,7 +4,8 @@ global DATA XX PX
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/IMU/IMU.mat');
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/GPS/GPS.mat');
 
-fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/IMU.mat');
+% fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/IMU.mat');
+fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/20180419_1.txt');
 fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/GPS/GPS.mat');
 fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/LIDAR/');
 
@@ -39,7 +40,7 @@ sig_cal_pos= 0.005; % 3cm   -- do not reduce too much or bias get instable
 sig_cal_vel= 0.005; % 3cm/s -- do not reduce too much or bias get instable
 sig_cal_E= deg2rad(0.1); % 0.1 deg
 sig_yaw0= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
-sig_phi0= deg2rad(2); % 2 deg -- Initial uncertatinty in attitude
+sig_phi0= deg2rad(1); % 2 deg -- Initial uncertatinty in attitude
 sig_ba= 0.05; % 0.1 m/s2 -- Initial acc bias uncertainty
 sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
 sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
@@ -57,13 +58,17 @@ r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
 lidarRange= 25; % [m]
 alpha_NN= 0.05; % prob of discard good features in NN
 T_newLM= 15; % Threshold in NIS to create a new landmark
-sig_minLM= 0.2; % minimum SD for the landmarks
+sig_minLM= 0.1; % minimum SD for the landmarks
+multFactorAccIMU= 30; % multiplicative factor for the accel SD
+multFactorGyroIMU= 30; % multiplicative factor for the gyros SD
+multFactorPoseGPS= 3; % multiplicative factor for the GPS pose SD
+multFactorVelGPS= 20;  % multiplicative factor for the GPS velocity SD
 % -------------------------------------------
 
 % ---------------- Read data ----------------
 [T_GPS,z_GPS,R_GPS,R_NE,timeInit]= dataReadGPS(fileGPS,numEpochStatic*dT_IMU);
-R_GPS(1:3,:)= R_GPS(1:3,:)*(10^2);  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
-R_GPS(4:6,:)= R_GPS(4:6,:)*(20^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+R_GPS(1:3,:)= R_GPS(1:3,:)*(multFactorPoseGPS^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+R_GPS(4:6,:)= R_GPS(4:6,:)*(multFactorVelGPS^2);  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
 [T_IMU,u,iu]= DataReadIMU(fileIMU, timeInit);    
 T_LIDAR= dataReadLIDARtime(strcat(fileLIDAR,'T_LIDAR.mat'), timeInit);
 % -------------------------------------------
@@ -90,12 +95,13 @@ R_minLM= sig_minLM.^2;
 
 
 % IMU -- white noise specs
-VRW= 0.07 * 200;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+VRW= 0.07 *multFactorAccIMU;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_acc= VRW * sqrt( 2000 / 3600 );
-ARW= 0.15 * 200; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+ARW= 0.15 *multFactorGyroIMU; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_gyr= deg2rad( ARW * sqrt( 2000 / 3600 ) ); % rad
 V= diag([sig_IMU_acc; sig_IMU_acc; sig_IMU_acc; sig_IMU_gyr; sig_IMU_gyr; sig_IMU_gyr]).^2;
 Sv= V * dT_IMU; % Convert to PSD
+Sv_cal= diag( [diag(Sv(1:3,1:3)) / multFactorAccIMU^2; diag(Sv(4:6,4:6)) / multFactorGyroIMU^2]  );
 
 % Biases -- PSD of white noise
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; Sn_f= diag([sn_f, sn_f, sn_f]);
@@ -104,9 +110,10 @@ Sn= blkdiag(Sn_f, Sn_w);
 
 % PSD for continuous model
 S= blkdiag(Sv, Sn);
+S_cal= blkdiag(Sv_cal, Sn);
 
 % Number of readings
-N_IMU= size(u,2); %N_IMU= 16000; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+N_IMU= size(u,2);% N_IMU= 15000; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 N_GPS= size(z_GPS,2);
 
 % Initial rotation to get: x=foward & z=down
