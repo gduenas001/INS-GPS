@@ -4,9 +4,13 @@ global DATA XX PX
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/IMU/IMU.mat');
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/GPS/GPS.mat');
 
-fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/IMU.mat');
-fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/GPS/GPS.mat');
-fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/LIDAR/');
+% fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/IMU.mat');
+% fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/GPS/GPS.mat');
+% fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/LIDAR/');
+
+fileIMU= strcat('../DATA/DATA_COMPLETE/20180725/IMU/IMU.mat');
+fileGPS= strcat('../DATA/DATA_COMPLETE/20180725/GPS/GPS.mat');
+fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180725/LIDAR/');
 
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/IMU/IMU.mat');
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/GPS/GPS.mat');
@@ -33,7 +37,7 @@ dT_IMU= 1/125; % IMU sampling time
 dT_cal= 1/10; % KF Update period during initial calibration
 dT_virt_Z= 1/10; % Virtual msmt update period
 dT_virt_Y= 1/10; % Virtual msmt update period
-numEpochStatic= 10000; % Number of epochs the cart is static initially
+numEpochStatic= 20000; % default (10000) --Osama-- Number of epochs the cart is static initially
 numEpochInclCalibration= round(numEpochStatic);
 sig_cal_pos= 0.005; % 3cm   -- do not reduce too much or bias get instable
 sig_cal_vel= 0.005; % 3cm/s -- do not reduce too much or bias get instable
@@ -124,7 +128,7 @@ iu= R_init * iu;
 
 % ------------ Initial attitude ------------
 [phi0, theta0]= initial_attitude(u(1:3,numEpochInclCalibration));
-yaw0= deg2rad(180); % set the initial yaw angle manually
+yaw0= deg2rad(-90); % default(180) --Osama-- set the initial yaw angle manually -180
 % -------------------------------------------
 
 % Allocate variables
@@ -144,10 +148,10 @@ PX(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
 XX(7)= phi0;
 XX(8)= theta0;
 XX(9)= yaw0;
-appearances= zeros(1,200);
+appearances= zeros(1,2000); % default (200) --Osama-- 2000
 
 % Initialize loop variables
-timeSim= 0;
+timeSim= T_IMU(1); % default (0) --Osama-- T_IMU(1)
 timeSum= 0;
 timeSumVirt_Z= 0;
 timeSumVirt_Y= 0;
@@ -158,6 +162,9 @@ k_GPS= 1;
 k_LIDAR= 1;
 taua= taua_calibration;
 tauw= tauw_calibration;
+GPS_Index_exceeded = 0;
+LIDAR_Index_exceeded = 0;
+% N_IMU = 40000;
 
 
 

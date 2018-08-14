@@ -86,7 +86,7 @@ for k= 1:N_IMU-1
     % ---------------------------------------------------------
     
     % ------------------- GPS -------------------
-    if (timeSim + dT_IMU) > timeGPS
+    if (timeSim + dT_IMU) > timeGPS && ~GPS_Index_exceeded
         
         if ~SWITCH_CALIBRATION && SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
@@ -107,7 +107,14 @@ for k= 1:N_IMU-1
         
         % Time GPS counter
         k_GPS= k_GPS + 1;
-        timeGPS= T_GPS(k_GPS);
+        
+        % -----Osama-----
+        if k_GPS <= size(T_GPS,1)
+            timeGPS= T_GPS(k_GPS);
+        else
+           k_GPS = k_GPS -1 ;
+           GPS_Index_exceeded = 1;
+        end
     end
     % ----------------------------------------
     
@@ -119,10 +126,28 @@ for k= 1:N_IMU-1
             % Read the lidar features
             z= dataReadLIDAR(fileLIDAR, lidarRange, epochLIDAR, SWITCH_REMOVE_FAR_FEATURES);
             
-            % Remove people-features
-            z= removeFeatureInArea(XX(1:9), z, 0,8,0,15);
-            z= removeFeatureInArea(XX(1:9), z, -28,15,-24,-18);
-            z= removeFeatureInArea(XX(1:9), z, -35,-27,27,30);
+            % Remove people-features for (20180419 data)
+%             z= removeFeatureInArea(XX(1:9), z, 0,8,0,15);
+%             z= removeFeatureInArea(XX(1:9), z, -28,15,-24,-18);
+%             z= removeFeatureInArea(XX(1:9), z, -35,-27,27,30);
+            
+            % Remove people-features for (20180725 data)
+            z= removeFeatureInArea(XX(1:9), z, 22, 26, -2, 8);
+            z= removeFeatureInArea(XX(1:9), z, -34, -30, -14, -6);
+            z= removeFeatureInArea(XX(1:9), z, 5, 7, -25, 0);
+            z= removeFeatureInArea(XX(1:9), z, 4.47, 6, -38, -25);
+            z= removeFeatureInArea(XX(1:9), z, -50, -40, -50, 20);
+            z= removeFeatureInArea(XX(1:9), z, -40, -35, -10, 10);
+            z= removeFeatureInArea(XX(1:9), z, 10, 15, -50, -40);
+            z= removeFeatureInArea(XX(1:9), z, -19.5, -19, 11.5, 12.5);
+            z= removeFeatureInArea(XX(1:9), z, 20, 30, -50, -35);
+            z= removeFeatureInArea(XX(1:9), z, 10, 11, 6, 7);
+            
+            
+            
+            
+            
+            
             
             % NN data association
             [association,appearances]= nearestNeighbor(z(:,1:2),appearances,R_lidar,T_NN, T_newLM);
@@ -149,7 +174,14 @@ for k= 1:N_IMU-1
         
         % Increase counters
         k_LIDAR= k_LIDAR + 1;
-        timeLIDAR= T_LIDAR(k_LIDAR,2);
+        
+        % -----Osama-----
+        if k_LIDAR <= size(T_LIDAR,1)
+            timeLIDAR= T_LIDAR(k_LIDAR,2);
+        else
+           k_LIDAR = k_LIDAR -1 ;
+           LIDAR_Index_exceeded = 1;
+        end
     end
     % ---------------------------------
     

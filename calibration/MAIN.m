@@ -5,7 +5,9 @@ clear; format short;% clc; close all;
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF262/X_gravity/20180403_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180404_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180423_1.txt';
-file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180423_2.txt';
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180423_2.txt';
+file= '/home/osamarobotics-lab/Documents/GPS-IMU-LIDAR_test_data/DATA/DATA_STATIC/3axis_calibration_125Hz_LPF16_new_STIM/X_gravity/20180507_170212_1.txt';
+
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
     ~, ~, ~, ~, ~]= DataRead(file); % rads
 % -------------------------------------------
@@ -34,7 +36,8 @@ imux_z= mean(incz);
 % file= strcat('../DATA_STATIC/3axis_calibration_125Hz_LPF262/Y_gravity/20180403_1.txt');
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Y_gravity/20180404_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Y_gravity/20180423_1.txt';
-file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Y_gravity/20180423_2.txt';
+file= '/home/osamarobotics-lab/Documents/GPS-IMU-LIDAR_test_data/DATA/DATA_STATIC/3axis_calibration_125Hz_LPF16_new_STIM/Y_gravity/20180507_165754_1.txt';
+
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
     ~, ~, ~, ~, ~]= DataRead(file); % rads
 % -------------------------------------------
@@ -63,7 +66,9 @@ imuy_z= mean(incz);
 % file= strcat('../DATA_STATIC/3axis_calibration_125Hz_LPF262/Z_gravity/20180403_1.txt');
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180404_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180423_1.txt';
-file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180423_2.txt';
+% file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180423_2.txt';
+file= '/home/osamarobotics-lab/Documents/GPS-IMU-LIDAR_test_data/DATA/DATA_STATIC/3axis_calibration_125Hz_LPF16_new_STIM/Z_gravity/20180507_164924_1.txt';
+
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
     ~, ~, ~, ~, ~]= DataRead(file); % rads
 % -------------------------------------------
