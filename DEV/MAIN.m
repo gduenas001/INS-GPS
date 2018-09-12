@@ -160,6 +160,8 @@ storeData(timeSim,k_update);
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------
 
+% create a map of landmarks
+lm_map= [DATA.update.LM{k_update}(1:2:end) , DATA.update.LM{k_update}(2:2:end), zeros((length(XX)-15)/2,1)];
 
 
 
@@ -217,9 +219,12 @@ plot3(DATA.update.XX(1,1:k_update), DATA.update.XX(2,1:k_update), DATA.update.XX
 plot3(z_GPS(1,:),z_GPS(2,:),z_GPS(3,:),'r*');
 if SWITCH_LIDAR_UPDATE % Plot landmarks
     plot3(LM(:,1),LM(:,2),zeros(size(LM,1),1),'k.'); 
-    plot3(DATA.update.LM{k_update}(1:2:end) ,DATA.update.LM{k_update}(2:2:end),zeros((length(XX)-15)/2,1),...
-    'g+', 'markersize',20);
+    plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'g+', 'markersize',20);
+%     plot3(DATA.update.LM{k_update}(1:2:end) ,DATA.update.LM{k_update}(2:2:end),zeros((length(XX)-15)/2,1),...
+%     'g+', 'markersize',20);
 end 
+
+
 for i= 1:N_IMU
     if rem(i,100) == 0
         R_NB= R_NB_rot(DATA.pred.XX(7,i),DATA.pred.XX(8,i),DATA.pred.XX(9,i));
