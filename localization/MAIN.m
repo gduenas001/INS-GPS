@@ -14,7 +14,7 @@ for k= 1:N_IMU-1
     disp(strcat('Epoch -> ', num2str(k)));
     
     
-    % Turn off GPS updates if start moving
+    % Turn off calibration updates if start moving
     if k == numEpochStatic
         SWITCH_CALIBRATION= 0; 
         PX(7,7)= sig_phi0^2;
@@ -32,7 +32,7 @@ for k= 1:N_IMU-1
     timeSumVirt_Y= timeSumVirt_Y + dT_IMU;
     
     % ------------- IMU -------------
-    IMU_update( u(:,k), g_N, taua, tauw, dT_IMU );
+    IMU_update( u(:,k), g_N, taua, tauw, dT_IMU ); % only updates pose mean
     PX(1:15,1:15)= Phi*PX(1:15,1:15)*Phi' + D_bar; 
     % -------------------------------
     
@@ -60,62 +60,69 @@ for k= 1:N_IMU-1
     end
     % ------------------------------------
     
-    % ------------- virtual msmt update >> Z vel  -------------  
-    if timeSumVirt_Z >= dT_virt_Z && SWITCH_VIRT_UPDATE_Z && ~SWITCH_CALIBRATION
-        [XX,PX]= zVelocityUpdate(XX,PX,R_virt_Z);
-        
-        % Reset counter
-        timeSumVirt_Z= 0;
-    end
-    % ---------------------------------------------------------
+%     % ------------- virtual msmt update >> Z vel  -------------  
+%     if timeSumVirt_Z >= dT_virt_Z && SWITCH_VIRT_UPDATE_Z && ~SWITCH_CALIBRATION
+%         [XX,PX]= zVelocityUpdate(XX,PX,R_virt_Z);
+%         
+%         % Reset counter
+%         timeSumVirt_Z= 0;
+%     end
+%     % ---------------------------------------------------------
+%     
+%     % ------------- virtual msmt update >> Y vel  -------------  
+%     if timeSumVirt_Y >= dT_virt_Y && SWITCH_VIRT_UPDATE_Y && ~SWITCH_CALIBRATION        
+%          
+%         % Yaw update
+%         if SWITCH_YAW_UPDATE && norm(XX(4:6)) > minVelocityYaw
+%             disp('yaw udpate');
+%             yawUpdate(u(4:6,k), R_yaw_fn(norm(XX(4:6))),r_IMU2rearAxis);
+%         else
+%             disp('--------no yaw update------');
+%         end
+%         
+%         % Reset counter
+%         timeSumVirt_Y= 0;
+%     end
+%     % ---------------------------------------------------------
+%     
+%     % ------------------- GPS -------------------
+%     if (timeSim + dT_IMU) > timeGPS
+%         
+%         if ~SWITCH_CALIBRATION && SWITCH_GPS_UPDATE
+%             % GPS update -- only use GPS vel if it's fast
+%             GPS_update(z_GPS(:,k_GPS),R_GPS(:,k_GPS),minVelocityGPS,SWITCH_GPS_VEL_UPDATE);
+%             
+%             % Yaw update
+%             if SWITCH_YAW_UPDATE && norm(XX(4:6)) > minVelocityYaw
+%                 disp('yaw udpate');
+%                 yawUpdate(u(4:6,k), R_yaw_fn(norm(XX(4:6))),r_IMU2rearAxis);
+%             else
+%                 disp('--------no yaw update------');
+%             end
+%             [Phi,D_bar]= linearize_discretize(u(:,k),S,taua,tauw,dT_IMU);
+% 
+%             % Store data
+%             k_update= storeData(timeSim,k_update);
+%         end
+%         
+%         % Time GPS counter
+%         k_GPS= k_GPS + 1;
+%         timeGPS= T_GPS(k_GPS);
+%     end
+%     % ----------------------------------------
     
-    % ------------- virtual msmt update >> Y vel  -------------  
-    if timeSumVirt_Y >= dT_virt_Y && SWITCH_VIRT_UPDATE_Y && ~SWITCH_CALIBRATION        
-         
-        % Yaw update
-        if SWITCH_YAW_UPDATE && norm(XX(4:6)) > minVelocityYaw
-            disp('yaw udpate');
-            yawUpdate(u(4:6,k), R_yaw_fn(norm(XX(4:6))),r_IMU2rearAxis);
-        else
-            disp('--------no yaw update------');
-        end
-        
-        % Reset counter
-        timeSumVirt_Y= 0;
-    end
-    % ---------------------------------------------------------
     
-    % ------------------- GPS -------------------
-    if (timeSim + dT_IMU) > timeGPS
-        
-        if ~SWITCH_CALIBRATION && SWITCH_GPS_UPDATE
-            % GPS update -- only use GPS vel if it's fast
-            GPS_update(z_GPS(:,k_GPS),R_GPS(:,k_GPS),minVelocityGPS,SWITCH_GPS_VEL_UPDATE);
-            
-            % Yaw update
-            if SWITCH_YAW_UPDATE && norm(XX(4:6)) > minVelocityYaw
-                disp('yaw udpate');
-                yawUpdate(u(4:6,k), R_yaw_fn(norm(XX(4:6))),r_IMU2rearAxis);
-            else
-                disp('--------no yaw update------');
-            end
-            [Phi,D_bar]= linearize_discretize(u(:,k),S,taua,tauw,dT_IMU);
-
-            % Store data
-            k_update= storeData(timeSim,k_update);
-        end
-        
-        % Time GPS counter
-        k_GPS= k_GPS + 1;
-        timeGPS= T_GPS(k_GPS);
-    end
-    % ----------------------------------------
+    
+    
+    
     
     % ------------- LIDAR -------------
     if (timeSim + dT_IMU) > timeLIDAR && SWITCH_LIDAR_UPDATE
         epochLIDAR= T_LIDAR(k_LIDAR,1);
         
-        if k > numEpochStatic + 1500
+        if ~SWITCH_CALIBRATION 
+            
+            
             % Read the lidar features
             z= dataReadLIDAR(fileLIDAR, lidarRange, epochLIDAR, SWITCH_REMOVE_FAR_FEATURES);
             
@@ -123,21 +130,15 @@ for k= 1:N_IMU-1
             z= removeFeatureInArea(XX(1:9), z, 0,8,0,15);
             z= removeFeatureInArea(XX(1:9), z, -28,15,-24,-18);
             z= removeFeatureInArea(XX(1:9), z, -35,-27,27,30);
-            
-            % NN data association
-%             [idf, Nza]= data_associate_LNN_LS(z(:,1:2), R_lidar, T_NN, lidarRange);
-            
+                        
             % NN data association
             [idf,appearances]= nearestNeighbor(z(:,1:2),appearances,R_lidar,T_NN, LM);
             
             % Lidar update
-            lidarUpdate(z(:,1:2),idf,appearances,R_lidar,SWITCH_CALIBRATION);
+            P_bar= PX; % save the value for STORE
+            [gamma_k, H_k, L_k, Y_k]= lidarUpdate(z(:,1:2),idf,appearances,R_lidar,SWITCH_CALIBRATION);
             
-            
-            
-            
-            
-            
+
             % Add to landmarks
             z= body2nav(z,XX(1:9));
             lidar_msmts= [lidar_msmts; z];
@@ -147,6 +148,72 @@ for k= 1:N_IMU-1
             
             % Store data
             k_update= storeData(timeSim,k_update);
+            
+           
+            
+            
+            
+            n_k= size(gamma_k);
+            Phi_k= Phi^12; % create the state evolution matrix 
+            Lk_pp= Phi_k - L_k*H_k*Phi_k; % Kalman gain prime-prime
+            
+            % store matrices while the horizon increases
+            if k_IM <= PARAMS.M + 1
+                
+                % Increase preceding horizon -- Using Cells
+                if length(gamma_M_cell) == PARAMS.M + 1
+                    gamma_M_cell= [gamma_k; gamma_M_cell];
+                end
+                gamma_M_cell= [{gamma_k}, gamma_M_cell];
+                
+                if length(Y_M_cell) == PARAMS.M + 1
+                    Y_M_cell(end)= [];
+                end
+                Y_M_cell= [ {Y_k} ,Y_M_cell];
+                
+                if length(L_M_cell) == PARAMS.M + 1
+                    L_M_cell(end)= [];
+                end
+                L_M_cell= [ {L_k} ,L_M_cell];
+                
+                if length(Lpp_M_cell) == PARAMS.M + 1
+                    Lpp_M_cell(end)= [];
+                end
+                Lpp_M_cell= [ {Lk_pp} ,Lpp_M_cell];
+                
+                if length(H_M_cell) == PARAMS.M + 1
+                    H_M_cell(end)= [];
+                end
+                H_M_cell= [ {H_k}, H_M_cell];
+             
+                
+            % store matrices in steady state
+            else
+                STORE.gamma_M_cell{k_store}= gamma_M_cell;
+                STORE.Y_M{k_store}= Y_M_cell;
+                STORE.L_M{k_store}= L_M_cell;
+                STORE.Lpp_M{k_store}= Lpp_M_cell;
+                STORE.H_M{k_store}= H_M_cell;
+                STORE.P_bar{k_store}= P_bar;
+                
+                gamma_M_cell= [ {gamma_k} , gamma_M_cell];
+                gamma_M_cell(end)= [];
+                Y_M_cell= [ {Y_k} ,Y_M_cell];
+                Y_M_cell(end)= [];
+                L_M_cell= [ {L_k} ,L_M_cell];
+                L_M_cell(end)= [];
+                Lpp_M_cell= [ {Lk_pp} ,Lpp_M_cell];
+                Lpp_M_cell(end)= [];
+                H_M_cell= [ {H_k}, H_M_cell];
+                H_M_cell(end)= [];
+                
+                
+                k_store= k_store + 1;
+            end
+            
+             % counter for the IM
+            k_IM= k_IM + 1;
+            
         end
         
         % Increase counters
@@ -154,6 +221,14 @@ for k= 1:N_IMU-1
         timeLIDAR= T_LIDAR(k_LIDAR,2);
     end
     % ---------------------------------
+    
+    
+    
+    
+    
+    
+    
+    
     
 end
 

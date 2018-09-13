@@ -1,5 +1,5 @@
 
-global DATA XX PX hlm Hlm LM
+global DATA XX PX hlm Hlm LM PARAMS
 
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/IMU/IMU.mat');
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/GPS/GPS.mat');
@@ -31,6 +31,8 @@ SWITCH_REMOVE_FAR_FEATURES= 1;
 % --------------------------------------------------
 
 % --------------- Parameters ---------------
+PARAMS.M= 2;
+
 dT_IMU= 1/125; % IMU sampling time
 dT_cal= 1/10; % KF Update period during initial calibration
 dT_virt_Z= 1/10; % Virtual msmt update period
@@ -165,8 +167,33 @@ timeLIDAR= T_LIDAR(1,2);
 k_update= 1;
 k_GPS= 1;
 k_LIDAR= 1;
+k_IM= 1;
+k_store= 1;
 taua= taua_calibration;
 tauw= tauw_calibration;
+
+% initialize IM variables
+gamma_M_cell= [];
+Y_M_cell= [];
+L_M_cell= [];
+Lpp_M_cell= [];
+H_M_cell= [];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

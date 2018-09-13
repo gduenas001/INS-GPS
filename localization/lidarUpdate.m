@@ -1,5 +1,5 @@
 
-function lidarUpdate(z,idf,appearances,R,SWITCH_CALIBRATION)
+function [gamma_k, H_k, L_k, Y_k]= lidarUpdate(z,idf,appearances,R,SWITCH_CALIBRATION)
 
 global XX PX LM
 
@@ -64,7 +64,11 @@ else
     PX= PX - L*H*PX;
 end
 
-
+% save this matrices for IM computations
+gamma_k= innov;
+H_k= H;
+L_k= L;
+Y_k= Y;
 
 
 
