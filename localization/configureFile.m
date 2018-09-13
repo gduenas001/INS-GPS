@@ -31,7 +31,7 @@ SWITCH_REMOVE_FAR_FEATURES= 1;
 % --------------------------------------------------
 
 % --------------- Parameters ---------------
-PARAMS.M= 2;
+PARAMS.M= 3;
 
 dT_IMU= 1/125; % IMU sampling time
 dT_cal= 1/10; % KF Update period during initial calibration
@@ -58,7 +58,7 @@ taua_calibration= 100; % 200 acc tau value during initial calibration
 tauw_calibration= 100; % 200 gyro tau value during initial calibration
 g_val= 9.80279; % value of g [m/s2] at the IIT
 r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
-lidarRange= 25; % [m]
+lidarRange= 20; % [m]                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
 alpha_NN= 0.05; % prob of discard good features in NN
 T_newLM= 15; % Threshold in NIS to create a new landmark
 sig_minLM= 0.1; % minimum SD for the landmarks
@@ -173,6 +173,8 @@ taua= taua_calibration;
 tauw= tauw_calibration;
 
 % initialize IM variables
+q_D_M= [];
+Phi_M_cell= [];
 gamma_M_cell= [];
 Y_M_cell= [];
 L_M_cell= [];

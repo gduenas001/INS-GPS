@@ -136,8 +136,9 @@ for k= 1:N_IMU-1
             
             % Lidar update
             P_bar= PX; % save the value for STORE
+            XX_bar= XX;
             [gamma_k, H_k, L_k, Y_k]= lidarUpdate(z(:,1:2),idf,appearances,R_lidar,SWITCH_CALIBRATION);
-            
+            q_D_k= gamma_k' * (Y_k \ gamma_k);
 
             % Add to landmarks
             z= body2nav(z,XX(1:9));
@@ -151,86 +152,109 @@ for k= 1:N_IMU-1
             
            
             
-            
-            
-            n_k= size(gamma_k);
-            Phi_k= Phi^12; % create the state evolution matrix 
-            Lk_pp= Phi_k - L_k*H_k*Phi_k; % Kalman gain prime-prime
-            
-            % store matrices while the horizon increases
-            if k_IM <= PARAMS.M + 1
+            if  ~isempty(gamma_k)
                 
-                % Increase preceding horizon -- Using Cells
-                if length(gamma_M_cell) == PARAMS.M + 1
-                    gamma_M_cell= [gamma_k; gamma_M_cell];
-                end
-                gamma_M_cell= [{gamma_k}, gamma_M_cell];
+                n_k= size(gamma_k);
+                Phi_k= Phi^12; % create the state evolution matrix
+                Lk_pp= Phi_k - L_k*H_k*Phi_k; % Kalman gain prime-prime
+                idx_to_save= [1:2,9];
                 
-                if length(Y_M_cell) == PARAMS.M + 1
+                % store matrices while the horizon increases
+                if k_IM <= PARAMS.M + 1
+                    
+                    % Increase preceding horizon -- Using Cells
+                    if length(q_D_M) == PARAMS.M + 1
+                        q_D_M(end)= [];
+                    end
+                    q_D_M= [q_D_k, q_D_M];
+                    
+                    
+                    if length(Phi_M_cell) == PARAMS.M + 1
+                        Phi_M_cell(end)= [];
+                    end
+                    Phi_M_cell= [{Phi_k(idx_to_save,idx_to_save)}, Phi_M_cell];
+                    
+                    
+                    if length(gamma_M_cell) == PARAMS.M + 1
+                        gamma_M_cell(end)= [];
+                    end
+                    gamma_M_cell= [{gamma_k}, gamma_M_cell];
+                    
+                    if length(Y_M_cell) == PARAMS.M + 1
+                        Y_M_cell(end)= [];
+                    end
+                    Y_M_cell= [ {Y_k} ,Y_M_cell];
+                    
+                    if length(L_M_cell) == PARAMS.M + 1
+                        L_M_cell(end)= [];
+                    end
+                    L_M_cell= [ {L_k(idx_to_save,:)} ,L_M_cell];
+                    
+                    if length(Lpp_M_cell) == PARAMS.M + 1
+                        Lpp_M_cell(end)= [];
+                    end
+                    Lpp_M_cell= [ {Lk_pp(idx_to_save,idx_to_save)} ,Lpp_M_cell];
+                    
+                    if length(H_M_cell) == PARAMS.M + 1
+                        H_M_cell(end)= [];
+                    end
+                    H_M_cell= [ {H_k(:,idx_to_save)}, H_M_cell];
+                    
+                    
+                    % store matrices in steady state
+                else
+                    STORE.Phi_M{k_store}= Phi_M_cell;
+                    STORE.gamma_M{k_store}= gamma_M_cell;
+                    STORE.Y_M{k_store}= Y_M_cell;
+                    STORE.L_M{k_store}= L_M_cell;
+                    STORE.Lpp_M{k_store}= Lpp_M_cell;
+                    STORE.H_M{k_store}= H_M_cell;
+                    STORE.P_bar{k_store}= P_bar(idx_to_save,idx_to_save);
+                    STORE.XX{k_store}= XX_bar(idx_to_save);
+                    STORE.q_D{k_store}= sum( q_D_M );
+                    
+                    q_D_M= [q_D_k, q_D_M];
+                    q_D_M(end)= [];
+                    Phi_M_cell= [ {Phi_k(idx_to_save,idx_to_save)} , Phi_M_cell];
+                    Phi_M_cell(end)= [];
+                    gamma_M_cell= [ {gamma_k} , gamma_M_cell];
+                    gamma_M_cell(end)= [];
+                    Y_M_cell= [ {Y_k} ,Y_M_cell];
                     Y_M_cell(end)= [];
-                end
-                Y_M_cell= [ {Y_k} ,Y_M_cell];
-                
-                if length(L_M_cell) == PARAMS.M + 1
+                    L_M_cell= [ {L_k(idx_to_save,:)} ,L_M_cell];
                     L_M_cell(end)= [];
-                end
-                L_M_cell= [ {L_k} ,L_M_cell];
-                
-                if length(Lpp_M_cell) == PARAMS.M + 1
+                    Lpp_M_cell= [ {Lk_pp(idx_to_save,idx_to_save)} ,Lpp_M_cell];
                     Lpp_M_cell(end)= [];
-                end
-                Lpp_M_cell= [ {Lk_pp} ,Lpp_M_cell];
-                
-                if length(H_M_cell) == PARAMS.M + 1
+                    H_M_cell= [ {H_k(:,idx_to_save)}, H_M_cell];
                     H_M_cell(end)= [];
+                    
+                    
+                    k_store= k_store + 1;
                 end
-                H_M_cell= [ {H_k}, H_M_cell];
-             
                 
-            % store matrices in steady state
-            else
-                STORE.gamma_M_cell{k_store}= gamma_M_cell;
-                STORE.Y_M{k_store}= Y_M_cell;
-                STORE.L_M{k_store}= L_M_cell;
-                STORE.Lpp_M{k_store}= Lpp_M_cell;
-                STORE.H_M{k_store}= H_M_cell;
-                STORE.P_bar{k_store}= P_bar;
-                
-                gamma_M_cell= [ {gamma_k} , gamma_M_cell];
-                gamma_M_cell(end)= [];
-                Y_M_cell= [ {Y_k} ,Y_M_cell];
-                Y_M_cell(end)= [];
-                L_M_cell= [ {L_k} ,L_M_cell];
-                L_M_cell(end)= [];
-                Lpp_M_cell= [ {Lk_pp} ,Lpp_M_cell];
-                Lpp_M_cell(end)= [];
-                H_M_cell= [ {H_k}, H_M_cell];
-                H_M_cell(end)= [];
-                
-                
-                k_store= k_store + 1;
+                % counter for the IM
+                k_IM= k_IM + 1;
             end
-            
-             % counter for the IM
-            k_IM= k_IM + 1;
-            
         end
         
         % Increase counters
         k_LIDAR= k_LIDAR + 1;
         timeLIDAR= T_LIDAR(k_LIDAR,2);
     end
-    % ---------------------------------
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    % ---------------------------------    
 end
+
+
+% extra stuff to STORE
+STORE.R_lidar= R_lidar;
+
+
+
+
+
+
+
+
 
 % Store data for last epoch
 storeData(timeSim,k_update);

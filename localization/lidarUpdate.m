@@ -3,6 +3,15 @@ function [gamma_k, H_k, L_k, Y_k]= lidarUpdate(z,idf,appearances,R,SWITCH_CALIBR
 
 global XX PX LM
 
+% set to emtpy initially
+gamma_k= [];
+H_k= [];
+L_k= [];
+Y_k= [];
+
+
+
+
 XX(9)= pi_to_pi(XX(9));
 
 
