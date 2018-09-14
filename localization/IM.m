@@ -1,4 +1,3 @@
-% (Phi_M , H_M_cell, A_k , Y_M_cell, alpha, L_M_cell, Lpp_M_cell, epoch)
 
 % PX : states prediction covarience matrix
 % Phi_M : state tranision matrix over the horizon, including the current (concatenated)
@@ -7,19 +6,19 @@
 % L_pp_M : L_prime_prime over the horizon, excluding the current (concatenated)
 
 
-clear; %close all; 
-load('STORE_M3_range20.mat');
+clear; close all; 
+load('STORE_M2_range25.mat');
 
 % parameters
 m= 3;
-M= 3;
+M= 2;
 m_F= 2;
 P_H= 1e-3;
 C_REQ= 1e-5;
-alert_limit= 0.5;
+alert_limit= 1;
 
-% num_epochs= length(STORE.Phi_M);
-num_epochs= 50;
+num_epochs= length(STORE.Phi_M);
+% num_epochs= 200;
 
 for k= 1:num_epochs
     
@@ -60,35 +59,7 @@ for k= 1:num_epochs
     nL_M= n_M / m_F; % number of lm in the PH
     n_H=  nL_M + 1; % number of hypotheses (only one lm fault in PH)
     
-    
-    % Initializa variables for current time
-%     Hk= zeros(nk, m); % Observation matrix at the current time step
-%     h_k= zeros(nk, 1); % Expected measurement
-    
-    % models for the current time
-%     for t= 1:n_L
-%         idx= ((t-1)*m_F)+1:t*m_F;
-%         [h_t,H_t]= compute_lm_model(lm(:,t));
-%         Hk( idx,:)= H_t;
-%         h_k( idx,:)= h_t;
-%     end
-
-    
-%     V= kron(eye(n_L), R_lidar); % current measurements covarience matrix
-%     Y_k= Hk*PX*Hk' + V; % Current innovations covarience matrix
-    
-    
-    
-%     Lk= PX * Hk' / Y_k;
     P_Hat= PX_bar - L_k*H_k*PX_bar;
-%     Lk_pp= Phi_M(1:m,1:m) - Lk*Hk* Phi_M(1:m,1:m); % Kalman Gain prime-prime
-    
-    
-    % Add cells
-%     H_M_cell= [ {Hk}, H_M_cell];
-%     L_M_cell= [ {Lk} ,L_M_cell];
-%     Lpp_M_cell= [ {Lk_pp} ,Lpp_M_cell];
-%     Y_M_cell= [ {Y_k} ,Y_M_cell];
     
     % Update the innovation vector covarience matrix for the new PH
     Y_M= zeros(n_M,n_M);
@@ -125,13 +96,7 @@ for k= 1:num_epochs
         B_bar( sum(n_M_array(1:i))+1 : sum(n_M_array(1:i+1)) , sum(n_M_array(1:i))+1 : end)= B;
     end
     M_k= B_bar' / Y_M * B_bar;
-    
-%     % Using Cells
-%     H_M_cell(end)= [];
-%     L_M_cell(end)= [];
-%     Lpp_M_cell(end)= [];
-%     Y_M_cell(end)= [];
-    
+        
     
     % Detector threshold including the PH
     T_D= chi2inv(1 - C_REQ, n_M);
@@ -176,22 +141,27 @@ for k= 1:num_epochs
             P_HMI= P_HMI + P_HMI_H * P_H;
         end
     end
-    P_HMI_save(k)= P_HMI;
-    P_HMI_H0_save(k)= 2*normcdf(-alert_limit, 0, sqrt(sigma2_hat));
+    DATA.P_HMI_save(k)= P_HMI;
+    DATA.P_HMI_H0_save(k)= 2*normcdf(-alert_limit, 0, sqrt(sigma2_hat));
     
 end % end of loop through STORE
 
+
+
+% plots
 figure; hold on; grid on;
-plot(1:num_epochs, P_HMI_save, 'g-', 'linewidth', 2)
-plot(1:num_epochs, P_HMI_H0_save, 'b-', 'linewidth', 2)
-
-figure; hold on; grid on;
-plot(1:num_epochs, [STORE.q_D{1:num_epochs}], 'r-', 'linewidth', 2)
-plot(1:num_epochs, T_D_save, 'b-', 'linewidth', 2)
+plot(1:num_epochs, DATA.P_HMI_save, 'g-', 'linewidth', 2)
+plot(1:num_epochs, DATA.P_HMI_H0_save, 'b-', 'linewidth', 2)
+set(gca,'Yscale','log');
 
 
-P_HMI_save
-P_HMI_H0_save
+% figure; hold on; grid on;
+% plot(1:num_epochs, [STORE.q_D{1:num_epochs}], 'r-', 'linewidth', 2)
+% plot(1:num_epochs, T_D_save, 'b-', 'linewidth', 2)
+
+
+% P_HMI_save
+% P_HMI_H0_save
 
 
 
