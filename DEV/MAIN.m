@@ -86,7 +86,7 @@ for k= 1:N_IMU-1
     % ---------------------------------------------------------
     
     % ------------------- GPS -------------------
-    if (timeSim + dT_IMU) > timeGPS
+    if (timeSim + dT_IMU) > timeGPS && ~GPS_Index_exceeded
         
         if ~SWITCH_CALIBRATION && SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
@@ -107,7 +107,14 @@ for k= 1:N_IMU-1
         
         % Time GPS counter
         k_GPS= k_GPS + 1;
-        timeGPS= T_GPS(k_GPS);
+        
+        % -----Osama-----
+        if k_GPS <= size(T_GPS,1)
+            timeGPS= T_GPS(k_GPS);
+        else
+           k_GPS = k_GPS -1 ;
+           GPS_Index_exceeded = 1;
+        end
     end
     % ----------------------------------------
     
@@ -119,10 +126,50 @@ for k= 1:N_IMU-1
             % Read the lidar features
             z= dataReadLIDAR(fileLIDAR, lidarRange, epochLIDAR, SWITCH_REMOVE_FAR_FEATURES);
             
-            % Remove people-features
-            z= removeFeatureInArea(XX(1:9), z, 0,8,0,15);
-            z= removeFeatureInArea(XX(1:9), z, -28,15,-24,-18);
-            z= removeFeatureInArea(XX(1:9), z, -35,-27,27,30);
+            % Remove people-features for (20180419 data)
+%             z= removeFeatureInArea(XX(1:9), z, 0,8,0,15);
+%             z= removeFeatureInArea(XX(1:9), z, -28,15,-24,-18);
+%             z= removeFeatureInArea(XX(1:9), z, -35,-27,27,30);
+            
+            % Remove people-features for (20180725 data)
+            z= removeFeatureInArea(XX(1:9), z, 22, 26, -2, 8);
+            z= removeFeatureInArea(XX(1:9), z, -34, -30, -14, -6);
+            z= removeFeatureInArea(XX(1:9), z, 5, 7, -25, 0);
+            z= removeFeatureInArea(XX(1:9), z, 4.47, 6, -38, -25);
+            z= removeFeatureInArea(XX(1:9), z, -50, -40, -50, 20);
+            z= removeFeatureInArea(XX(1:9), z, -40, -35, -10, 10);
+            z= removeFeatureInArea(XX(1:9), z, 10, 15, -50, -40);
+            z= removeFeatureInArea(XX(1:9), z, -19.5, -19, 11.5, 12.5);
+            z= removeFeatureInArea(XX(1:9), z, 20, 30, -50, -35);
+            z= removeFeatureInArea(XX(1:9), z, 10, 11, 6, 7);
+            
+            % Remove people-features for (20180821 data)
+%             z= removeFeatureInArea(XX(1:9), z, -40, -30, 6, 21);
+%             z= removeFeatureInArea(XX(1:9), z, -20, 0, 10, 20);
+%             z= removeFeatureInArea(XX(1:9), z, -10, 0,-12, -11);
+%             z= removeFeatureInArea(XX(1:9), z, -28, 5, -3.0, 0);
+%             z= removeFeatureInArea(XX(1:9), z, -16, -12, -9.0, -5);
+%             z= removeFeatureInArea(XX(1:9), z, -10.0, 2, -4.2, -2);
+%             z= removeFeatureInArea(XX(1:9), z, -24.0, -16, -3.6, -2.5);
+%             z= removeFeatureInArea(XX(1:9), z, -110.0, -40, -25, -5);
+%             z= removeFeatureInArea(XX(1:9), z, -34, -20, 0, 3);
+%             z= removeFeatureInArea(XX(1:9), z, -38, -35, 2, 6);
+%             z= removeFeatureInArea(XX(1:9), z, -26, -24, -3.5, -2.5);
+%             z= removeFeatureInArea(XX(1:9), z, -110, -90, 0, 30);
+%             z= removeFeatureInArea(XX(1:9), z, -50, -36, 6, 18);
+%             z= removeFeatureInArea(XX(1:9), z, -34, -26, 18, 24);
+%             z= removeFeatureInArea(XX(1:9), z, -13, -9, -13, -8);
+%             z= removeFeatureInArea(XX(1:9), z, -18.5, -17.5, -4, -3);
+%             z= removeFeatureInArea(XX(1:9), z, 2.5, 4.5, 8.5, 10.5);
+%             z= removeFeatureInArea(XX(1:9), z, -67.5, -65.5, -4, -2);
+%             z= removeFeatureInArea(XX(1:9), z, -28, -3, -5, -3);
+            
+            
+               
+            
+            
+            
+            
             
             % NN data association
             [association,appearances]= nearestNeighbor(z(:,1:2),appearances,R_lidar,T_NN, T_newLM);
@@ -149,7 +196,14 @@ for k= 1:N_IMU-1
         
         % Increase counters
         k_LIDAR= k_LIDAR + 1;
-        timeLIDAR= T_LIDAR(k_LIDAR,2);
+        
+        % -----Osama-----
+        if k_LIDAR <= size(T_LIDAR,1)
+            timeLIDAR= T_LIDAR(k_LIDAR,2);
+        else
+           k_LIDAR = k_LIDAR -1 ;
+           LIDAR_Index_exceeded = 1;
+        end
     end
     % ---------------------------------
     

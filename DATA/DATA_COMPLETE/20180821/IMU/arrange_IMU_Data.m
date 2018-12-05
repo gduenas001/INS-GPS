@@ -1,0 +1,10 @@
+function [Organized_Data]=arrange_IMU_Data(filename,test_year,test_month,test_day)
+Data = csvimport(filename);
+FileSize=size(Data);
+Organized_Data=inf*ones(FileSize(1)-1,18);
+Organized_Data(:,1)=test_year;
+Organized_Data(:,2)=test_month;
+Organized_Data(:,3)=test_day;
+Dummy_Var=cell2mat(Data(2:end,1))/(1000000000*60*60*24);
+Organized_Data(:,4)=(Dummy_Var-fix(Dummy_Var))*60*60*24;
+Organized_Data(:,5:18)=cell2mat(Data(2:end,2:15));
