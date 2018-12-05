@@ -10,6 +10,7 @@ global DATA XX PX
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/GPS/GPS.mat');
 % fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/LIDAR/');
 
+% dataset obtained with ROS
 fileIMU= strcat('../DATA/DATA_COMPLETE/20180725/IMU/IMU.mat');
 fileGPS= strcat('../DATA/DATA_COMPLETE/20180725/GPS/GPS.mat');
 fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180725/LIDAR/');
@@ -29,7 +30,7 @@ invC= [invC, zeros(3); zeros(3), eye(3)];
 
 
 % --------------- Switches (options) ---------------
-SWITCH_NUM_of_LOOPS= 2; % --Osama--
+SWITCH_NUM_of_LOOPS= 1; % --Osama--
 SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
 SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
 SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
@@ -85,7 +86,7 @@ T_LIDAR= dataReadLIDARtime(strcat(fileLIDAR,'T_LIDAR.mat'), timeInit);
 % -------------------------------------------
 
 
-% Build parameters
+% --------------- Build parameters ---------------
 g_N= [0; 0; g_val]; % G estimation (sense is same at grav acceleration in nav-frame)
 sig_cal_pos_blkMAtrix= diag([sig_cal_pos, sig_cal_pos, sig_cal_pos]);
 sig_cal_vel_blkMAtrix= diag([sig_cal_vel, sig_cal_vel, sig_cal_vel]);
@@ -103,6 +104,7 @@ yPlot= [0.1; 0; -0.1];
 zPlot= [0; 0; 0];
 xyz_B= [xPlot, yPlot, zPlot]';
 R_minLM= sig_minLM.^2;
+% ----------------------------------------------
 
 
 % IMU -- white noise specs
@@ -162,10 +164,9 @@ PX(13:15,13:15)= diag( [sig_bw,sig_bw,sig_bw] ).^2;
 XX(7)= phi0;
 XX(8)= theta0;
 XX(9)= yaw0;
-appearances= zeros(1,2000); % default (200) --Osama-- 2000
+appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
 
 % Initialize loop variables
-timeSim= T_IMU(1); % default (0) --Osama-- T_IMU(1)
 timeSum= 0;
 timeSumVirt_Z= 0;
 timeSumVirt_Y= 0;

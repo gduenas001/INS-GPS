@@ -13,6 +13,8 @@ configureFile;
 for k= 1:N_IMU-1
     disp(strcat('Epoch -> ', num2str(k)));
     
+    % set the simulation time to the IMU time
+    timeSim= T_IMU(k);
     
     % Turn off GPS updates if start moving
     if k == numEpochStatic
@@ -25,8 +27,6 @@ for k= 1:N_IMU-1
     end
         
     % Increase time count
-    timeSim= T_IMU(k) - 0.75;
-%     timeSim= timeSim + dT_IMU;
     timeSum= timeSum + dT_IMU;
     timeSumVirt_Z= timeSumVirt_Z + dT_IMU;
     timeSumVirt_Y= timeSumVirt_Y + dT_IMU;
