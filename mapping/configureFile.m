@@ -1,6 +1,8 @@
 
 global DATA XX PX
 
+addpath('../utils/')
+
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/IMU/IMU.mat');
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/GPS/GPS.mat');
 
@@ -47,7 +49,6 @@ dT_cal= 1/10; % KF Update period during initial calibration
 dT_virt_Z= 1/10; % Virtual msmt update period
 dT_virt_Y= 1/10; % Virtual msmt update period
 numEpochStatic= 20000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
-numEpochInclCalibration= round(numEpochStatic);
 sig_cal_pos= 0.005; % 3cm   -- do not reduce too much or bias get instable
 sig_cal_vel= 0.005; % 3cm/s -- do not reduce too much or bias get instable
 sig_cal_E= deg2rad(0.1); % 0.1 deg
@@ -87,6 +88,7 @@ T_LIDAR= dataReadLIDARtime(strcat(fileLIDAR,'T_LIDAR.mat'), timeInit);
 
 
 % --------------- Build parameters ---------------
+numEpochInclCalibration= round(numEpochStatic);
 g_N= [0; 0; g_val]; % G estimation (sense is same at grav acceleration in nav-frame)
 sig_cal_pos_blkMAtrix= diag([sig_cal_pos, sig_cal_pos, sig_cal_pos]);
 sig_cal_vel_blkMAtrix= diag([sig_cal_vel, sig_cal_vel, sig_cal_vel]);
@@ -108,9 +110,9 @@ R_minLM= sig_minLM.^2;
 
 
 % IMU -- white noise specs
-VRW= 0.07 *multFactorAccIMU;  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+VRW= 0.07 *multFactorAccIMU; % vel random walk %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_acc= VRW * sqrt( 2000 / 3600 );
-ARW= 0.15 *multFactorGyroIMU; % deg %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+ARW= 0.15 *multFactorGyroIMU; % angular random walk [deg] %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_gyr= deg2rad( ARW * sqrt( 2000 / 3600 ) ); % rad
 V= diag([sig_IMU_acc; sig_IMU_acc; sig_IMU_acc; sig_IMU_gyr; sig_IMU_gyr; sig_IMU_gyr]).^2;
 Sv= V * dT_IMU; % Convert to PSD

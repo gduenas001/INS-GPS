@@ -1,5 +1,6 @@
 
 function IMU_update( u, g_N, taua, tauw, dt )
+% addpath('../utils/')
 
 global XX
 
