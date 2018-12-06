@@ -1,9 +1,9 @@
 
-function [T,z,R,R_NE,timeInit]= dataReadGPS(string,timeStatic)
+function [T,z,R,R_NE,timeInit]= dataReadGPS(file_name,timeStatic)
 
 numEpochStaticGPS= ceil(timeStatic);
 
-load(string);
+load(file_name);
 
 T= data(:,4);
 posX= data(:,5);

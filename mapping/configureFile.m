@@ -1,23 +1,19 @@
 
+clear; close all; clc;
+
 global DATA XX PX
 
 addpath('../utils/')
 
-% create parameters object
+% create objects
 params= ParametersClass();
-
+gps= GPSClass(params.numEpochStatic * params.dT_IMU, params);
 
 
 % ---------------- Read data ----------------
-[T_GPS,z_GPS,R_GPS,R_NE,timeInit]= dataReadGPS(params.fileGPS, params.numEpochStatic * params.dT_IMU);
-R_GPS(1:3,:)= R_GPS(1:3,:)*(params.multFactorPoseGPS^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
-R_GPS(4:6,:)= R_GPS(4:6,:)*(params.multFactorVelGPS^2);  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
-[T_IMU,u,iu]= DataReadIMU(params.fileIMU, timeInit);    
-T_LIDAR= dataReadLIDARtime(strcat(params.fileLIDAR,'T_LIDAR.mat'), timeInit);
-
-% Number of readings
-N_IMU= size(u,2);% N_IMU= 15000; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
-N_GPS= size(z_GPS,2);
+[T_IMU,u,iu]= DataReadIMU(params.fileIMU, gps.timeInit);
+N_IMU= size(u,2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+T_LIDAR= dataReadLIDARtime(strcat(params.fileLIDAR,'T_LIDAR.mat'), gps.timeInit);
 % -------------------------------------------
 
 
@@ -36,10 +32,6 @@ u= (invC * u) - b_0;
 u= R_init_block * u;
 iu= R_init * iu;
 % -------------------------------------------
-
-
-
-
 
 % ------------ Initial attitude ------------
 [phi0, theta0]= initial_attitude( u(1:3, params.numEpochInclCalibration) );
@@ -69,7 +61,7 @@ appearances= zeros(1,300); % if there are more than 300 landmarks, something's w
 timeSum= 0;
 timeSumVirt_Z= 0;
 timeSumVirt_Y= 0;
-timeGPS= T_GPS(1); % this is zero, as the GPS time is the reference
+timeGPS= gps.time(1); % this is zero, as the GPS time is the reference
 timeLIDAR= T_LIDAR(1,2);
 k_update= 1;
 k_GPS= 1;

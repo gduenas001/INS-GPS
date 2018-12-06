@@ -85,12 +85,13 @@ for k= 1:N_IMU-1
     end
     % ---------------------------------------------------------
     
+    
     % ------------------- GPS -------------------
     if (timeSim + params.dT_IMU) > timeGPS && ~GPS_Index_exceeded
         
         if ~params.SWITCH_CALIBRATION && params.SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
-            GPS_update(z_GPS(:,k_GPS), R_GPS(:,k_GPS),...
+            GPS_update(gps.msmt(:,k_GPS), gps.R(:,k_GPS),...
                 params.minVelocityGPS, params.SWITCH_GPS_VEL_UPDATE);
             
             % Yaw update
@@ -110,8 +111,8 @@ for k= 1:N_IMU-1
         k_GPS= k_GPS + 1;
         
         % -----Osama----- TODO: Osama what is this??
-        if k_GPS <= size(T_GPS,1)
-            timeGPS= T_GPS(k_GPS);
+        if k_GPS <= size(gps.time,1)
+            timeGPS= gps.time(k_GPS);
         else
            k_GPS = k_GPS -1 ;
            GPS_Index_exceeded = 1;
@@ -266,7 +267,7 @@ figPath= figure; hold on; grid on;
 plot3(DATA.pred.XX(1,:), DATA.pred.XX(2,:), DATA.pred.XX(3,:), 'b.');
 plot3(DATA.update.XX(1,1:k_update), DATA.update.XX(2,1:k_update), DATA.update.XX(3,1:k_update),...
             'b.','markersize', 7);
-plot3(z_GPS(1,:),z_GPS(2,:),z_GPS(3,:),'r*');
+plot3(gps.msmt(1,:),gps.msmt(2,:),gps.msmt(3,:),'r*');
 if params.SWITCH_LIDAR_UPDATE % Plot landmarks
     plot3(LM(:,1),LM(:,2),zeros(size(LM,1),1),'k.'); 
     plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'g+', 'markersize',20);
@@ -374,17 +375,17 @@ ylabel('\psi [deg]'); xlabel('Time [s]');
 
 % % Plot GPS positions
 % figure; hold on; grid on; title('GPS positions');
-% plot(1:N_GPS, z_GPS(1,:), 'linewidth',2)
-% plot(1:N_GPS, z_GPS(2,:), 'linewidth',2)
-% plot(1:N_GPS, z_GPS(3,:), 'linewidth',2)
+% plot(1:gps.num_readings, gps.msmt(1,:), 'linewidth',2)
+% plot(1:gps.num_readings, gps.msmt(2,:), 'linewidth',2)
+% plot(1:gps.num_readings, gps.msmt(3,:), 'linewidth',2)
 % ylabel('m')
 % legend('r_x','r_y','r_z')
 
 % % Plot GPS velocities
 % figure; hold on; grid on; title('GPS velocities');
-% plot(1:N_GPS, z_GPS(4,:), 'linewidth',2)
-% plot(1:N_GPS, z_GPS(5,:), 'linewidth',2)
-% plot(1:N_GPS, z_GPS(6,:), 'linewidth',2)
+% plot(1:gps.num_readings, gps.msmt(4,:), 'linewidth',2)
+% plot(1:gps.num_readings, gps.msmt(5,:), 'linewidth',2)
+% plot(1:gps.num_readings, gps.msmt(6,:), 'linewidth',2)
 % ylabel('m/s')
 % legend('v_x','v_y','v_z')
 

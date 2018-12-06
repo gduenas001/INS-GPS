@@ -1,7 +1,13 @@
 clear all; clc;
 
-params= ParametersClass()
+params= ParametersClass();
 
-params.sig_yaw_fn(5)
-params.R_yaw_fn(5)
+changeclass(params);
+
+params.S
+
+function changeclass(p)
+% p.S= 123;
+
+end
 

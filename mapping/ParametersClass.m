@@ -1,18 +1,17 @@
 
 
 classdef ParametersClass < handle
-    properties % TODO: make constant (Constant)
+    properties (Constant)
         
         % dataset obtained with ROS
         fileIMU=   '../data/cart/20180725/IMU/IMU.mat';
-        fileGPS=   '../data/cart/20180725/GPS/GPS.mat';
+        file_name_gps=   '../data/cart/20180725/GPS/GPS.mat';
         fileLIDAR= '../data/cart/20180725/LIDAR/';
         % calibration file
         file_name_calibration= '../calibration/calibration_new.mat';
 
         % --------------- Switches (options) ---------------
         SWITCH_NUM_of_LOOPS= 1; % --Osama--
-        SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
         SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
         SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
         SWITCH_YAW_UPDATE= 1;
@@ -56,14 +55,13 @@ classdef ParametersClass < handle
         multFactorVelGPS= 20;  % multiplicative factor for the GPS velocity SD
         % -------------------------------------------
         
-        VRW= 0.07 % vel random walk
-        ARW= 0.15 % angular random walk [deg]
+        
         
         sn_f= ( 0.05 * 9.80279 / 1000 )^2 % bias acc white noise PSD
         sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
     end
     
-    properties % parameters to be built with constructor
+    properties (SetAccess = immutable) % parameters to be built with constructor
         numEpochInclCalibration
         g_N % G estimation (sense is same at grav acceleration in nav-frame)
         sig_cal_pos_blkMAtrix
@@ -98,7 +96,17 @@ classdef ParametersClass < handle
         S
         S_cal
 
+        VRW= 0.07 % vel random walk
+        ARW= 0.15 % angular random walk [deg]
+        
     end
+    
+    properties
+        SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
+
+        
+    end
+    
     methods
         % ----------------------------------------------
         % ----------------------------------------------
