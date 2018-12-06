@@ -53,6 +53,8 @@ classdef ParametersClass < handle
         multFactorGyroIMU= 30; % multiplicative factor for the gyros SD
         multFactorPoseGPS= 3; % multiplicative factor for the GPS pose SD
         multFactorVelGPS= 20;  % multiplicative factor for the GPS velocity SD
+        feature_height= 1.5; % height of the features
+        initial_yaw_angle= -90 % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
         % -------------------------------------------
         
         

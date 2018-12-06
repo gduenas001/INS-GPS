@@ -4,31 +4,38 @@ classdef LidarClass < handle
     properties (SetAccess = immutable)
         time
         R
+        areas_to_remove
     end
     
-    properties (SetAccess = private)
+    properties (SetAccess = private) % this can only be modified with its own methods
         msmt   % this only stores the current msmt -->  private
     end
     
     
     
     methods
+        % ----------------------------------------------
+        % ----------------------------------------------
         function obj= LidarClass(params, init_time)
             % substracts the GPS start time which is used as reference
             
-            % loads the variable "T_LIDAR"
-            load(strcat(params.file_name_lidar_path,'T_LIDAR.mat'));
-            obj.time= T_LIDAR;
+            % load the variable "T_LIDAR"
+            obj.time= load(strcat(params.file_name_lidar_path,'T_LIDAR.mat'));
+            obj.time= obj.time.T_LIDAR;
+            
+            % load the areas from where we remove people
+            obj.areas_to_remove= load(strcat(params.file_name_lidar_path,'areas_to_remove.mat'));
+            obj.areas_to_remove= obj.areas_to_remove.areas_to_remove;
+            
             
             % Use the GPS first reading time as reference
             obj.time(:,2)= obj.time(:,2) - init_time;
             
             % If some of the initial times are negative (prior to first GPS reading) --> eliminate them
-            obj.time(obj.time(:,2) < 0 , :)= [];
-            
+            obj.time(obj.time(:,2) < 0 , :)= []; 
         end
-        
-        
+        % ----------------------------------------------
+        % ----------------------------------------------
         function get_msmt(obj, epoch, params)
             % load the mat file with the extrated features at the lidar epoch specified
             
@@ -39,56 +46,36 @@ classdef LidarClass < handle
             obj.msmt= obj.msmt.z;
             
             if params.SWITCH_REMOVE_FAR_FEATURES
-                obj.removeFarFeatures(params.lidarRange);
+                obj.remove_far_features(params.lidarRange);
             end
             
             % Add height
-            height= 1.5;
-            obj.msmt= [obj.msmt, ones(size(obj.msmt,1),1)*height];
+            obj.msmt= [obj.msmt, ones(size(obj.msmt,1),1) * params.feature_height];
             
         end
-        
-        
-        function removeFarFeatures(obj, lidarRange)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function remove_far_features(obj, lidarRange)
             % removes extracted features farther than "lidarRange"
             
             d= obj.msmt(:,1).^2 + obj.msmt(:,2).^2;
-            
             obj.msmt( d > lidarRange^2, :)= [];
         end
-        
-        
-        function removeFeatureInArea(obj, x, minX, maxX, minY, maxY)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function remove_fatures_in_area(obj, x, area)
+            % remove features from area: [minX, maxX, minY, maxY]
             
-            zNav= obj.body2nav(obj.msmt,x);
+            % transform to nav-frame first
+            msmt_nav_frame= body2nav(obj.msmt,x);
             
             % Remove people-features
-            inX= (zNav(:,1) > minX) & (zNav(:,1) < maxX);
-            inY= (zNav(:,2) > minY) & (zNav(:,2) < maxY);
-            
+            inX= (msmt_nav_frame(:,1) > area(1)) & (msmt_nav_frame(:,1) < area(2));
+            inY= (msmt_nav_frame(:,2) > area(3)) & (msmt_nav_frame(:,2) < area(4));
             obj.msmt( inX & inY, :)= [];
-            
         end
-        
-        
-        
-        function z= body2nav(~,z,x)
-            
-            % Convert in 3D
-            R_NB= R_NB_rot(x(7),x(8),x(9));
-            z= ( R_NB * z' + x(1:3) )';
-            
-            % % Convert in 2D
-            % z= z(:,1:2);
-            % R_NB= R_NB_rot(0,0,x(9));
-            % R_NB= R_NB(1:2,1:2);
-            % z= ( R_NB * z' + x(1:2) )';
-            
-            % Put the back into 2D
-            z= z(:,1:2);
-            
-        end
-        
+        % ----------------------------------------------
+        % ----------------------------------------------
     end
 end
 

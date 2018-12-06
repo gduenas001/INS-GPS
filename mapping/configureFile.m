@@ -34,7 +34,7 @@ iu= R_init * iu;
 
 % ------------ Initial attitude ------------
 [phi0, theta0]= initial_attitude( u(1:3, params.numEpochInclCalibration) );
-yaw0= deg2rad(-90); % default(180) --Osama-- set the initial yaw angle manually -90
+yaw0= deg2rad(params.initial_yaw_angle); 
 % -------------------------------------------
 
 % Allocate variables

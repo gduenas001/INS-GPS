@@ -12,6 +12,8 @@ classdef GPSClass < handle
     end
     
     methods
+        % ----------------------------------------------
+        % ----------------------------------------------
         function obj= GPSClass(timeStatic, params)
             
             numEpochStaticGPS= ceil(timeStatic);
@@ -72,6 +74,8 @@ classdef GPSClass < handle
             obj.R(4:6,:)= obj.R(4:6,:)*(params.multFactorVelGPS^2);  %%%%%%%%%%%%%%%%%% CAREFUL
             
         end
+        % ----------------------------------------------
+        % ----------------------------------------------
     end
 end
 
