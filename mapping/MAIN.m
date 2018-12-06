@@ -6,7 +6,7 @@ dbstop if error
 configureFile;
 
 % Initial discretization for cov. propagation
-[Phi,D_bar]= linearize_discretize(u(:,1),S,taua,tauw,dT_IMU);
+[Phi,D_bar]= linearize_discretize( u(:,1), params.S, taua, tauw, params.dT_IMU );
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
@@ -17,22 +17,22 @@ for k= 1:N_IMU-1
     timeSim= T_IMU(k);
     
     % Turn off GPS updates if start moving
-    if k == numEpochStatic
-        SWITCH_CALIBRATION= 0; 
-        PX(7,7)= sig_phi0^2;
-        PX(8,8)= sig_phi0^2;
-        PX(9,9)= sig_yaw0^2;
-        taua= taua0;
-        tauw= tauw0;
+    if k == params.numEpochStatic
+        params.SWITCH_CALIBRATION= 0; 
+        PX(7,7)= params.sig_phi0^2;
+        PX(8,8)= params.sig_phi0^2;
+        PX(9,9)= params.sig_yaw0^2;
+        taua= params.taua0;
+        tauw= params.tauw0;
     end
         
     % Increase time count
-    timeSum= timeSum + dT_IMU;
-    timeSumVirt_Z= timeSumVirt_Z + dT_IMU;
-    timeSumVirt_Y= timeSumVirt_Y + dT_IMU;
+    timeSum= timeSum + params.dT_IMU;
+    timeSumVirt_Z= timeSumVirt_Z + params.dT_IMU;
+    timeSumVirt_Y= timeSumVirt_Y + params.dT_IMU;
     
     % ------------- IMU -------------
-    IMU_update( u(:,k), g_N, taua, tauw, dT_IMU );
+    IMU_update( u(:,k), params.g_N, taua, tauw, params.dT_IMU );
     PX(1:15,1:15)= Phi*PX(1:15,1:15)*Phi' + D_bar; 
     % -------------------------------
     
@@ -41,19 +41,19 @@ for k= 1:N_IMU-1
     DATA.pred.time(k)= timeSim;
     
     % ------------- Calibration -------------
-    if timeSum >= dT_cal && SWITCH_CALIBRATION
+    if timeSum >= params.dT_cal && params.SWITCH_CALIBRATION
         
         z= [zeros(6,1); phi0; theta0; yaw0];
-        calibration(z,H_cal,R_cal);
+        calibration(z, params.H_cal, params.R_cal);
         
-        [Phi,D_bar]= linearize_discretize(u(:,k),S_cal,taua,tauw,dT_IMU);
+        [Phi,D_bar]= linearize_discretize(u(:,k), params.S_cal, taua, tauw, params.dT_IMU);
         
         % If GPS is calibrating initial biases, increse bias variance
-        D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [sig_ba,sig_ba,sig_ba] ).^2;
-        D_bar(13:15,13:15)= D_bar(13:15,13:15) + diag( [sig_bw,sig_bw,sig_bw] ).^2;
+        D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
+        D_bar(13:15,13:15)= D_bar(13:15,13:15) + diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
         
         % Store data
-        k_update= storeData(timeSim,k_update);
+        k_update= storeData(timeSim, k_update);
 
         % Reset counter
         timeSum= 0;
@@ -61,8 +61,8 @@ for k= 1:N_IMU-1
     % ------------------------------------
     
     % ------------- virtual msmt update >> Z vel  -------------  
-    if timeSumVirt_Z >= dT_virt_Z && SWITCH_VIRT_UPDATE_Z && ~SWITCH_CALIBRATION
-        [XX,PX]= zVelocityUpdate(XX,PX,R_virt_Z);
+    if timeSumVirt_Z >= params.dT_virt_Z && params.SWITCH_VIRT_UPDATE_Z && ~params.SWITCH_CALIBRATION
+        [XX,PX]= zVelocityUpdate( XX, PX, params.R_virt_Z);
         
         % Reset counter
         timeSumVirt_Z= 0;
@@ -70,12 +70,12 @@ for k= 1:N_IMU-1
     % ---------------------------------------------------------
     
     % ------------- virtual msmt update >> Y vel  -------------  
-    if timeSumVirt_Y >= dT_virt_Y && SWITCH_VIRT_UPDATE_Y && ~SWITCH_CALIBRATION        
+    if timeSumVirt_Y >= params.dT_virt_Y && params.SWITCH_VIRT_UPDATE_Y && ~params.SWITCH_CALIBRATION
          
         % Yaw update
-        if SWITCH_YAW_UPDATE && norm(XX(4:6)) > minVelocityYaw
+        if params.SWITCH_YAW_UPDATE && norm(XX(4:6)) > params.minVelocityYaw
             disp('yaw udpate');
-            yawUpdate(u(4:6,k), R_yaw_fn(norm(XX(4:6))),r_IMU2rearAxis);
+            yawUpdate(u(4:6,k), params.R_yaw_fn( norm(XX(4:6))),r_IMU2rearAxis );
         else
             disp('--------no yaw update------');
         end
@@ -86,20 +86,21 @@ for k= 1:N_IMU-1
     % ---------------------------------------------------------
     
     % ------------------- GPS -------------------
-    if (timeSim + dT_IMU) > timeGPS && ~GPS_Index_exceeded
+    if (timeSim + params.dT_IMU) > timeGPS && ~GPS_Index_exceeded
         
-        if ~SWITCH_CALIBRATION && SWITCH_GPS_UPDATE
+        if ~params.SWITCH_CALIBRATION && params.SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
-            GPS_update(z_GPS(:,k_GPS),R_GPS(:,k_GPS),minVelocityGPS,SWITCH_GPS_VEL_UPDATE);
+            GPS_update(z_GPS(:,k_GPS), R_GPS(:,k_GPS),...
+                params.minVelocityGPS, params.SWITCH_GPS_VEL_UPDATE);
             
             % Yaw update
-            if SWITCH_YAW_UPDATE && norm(XX(4:6)) > minVelocityYaw
+            if params.SWITCH_YAW_UPDATE && norm(XX(4:6)) > params.minVelocityYaw
                 disp('yaw udpate');
-                yawUpdate(u(4:6,k), R_yaw_fn(norm(XX(4:6))),r_IMU2rearAxis);
+                yawUpdate( u(4:6,k), params.R_yaw_fn(norm(XX(4:6))), params.r_IMU2rearAxis );
             else
                 disp('--------no yaw update------');
             end
-            [Phi,D_bar]= linearize_discretize(u(:,k),S,taua,tauw,dT_IMU);
+            [Phi,D_bar]= linearize_discretize(u(:,k),params.S,taua,tauw,params.dT_IMU);
 
             % Store data
             k_update= storeData(timeSim,k_update);
@@ -108,7 +109,7 @@ for k= 1:N_IMU-1
         % Time GPS counter
         k_GPS= k_GPS + 1;
         
-        % -----Osama-----
+        % -----Osama----- TODO: Osama what is this??
         if k_GPS <= size(T_GPS,1)
             timeGPS= T_GPS(k_GPS);
         else
@@ -119,12 +120,13 @@ for k= 1:N_IMU-1
     % ----------------------------------------
     
     % ------------- LIDAR -------------
-    if (timeSim + dT_IMU) > timeLIDAR && SWITCH_LIDAR_UPDATE
+    if (timeSim + params.dT_IMU) > timeLIDAR && params.SWITCH_LIDAR_UPDATE
         
-        if k > numEpochStatic + 1500
+        if k > params.numEpochStatic + 1500 % TODO: osama, why are you adding 1500
             % Read the lidar features
             epochLIDAR= T_LIDAR(k_LIDAR,1);
-            z= dataReadLIDAR(fileLIDAR, lidarRange, epochLIDAR, SWITCH_REMOVE_FAR_FEATURES);
+            z= dataReadLIDAR(params.fileLIDAR, params.lidarRange,...
+                epochLIDAR, params.SWITCH_REMOVE_FAR_FEATURES);
             
             % Remove people-features for (20180725 data)
             z= removeFeatureInArea(XX(1:9), z, 22, 26, -2, 8);
@@ -166,32 +168,35 @@ for k= 1:N_IMU-1
 %             z= removeFeatureInArea(XX(1:9), z, -28, -3, -5, -3);
                         
             % NN data association
-            [association,appearances]= nearestNeighbor(z(:,1:2),appearances,R_lidar,T_NN, T_newLM);
+            [association,appearances]= nearestNeighbor(z(:,1:2),...
+                appearances, params.R_lidar, params.T_NN, params.T_newLM);
             
             % Lidar update
-            lidarUpdate(z(:,1:2),association,appearances,R_lidar,SWITCH_CALIBRATION);
+            lidarUpdate(z(:,1:2), association, appearances,...
+                params.R_lidar, params.SWITCH_CALIBRATION);
             
             % Increase landmark covariance to the minimum
-            increaseLandmarkCov(R_minLM);
+            increaseLandmarkCov(params.R_minLM);
             
             % Add new landmarks
-            addNewLM( z(association' == -1,:), R_lidar );
+            addNewLM( z(association' == -1,:), params.R_lidar );
             
             % Add to landmarks
             z= body2nav(z,XX(1:9));
             LM= [LM; z];
             
             % Lineariza and discretize
-            [Phi,D_bar]= linearize_discretize(u(:,k),S,taua,tauw,dT_IMU);
+            [Phi,D_bar]= linearize_discretize(u(:,k), params.S,...
+                taua, tauw, params.dT_IMU);
             
             % Store data
-            k_update= storeData(timeSim,k_update);
+            k_update= storeData(timeSim, k_update);
         end
         
         % Increase counters
         k_LIDAR= k_LIDAR + 1;
         
-        % -----Osama-----
+        % -----Osama----- TODO: osama, what is this again?
         if k_LIDAR <= length(T_LIDAR)
             timeLIDAR= T_LIDAR(k_LIDAR,2);
         else
@@ -209,15 +214,12 @@ storeData(timeSim,k_update);
 % ------------------------------------------------------------
 
 % create a map of landmarks
-lm_map= [DATA.update.LM{k_update}(1:2:end) , DATA.update.LM{k_update}(2:2:end), zeros((length(XX)-15)/2,1)];
-
-
-
-
+lm_map= [DATA.update.LM{k_update}(1:2:end),...
+    DATA.update.LM{k_update}(2:2:end), zeros((length(XX)-15)/2,1)];
 
 % ------------- PLOTS -------------
-numEpochInitPlot= numEpochStatic;
-timeComplete= 0:dT_IMU:timeSim+dT_IMU/2;
+numEpochInitPlot= params.numEpochStatic;
+timeComplete= 0:params.dT_IMU:timeSim+params.dT_IMU/2;
 timeMove= timeComplete(numEpochInitPlot:end);
 
 % % Plot estimates
@@ -265,7 +267,7 @@ plot3(DATA.pred.XX(1,:), DATA.pred.XX(2,:), DATA.pred.XX(3,:), 'b.');
 plot3(DATA.update.XX(1,1:k_update), DATA.update.XX(2,1:k_update), DATA.update.XX(3,1:k_update),...
             'b.','markersize', 7);
 plot3(z_GPS(1,:),z_GPS(2,:),z_GPS(3,:),'r*');
-if SWITCH_LIDAR_UPDATE % Plot landmarks
+if params.SWITCH_LIDAR_UPDATE % Plot landmarks
     plot3(LM(:,1),LM(:,2),zeros(size(LM,1),1),'k.'); 
     plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'g+', 'markersize',20);
 %     plot3(DATA.update.LM{k_update}(1:2:end) ,DATA.update.LM{k_update}(2:2:end),zeros((length(XX)-15)/2,1),...
@@ -276,7 +278,7 @@ end
 for i= 1:N_IMU
     if rem(i,100) == 0
         R_NB= R_NB_rot(DATA.pred.XX(7,i),DATA.pred.XX(8,i),DATA.pred.XX(9,i));
-        xyz_N= R_NB*xyz_B + DATA.pred.XX(1:3,i);
+        xyz_N= R_NB*params.xyz_B + DATA.pred.XX(1:3,i);
         plot3(xyz_N(1,:), xyz_N(2,:), xyz_N(3,:), 'g-', 'linewidth', 2);
     end
 end

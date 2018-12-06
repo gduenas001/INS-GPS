@@ -1,6 +1,6 @@
 
 
-classdef ParametersClass
+classdef ParametersClass < handle
     properties % TODO: make constant (Constant)
         
         % dataset obtained with ROS
