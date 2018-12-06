@@ -8,12 +8,11 @@ addpath('../utils/')
 % create objects
 params= ParametersClass();
 gps= GPSClass(params.numEpochStatic * params.dT_IMU, params);
-
+lidar= LidarClass(params, gps.timeInit);
 
 % ---------------- Read data ----------------
 [T_IMU,u,iu]= DataReadIMU(params.fileIMU, gps.timeInit);
-N_IMU= size(u,2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
-T_LIDAR= dataReadLIDARtime(strcat(params.fileLIDAR,'T_LIDAR.mat'), gps.timeInit);
+N_IMU= size(u,2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 % -------------------------------------------
 
 
@@ -62,7 +61,7 @@ timeSum= 0;
 timeSumVirt_Z= 0;
 timeSumVirt_Y= 0;
 timeGPS= gps.time(1); % this is zero, as the GPS time is the reference
-timeLIDAR= T_LIDAR(1,2);
+timeLIDAR= lidar.time(1,2);
 k_update= 1;
 k_GPS= 1;
 k_LIDAR= 1;

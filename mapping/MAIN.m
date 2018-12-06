@@ -43,8 +43,9 @@ for k= 1:N_IMU-1
     % ------------- Calibration -------------
     if timeSum >= params.dT_cal && params.SWITCH_CALIBRATION
         
-        z= [zeros(6,1); phi0; theta0; yaw0];
-        calibration(z, params.H_cal, params.R_cal);
+        % create a fake msmt and make a KF update
+        msmt= [zeros(6,1); phi0; theta0; yaw0];
+        calibration(msmt, params.H_cal, params.R_cal); % Kf update
         
         [Phi,D_bar]= linearize_discretize(u(:,k), params.S_cal, taua, tauw, params.dT_IMU);
         
@@ -125,21 +126,20 @@ for k= 1:N_IMU-1
         
         if k > params.numEpochStatic + 1500 % TODO: osama, why are you adding 1500
             % Read the lidar features
-            epochLIDAR= T_LIDAR(k_LIDAR,1);
-            z= dataReadLIDAR(params.fileLIDAR, params.lidarRange,...
-                epochLIDAR, params.SWITCH_REMOVE_FAR_FEATURES);
+            epochLIDAR= lidar.time(k_LIDAR,1);
+            lidar.get_msmt( epochLIDAR, params );
             
             % Remove people-features for (20180725 data)
-            z= removeFeatureInArea(XX(1:9), z, 22, 26, -2, 8);
-            z= removeFeatureInArea(XX(1:9), z, -34, -30, -14, -6);
-            z= removeFeatureInArea(XX(1:9), z, 5, 7, -25, 0);
-            z= removeFeatureInArea(XX(1:9), z, 4.47, 6, -38, -25);
-            z= removeFeatureInArea(XX(1:9), z, -50, -40, -50, 20);
-            z= removeFeatureInArea(XX(1:9), z, -40, -35, -10, 10);
-            z= removeFeatureInArea(XX(1:9), z, 10, 15, -50, -40);
-            z= removeFeatureInArea(XX(1:9), z, -19.5, -19, 11.5, 12.5);
-            z= removeFeatureInArea(XX(1:9), z, 20, 30, -50, -35);
-            z= removeFeatureInArea(XX(1:9), z, 10, 11, 6, 7);
+            lidar.removeFeatureInArea(XX(1:9), 22, 26, -2, 8);
+            lidar.removeFeatureInArea(XX(1:9), -34, -30, -14, -6);
+            lidar.removeFeatureInArea(XX(1:9), 5, 7, -25, 0);
+            lidar.removeFeatureInArea(XX(1:9), 4.47, 6, -38, -25);
+            lidar.removeFeatureInArea(XX(1:9), -50, -40, -50, 20);
+            lidar.removeFeatureInArea(XX(1:9), -40, -35, -10, 10);
+            lidar.removeFeatureInArea(XX(1:9), 10, 15, -50, -40);
+            lidar.removeFeatureInArea(XX(1:9), -19.5, -19, 11.5, 12.5);
+            lidar.removeFeatureInArea(XX(1:9), 20, 30, -50, -35);
+            lidar.removeFeatureInArea(XX(1:9), 10, 11, 6, 7);
             
             % Remove people-features for (20180419 data)
 %             z= removeFeatureInArea(XX(1:9), z, 0,8,0,15);
@@ -169,22 +169,21 @@ for k= 1:N_IMU-1
 %             z= removeFeatureInArea(XX(1:9), z, -28, -3, -5, -3);
                         
             % NN data association
-            [association,appearances]= nearestNeighbor(z(:,1:2),...
+            [association,appearances]= nearestNeighbor(lidar.msmt(:,1:2),...
                 appearances, params.R_lidar, params.T_NN, params.T_newLM);
             
             % Lidar update
-            lidarUpdate(z(:,1:2), association, appearances,...
+            lidarUpdate(lidar.msmt(:,1:2), association, appearances,...
                 params.R_lidar, params.SWITCH_CALIBRATION);
             
             % Increase landmark covariance to the minimum
             increaseLandmarkCov(params.R_minLM);
             
             % Add new landmarks
-            addNewLM( z(association' == -1,:), params.R_lidar );
+            addNewLM( lidar.msmt(association' == -1,:), params.R_lidar );
             
-            % Add to landmarks
-            z= body2nav(z,XX(1:9));
-            LM= [LM; z];
+            % Add the current msmts in Nav-frame to plot
+            LM= [LM; body2nav(lidar.msmt, XX(1:9))];
             
             % Lineariza and discretize
             [Phi,D_bar]= linearize_discretize(u(:,k), params.S,...
@@ -198,8 +197,8 @@ for k= 1:N_IMU-1
         k_LIDAR= k_LIDAR + 1;
         
         % -----Osama----- TODO: osama, what is this again?
-        if k_LIDAR <= length(T_LIDAR)
-            timeLIDAR= T_LIDAR(k_LIDAR,2);
+        if k_LIDAR <= length(lidar.time)
+            timeLIDAR= lidar.time(k_LIDAR,2);
         else
            k_LIDAR = k_LIDAR -1 ;
            LIDAR_Index_exceeded = 1;

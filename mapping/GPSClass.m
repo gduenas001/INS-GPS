@@ -5,7 +5,7 @@ classdef GPSClass < handle
         num_readings
         time
         timeInit
-        R
+        R    % covariance matrices for msmts
         msmt
         R_NE % rot matrix from ECEF to Nav-frame
         

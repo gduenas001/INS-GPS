@@ -1,13 +1,13 @@
 
-function z= dataReadLIDAR(fileLIDAR, lidarRange, epoch, SWITCH_REMOVE_FAR_FEATURES)
+function z= dataReadLIDAR(epoch, params)
 % load the mat file with the extrated features at the lidar epoch specified
 
-fileName= strcat(fileLIDAR,'matFiles/Epoch',num2str(epoch),'.mat');
+fileName= strcat(params.file_name_lidar_path,'matFiles/Epoch',num2str(epoch),'.mat');
 
 % loads the z variable with range and bearing
 load(fileName);
 
-if SWITCH_REMOVE_FAR_FEATURES, z= removeFarFeatures(z, lidarRange); end
+if params.SWITCH_REMOVE_FAR_FEATURES, z= removeFarFeatures(z, params.lidarRange); end
 
 % Add height
 height= 1.5;

@@ -6,7 +6,7 @@ classdef ParametersClass < handle
         % dataset obtained with ROS
         fileIMU=   '../data/cart/20180725/IMU/IMU.mat';
         file_name_gps=   '../data/cart/20180725/GPS/GPS.mat';
-        fileLIDAR= '../data/cart/20180725/LIDAR/';
+        file_name_lidar_path= '../data/cart/20180725/LIDAR/';
         % calibration file
         file_name_calibration= '../calibration/calibration_new.mat';
 
