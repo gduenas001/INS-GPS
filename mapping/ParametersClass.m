@@ -1,7 +1,15 @@
 
 
 classdef ParametersClass
-    properties (Constant)
+    properties % TODO: make constant (Constant)
+        
+        % dataset obtained with ROS
+        fileIMU=   '../data/cart/20180725/IMU/IMU.mat';
+        fileGPS=   '../data/cart/20180725/GPS/GPS.mat';
+        fileLIDAR= '../data/cart/20180725/LIDAR/';
+        % calibration file
+        file_name_calibration= '../calibration/calibration_new.mat';
+
         % --------------- Switches (options) ---------------
         SWITCH_NUM_of_LOOPS= 1; % --Osama--
         SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
@@ -30,7 +38,6 @@ classdef ParametersClass
         sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
         sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
         sig_lidar= 0.3; % 20cm -- lidar measurement in the nav frame
-        sig_yaw_fn= @(v) deg2rad(5) + ( exp(10*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
         minVelocityGPS= 2/3.6; % 2 km/h
         minVelocityYaw= 2/3.6; % 2 km/h
         taua0= 3000; % Tau for acc bias -- from manufacturer
@@ -48,10 +55,15 @@ classdef ParametersClass
         multFactorPoseGPS= 3; % multiplicative factor for the GPS pose SD
         multFactorVelGPS= 20;  % multiplicative factor for the GPS velocity SD
         % -------------------------------------------
+        
+        VRW= 0.07 % vel random walk
+        ARW= 0.15 % angular random walk [deg]
+        
+        sn_f= ( 0.05 * 9.80279 / 1000 )^2 % bias acc white noise PSD
+        sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
     end
     
-    properties
-        % --------------- Build parameters ---------------
+    properties % parameters to be built with constructor
         numEpochInclCalibration
         g_N % G estimation (sense is same at grav acceleration in nav-frame)
         sig_cal_pos_blkMAtrix
@@ -69,10 +81,36 @@ classdef ParametersClass
         zPlot
         xyz_B
         R_minLM
+        
+        % IMU -- white noise specs
+        sig_IMU_acc
+        sig_IMU_gyr
+        V
+        Sv     % PSD for IMU
+        Sv_cal % PSD during calibration
+        
+        % Biases -- PSD of white noise
+        Sn_f % TODO: check if needed
+        Sn_w % TODO: check if needed
+        Sn
+        
+        % PSD for continuous model
+        S
+        S_cal
+
     end
     methods
+        % ----------------------------------------------
+        % ----------------------------------------------
         function obj = ParametersClass()
-            % --------------- Build parameters ---------------
+            
+            % modify parameters
+            obj.VRW= obj.VRW * obj.multFactorAccIMU; 
+            obj.ARW= obj.ARW * obj.multFactorGyroIMU; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+            
+            
+            
+            % build parameters
             obj.numEpochInclCalibration= round(obj.numEpochStatic);
             obj.g_N= [0; 0; obj.g_val]; % G estimation (sense is same at grav acceleration in nav-frame)
             obj.sig_cal_pos_blkMAtrix= diag([obj.sig_cal_pos, obj.sig_cal_pos, obj.sig_cal_pos]);
@@ -84,15 +122,40 @@ classdef ParametersClass
             obj.R_virt_Z= obj.sig_virt_vz.^2;
             obj.R_virt_Y= obj.sig_virt_vy.^2;
             obj.R_lidar= diag( [obj.sig_lidar, obj.sig_lidar] ).^2;
-            %            obj.R_yaw_fn= @(v) sig_yaw_fn(v)^2;
             obj.T_NN= 4.5; %chi2inv(1-obj.alpha_NN,2);
             xPlot= [-0.3; 0; -0.3];
             yPlot= [0.1; 0; -0.1];
             zPlot= [0; 0; 0];
             obj.xyz_B= [xPlot, yPlot, zPlot]';
             obj.R_minLM= obj.sig_minLM.^2;
-            % ----------------------------------------------
+            
+            % IMU -- white noise specs
+            obj.sig_IMU_acc= obj.VRW * sqrt( 2000 / 3600 );
+            obj.sig_IMU_gyr= deg2rad( obj.ARW * sqrt( 2000 / 3600 ) ); % rad
+            obj.V= diag( [obj.sig_IMU_acc; obj.sig_IMU_acc; obj.sig_IMU_acc;...
+                      obj.sig_IMU_gyr; obj.sig_IMU_gyr; obj.sig_IMU_gyr]).^2;
+            obj.Sv= obj.V * obj.dT_IMU; % Convert to PSD
+            obj.Sv_cal= diag( [diag( obj.Sv(1:3,1:3)) / obj.multFactorAccIMU^2; diag(obj.Sv(4:6,4:6)) / obj.multFactorGyroIMU^2]  );
+
+            % Biases -- PSD of white noise
+            obj.Sn_f= diag([obj.sn_f, obj.sn_f, obj.sn_f]);
+            obj.Sn_w= diag([obj.sn_w, obj.sn_w, obj.sn_w]);
+            obj.Sn= blkdiag(obj.Sn_f, obj.Sn_w);
+            
+            % PSD for continuous model
+            obj.S     = blkdiag(obj.Sv, obj.Sn);
+            obj.S_cal = blkdiag(obj.Sv_cal, obj.Sn);
+
         end
-    end
-    
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function sig_yaw= sig_yaw_fn(~, v)
+            sig_yaw= deg2rad(5) + ( exp(10*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function R_yaw= R_yaw_fn(obj, v)
+            R_yaw= obj.sig_yaw_fn(v)^2;
+        end 
+    end 
 end

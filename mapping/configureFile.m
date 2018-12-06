@@ -3,32 +3,12 @@ global DATA XX PX
 
 addpath('../utils/')
 
-% fileIMU= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/IMU/IMU.mat');
-% fileGPS= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/GPS/GPS.mat');
-
-
-% fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/20180419_1.txt');
-% fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/IMU.mat');
-% fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/GPS/GPS.mat');
-% fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/LIDAR/');
-
 % dataset obtained with ROS
-fileIMU= strcat('../data/cart/20180725/IMU/IMU.mat');
-fileGPS= strcat('../data/cart/20180725/GPS/GPS.mat');
-fileLIDAR= strcat('../data/cart/20180725/LIDAR/');
+fileIMU=   '../data/cart/20180725/IMU/IMU.mat';
+fileGPS=   '../data/cart/20180725/GPS/GPS.mat';
+fileLIDAR= '../data/cart/20180725/LIDAR/';
+file_name_calibration= '../calibration/calibration_new.mat';
 
-% fileIMU= strcat('../DATA/DATA_COMPLETE/20180821/IMU/IMU.mat');
-% fileGPS= strcat('../DATA/DATA_COMPLETE/20180821/GPS/GPS.mat');
-% fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180821/LIDAR/');
-
-
-% fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/IMU/IMU.mat');
-% fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/GPS/GPS.mat');
-
-% --------------- Initial biases ---------------
-load('../calibration/calibration.mat');
-invC= [invC, zeros(3); zeros(3), eye(3)];
-% ---------------------------------------------
 
 
 % --------------- Switches (options) ---------------
@@ -78,13 +58,6 @@ multFactorPoseGPS= 3; % multiplicative factor for the GPS pose SD
 multFactorVelGPS= 20;  % multiplicative factor for the GPS velocity SD
 % -------------------------------------------
 
-% ---------------- Read data ----------------
-[T_GPS,z_GPS,R_GPS,R_NE,timeInit]= dataReadGPS(fileGPS,numEpochStatic*dT_IMU);
-R_GPS(1:3,:)= R_GPS(1:3,:)*(multFactorPoseGPS^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
-R_GPS(4:6,:)= R_GPS(4:6,:)*(multFactorVelGPS^2);  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
-[T_IMU,u,iu]= DataReadIMU(fileIMU, timeInit);    
-T_LIDAR= dataReadLIDARtime(strcat(fileLIDAR,'T_LIDAR.mat'), timeInit);
-% -------------------------------------------
 
 
 % --------------- Build parameters ---------------
@@ -109,6 +82,7 @@ R_minLM= sig_minLM.^2;
 % ----------------------------------------------
 
 
+
 % IMU -- white noise specs
 VRW= 0.07 *multFactorAccIMU; % vel random walk %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 sig_IMU_acc= VRW * sqrt( 2000 / 3600 );
@@ -119,30 +93,52 @@ Sv= V * dT_IMU; % Convert to PSD
 Sv_cal= diag( [diag(Sv(1:3,1:3)) / multFactorAccIMU^2; diag(Sv(4:6,4:6)) / multFactorGyroIMU^2]  );
 
 % Biases -- PSD of white noise
-sn_f= ( 0.05 * 9.80279 / 1000 )^2; Sn_f= diag([sn_f, sn_f, sn_f]);
-sn_w= ( deg2rad(0.3/3600) )^2;     Sn_w= diag([sn_w, sn_w, sn_w]);
+sn_f= ( 0.05 * 9.80279 / 1000 )^2; 
+Sn_f= diag([sn_f, sn_f, sn_f]);
+sn_w= ( deg2rad(0.3/3600) )^2;
+Sn_w= diag([sn_w, sn_w, sn_w]);
 Sn= blkdiag(Sn_f, Sn_w);
 
 % PSD for continuous model
 S= blkdiag(Sv, Sn);
 S_cal= blkdiag(Sv_cal, Sn);
 
+
+
+
+
+% ---------------- Read data ----------------
+[T_GPS,z_GPS,R_GPS,R_NE,timeInit]= dataReadGPS(fileGPS,numEpochStatic*dT_IMU);
+R_GPS(1:3,:)= R_GPS(1:3,:)*(multFactorPoseGPS^2); %%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+R_GPS(4:6,:)= R_GPS(4:6,:)*(multFactorVelGPS^2);  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+[T_IMU,u,iu]= DataReadIMU(fileIMU, timeInit);    
+T_LIDAR= dataReadLIDARtime(strcat(fileLIDAR,'T_LIDAR.mat'), timeInit);
+
 % Number of readings
 N_IMU= size(u,2);% N_IMU= 15000; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
 N_GPS= size(z_GPS,2);
+% -------------------------------------------
+
+
+
+% ------------ Initial calibration ------------
+load(file_name_calibration); % loads iinvC, invC, ib_0, b_0
+invC= [invC, zeros(3); zeros(3), eye(3)];
 
 % Initial rotation to get: x=foward & z=down
 R_init= [ 0, -1, 0;
          -1, 0, 0;
           0, 0, -1];
 R_init_block= blkdiag(R_init,R_init);
-
-% ------------ Initial calibration ------------
 iu= (iinvC * iu) - ib_0;
 u= (invC * u) - b_0;
 u= R_init_block * u;
 iu= R_init * iu;
 % -------------------------------------------
+
+
+
+
 
 % ------------ Initial attitude ------------
 [phi0, theta0]= initial_attitude(u(1:3,numEpochInclCalibration));

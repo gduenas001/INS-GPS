@@ -1,7 +1,8 @@
 
-function [phi,theta]= initial_attitude(iu)
+function [phi,theta]= initial_attitude(u)
+% calculates the initial pitch and roll
 
-g_bar= mean(iu,2);
+g_bar= mean(u,2);
 
 % My method -- works for z-axis pointing down (accz < 0)
 % theta=  atan2( g_bar(1) , abs(g_bar(3)) ); 
