@@ -6,15 +6,15 @@ dbstop if error
 configureFile;
 
 % Initial discretization for cov. propagation
-[Phi,D_bar]= linearize_discretize( u(:,1), params.S, taua, tauw, params.dT_IMU );
+[Phi,D_bar]= linearize_discretize( imu.msmt(:,1), params.S, taua, tauw, params.dT_IMU );
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
-for k= 1:N_IMU-1
+for k= 1:imu.num_readings-1
     disp(strcat('Epoch -> ', num2str(k)));
     
     % set the simulation time to the IMU time
-    timeSim= T_IMU(k);
+    timeSim= imu.time(k);
     
     % Turn off GPS updates if start moving
     if k == params.numEpochStatic
@@ -32,7 +32,7 @@ for k= 1:N_IMU-1
     timeSumVirt_Y= timeSumVirt_Y + params.dT_IMU;
     
     % ------------- IMU -------------
-    IMU_update( u(:,k), params.g_N, taua, tauw, params.dT_IMU );
+    IMU_update( imu.msmt(:,k), params.g_N, taua, tauw, params.dT_IMU );
     PX(1:15,1:15)= Phi*PX(1:15,1:15)*Phi' + D_bar; 
     % -------------------------------
     
@@ -47,7 +47,7 @@ for k= 1:N_IMU-1
         msmt= [zeros(6,1); phi0; theta0; yaw0];
         calibration(msmt, params.H_cal, params.R_cal); % Kf update
         
-        [Phi,D_bar]= linearize_discretize(u(:,k), params.S_cal, taua, tauw, params.dT_IMU);
+        [Phi,D_bar]= linearize_discretize( imu.msmt(:,k), params.S_cal, taua, tauw, params.dT_IMU);
         
         % If GPS is calibrating initial biases, increse bias variance
         D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
@@ -98,11 +98,11 @@ for k= 1:N_IMU-1
             % Yaw update
             if params.SWITCH_YAW_UPDATE && norm(XX(4:6)) > params.minVelocityYaw
                 disp('yaw udpate');
-                yawUpdate( u(4:6,k), params.R_yaw_fn(norm(XX(4:6))), params.r_IMU2rearAxis );
+                yawUpdate( imu.msmt(4:6,k), params.R_yaw_fn(norm(XX(4:6))), params.r_IMU2rearAxis );
             else
                 disp('--------no yaw update------');
             end
-            [Phi,D_bar]= linearize_discretize(u(:,k),params.S,taua,tauw,params.dT_IMU);
+            [Phi,D_bar]= linearize_discretize( imu.msmt(:,k),params.S,taua,tauw,params.dT_IMU);
 
             % Store data
             k_update= storeData(timeSim,k_update);
@@ -152,7 +152,7 @@ for k= 1:N_IMU-1
             LM= [LM; body2nav(lidar.msmt, XX(1:9))];
             
             % Lineariza and discretize
-            [Phi,D_bar]= linearize_discretize(u(:,k), params.S,...
+            [Phi,D_bar]= linearize_discretize( imu.msmt(:,k), params.S,...
                 taua, tauw, params.dT_IMU);
             
             % Store data
@@ -241,7 +241,7 @@ if params.SWITCH_LIDAR_UPDATE % Plot landmarks
 end 
 
 
-for i= 1:N_IMU
+for i= 1:imu.num_readings
     if rem(i,100) == 0
         R_NB= R_NB_rot(DATA.pred.XX(7,i),DATA.pred.XX(8,i),DATA.pred.XX(9,i));
         xyz_N= R_NB*params.xyz_B + DATA.pred.XX(1:3,i);
