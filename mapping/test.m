@@ -1,13 +1,6 @@
 clear all; clc;
 
-params= ParametersClass();
+estimator= EstimatorClass();
 
-changeclass(params);
 
-params.S
-
-function changeclass(p)
-% p.S= 123;
-
-end
-
+estimator.XX

@@ -10,22 +10,12 @@ params= ParametersClass();
 gps= GPSClass(params.numEpochStatic * params.dT_IMU, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
+estimator= EstimatorClass(imu, params);
 
-
-% ------------ Initial attitude ------------
-[phi0, theta0]= initial_attitude( imu.msmt(1:3, params.numEpochInclCalibration) );
-yaw0= deg2rad(params.initial_yaw_angle); 
-% -------------------------------------------
-
-% Allocate variables
-DATA.pred.XX= zeros(15, imu.num_readings);
-DATA.pred.time= zeros(imu.num_readings, 1);
-DATA.update.XX= zeros(15, imu.num_readings);
-DATA.update.PX= zeros(15, imu.num_readings);
-DATA.update.time= zeros(imu.num_readings, 1);
-LM= [];
 
 % Initialize estimate
+[phi0, theta0]= initial_attitude( imu.msmt(1:3, params.numEpochInclCalibration) );
+yaw0= deg2rad(params.initial_yaw_angle); 
 XX= zeros(15,1);
 PX= zeros(15); 
 % PX(7:9,7:9)= diag( [sig_E,sig_E,sig_E] ).^2;
@@ -35,6 +25,14 @@ XX(7)= phi0;
 XX(8)= theta0;
 XX(9)= yaw0;
 appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
+
+% Allocate variables
+DATA.pred.XX= zeros(15, imu.num_readings);
+DATA.pred.time= zeros(imu.num_readings, 1);
+DATA.update.XX= zeros(15, imu.num_readings);
+DATA.update.PX= zeros(15, imu.num_readings);
+DATA.update.time= zeros(imu.num_readings, 1);
+LM= [];
 
 % Initialize loop variables
 timeSum= 0;
