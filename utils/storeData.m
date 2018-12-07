@@ -1,7 +1,7 @@
 
-function counter= storeData(time,counter)
+function counter= storeData(XX, PX, time,counter)
 
-global DATA XX PX
+global DATA
 
 
 % Store data
