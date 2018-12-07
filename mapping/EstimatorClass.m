@@ -4,6 +4,9 @@ classdef EstimatorClass < handle
         XX= zeros(15,1)
         PX= zeros(15)
         
+        Phi   % state evolution matrix
+        D_bar % covariance increase for the state evolution
+        
         initial_attitude
         appearances
         
@@ -12,10 +15,10 @@ classdef EstimatorClass < handle
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj= EstimatorClass(imu, params)
+        function obj= EstimatorClass(imu_calibration_msmts, params)
             
             % Initial attitude
-            obj.initialize_pitch_and_roll(imu, params)
+            obj.initialize_pitch_and_roll(imu_calibration_msmts)
             obj.XX(9)= deg2rad(params.initial_yaw_angle);
             
             % save initial attitude for calibration
@@ -29,11 +32,11 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function initialize_pitch_and_roll(obj, imu, params)
+        function initialize_pitch_and_roll(obj, imu_calibration_msmts)
             % calculates the initial pitch and roll
             
             % compute gravity from static IMU measurements
-            g_bar= mean( imu.msmt(1:3, params.numEpochInclCalibration), 2 );
+            g_bar= mean( imu_calibration_msmts, 2 );
             
             % Books method
             g_bar= -g_bar;
@@ -80,8 +83,9 @@ classdef EstimatorClass < handle
             b_w_dot= -eye(3) / tauw * b_w;
             x_dot= [r_dot; v_dot; E_dot; b_f_dot; b_w_dot];
             
-            % Return new pose
+            % udpate estimate
             obj.XX(1:15)= obj.XX(1:15) + params.dT_IMU * x_dot;    
+            obj.PX(1:15,1:15)= obj.Phi * obj.PX(1:15,1:15) * obj.Phi' + obj.D_bar;
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -115,12 +119,41 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function gps_update(obj, z, R, minVelocityGPS, flag_velocity)
+        function zVelocityUpdate(obj, R)
+            
+            % Normalize yaw
+            obj.XX(9)= pi_to_pi( obj.XX(9) );
+            
+            % Update
+            R_BN= R_NB_rot( obj.XX(7), obj.XX(8), obj.XX(9) )';
+            H= [0,0,1] * R_BN * [zeros(3),eye(3),zeros(3,9)];
+            L= obj.PX*H' / (H*obj.PX*H' + R);
+            z_hat= H * obj.XX;
+            innov= 0 - z_hat;
+            obj.XX= obj.XX + L*innov;
+            obj.PX= obj.PX - L*H*obj.PX;
+            
+            % This is a different option to do the update in Z, but it is more
+            % computationally expensive and does not offer better results in my case
+            %{
+                R_BN= R_NB_rot( x(7,k+1), x(8,k+1), x(9,k+1) )';
+                H_virt= H_fn(x(4,k+1), x(5,k+1), x(6,k+1), x(7,k+1), x(8,k+1), x(9,k+1));
+                L= P*H_virt' / (H_virt*P*H_virt' + R_virt_Z);
+                z= 0;
+                z_hat= [0,0,1] * R_BN * x(4:6,k+1);
+                innov= z - z_hat;
+                x(:,k+1)= x(:,k+1) + L*innov;
+                P= P - L*H_virt*P;
+            %}
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function gps_update(obj, z, R, params)
             
            
             n_L= (length(obj.XX) - 15) / 2;
             
-            if norm(z(4:6)) > minVelocityGPS && flag_velocity % sense velocity
+            if norm(z(4:6)) > params.minVelocityGPS && params.SWITCH_GPS_VEL_UPDATE % sense velocity
                 R= diag( R );
                 H= [eye(6), zeros(6,9), zeros(6,n_L*2)];
                 disp('GPS velocity')
@@ -140,7 +173,7 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function [association]= nearest_neighbor(obj, z, R, T, T_newLM)
+        function [association]= nearest_neighbor(obj, z, params)
             
             n_F= size(z,1);
             n_L= (length(obj.XX) - 15) / 2;
@@ -155,7 +188,7 @@ classdef EstimatorClass < handle
             zHat= zeros(2,1);
             % Loop over extracted features
             for i= 1:n_F
-                minY= T_newLM;
+                minY= params.T_newLM;
                 
                 for l= 1:n_L
                     ind= (15 + (2*l-1)):(15 + 2*l);
@@ -170,7 +203,7 @@ classdef EstimatorClass < handle
                     H= [-cpsi, -spsi, -dx*spsi + dy*cpsi,  cpsi, spsi;
                         spsi, -cpsi, -dx*cpsi - dy*spsi, -spsi, cpsi];
                     
-                    Y= H * obj.PX([1:2,9,ind],[1:2,9,ind]) * H' + R;
+                    Y= H * obj.PX([1:2,9,ind],[1:2,9,ind]) * H' + params.R_lidar;
                     
                     y2= gamma' / Y * gamma;
                     
@@ -181,7 +214,7 @@ classdef EstimatorClass < handle
                 end
                 
                 % If the minimum value is very large --> new landmark
-                if minY > T && minY < T_newLM
+                if minY > params.T_NN && minY < params.T_newLM
                     association(i)= 0;
                 end
             end
@@ -303,7 +336,8 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function [Phi,D_bar]= linearize_discretize(obj, u, S, taua, tauw, dT)
+        function linearize_discretize(obj, u, S, taua, tauw, dT)
+            % updates Phi & D_bar
             
             % Compute the F and G matrices (linear continuous time)
             [F,G]= FG_fn(u(1),u(2),u(3),u(5),u(6),...
@@ -311,14 +345,14 @@ classdef EstimatorClass < handle
                 taua,tauw);
             
             % Discretize system for IMU time (only for variance calculations)
-            [Phi,D_bar]= obj.discretize(F, G, S, dT);
+            obj.discretize(F, G, S, dT);
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function [Phi, D_bar]= discretize(~, F, G, S, dT)
-            %MATRICES2DISCRETE This function discretize the continuous time model. It
-            %works for either the GPS or IMU discretization times.
-            
+        function discretize(obj, F, G, S, dT)
+            % MATRICES2DISCRETE This function discretize the continuous time model. It
+            % works for either the GPS or IMU discretization times.
+            % updates Phi & D_bar
             
             % sysc= ss(F, zeros(15,1), zeros(1,15), 0);
             % sysd= c2d(sysc, dT);
@@ -330,12 +364,11 @@ classdef EstimatorClass < handle
             
             % Proper method
             EXP= expm(C*dT);
-            Phi= EXP(16:end,16:end)';
-%             D_bar= Phi * EXP(1:15,16:end);
-            
+            obj.Phi= EXP(16:end,16:end)';
+%             obj.D_bar= Phi * EXP(1:15,16:end);
             
             % Simplified method
-            D_bar= (G*dT) * (S/dT) * (G*dT)'; % simplified version
+            obj.D_bar= (G*dT) * (S/dT) * (G*dT)'; % simplified version
         end
     end
     % ----------------------------------------------

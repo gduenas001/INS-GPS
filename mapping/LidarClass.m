@@ -63,7 +63,7 @@ classdef LidarClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function remove_fatures_in_area(obj, x, area)
+        function remove_features_in_area(obj, x, area)
             % remove features from area: [minX, maxX, minY, maxY]
             
             % transform to nav-frame first

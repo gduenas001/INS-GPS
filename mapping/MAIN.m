@@ -6,8 +6,7 @@ dbstop if error
 configureFile;
 
 % Initial discretization for cov. propagation
-% [Phi,D_bar]= linearize_discretize( imu.msmt(:,k),params.S,taua,tauw,params.dT_IMU);
-[Phi,D_bar]= estimator.linearize_discretize( imu.msmt(:,1), params.S, taua, tauw, params.dT_IMU );
+estimator.linearize_discretize( imu.msmt(:,1), params.S_cal, taua, tauw, params.dT_IMU );
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
@@ -33,9 +32,7 @@ for k= 1:imu.num_readings-1
     timeSumVirt_Y= timeSumVirt_Y + params.dT_IMU;
     
     % ------------- IMU -------------
-%     IMU_update( imu.msmt(:,k), params.g_N, taua, tauw, params.dT_IMU );
     estimator.imu_update( imu.msmt(:,k), taua, tauw, params );
-    estimator.PX(1:15,1:15)= Phi*estimator.PX(1:15,1:15)*Phi' + D_bar; 
     % -------------------------------
     
     % Store data
@@ -46,19 +43,17 @@ for k= 1:imu.num_readings-1
     if timeSum >= params.dT_cal && params.SWITCH_CALIBRATION
         
         % create a fake msmt and make a KF update
-%         msmt= [zeros(6,1); phi0; theta0; yaw0];
         msmt= [zeros(6,1); estimator.initial_attitude];
-        
-        
-%         calibration(msmt, params.H_cal, params.R_cal); % Kf update
         estimator.calibration(msmt, params.H_cal, params.R_cal); % Kf update
         
-%         [Phi,D_bar]= linearize_discretize( imu.msmt(:,k),params.S,taua,tauw,params.dT_IMU);
-        [Phi,D_bar]= estimator.linearize_discretize( imu.msmt(:,k), params.S_cal, taua, tauw, params.dT_IMU);
+        % linearize and discretize after every non-IMU update
+        estimator.linearize_discretize( imu.msmt(:,k), params.S_cal, taua, tauw, params.dT_IMU);
         
         % If GPS is calibrating initial biases, increse bias variance
-        D_bar(10:12,10:12)= D_bar(10:12,10:12) + diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
-        D_bar(13:15,13:15)= D_bar(13:15,13:15) + diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
+        estimator.D_bar(10:12,10:12)= estimator.D_bar(10:12,10:12) +...
+            diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
+        estimator.D_bar(13:15,13:15)= estimator.D_bar(13:15,13:15) +...
+            diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
         
         % Store data
         k_update= storeData(estimator.XX, estimator.PX, timeSim, k_update);
@@ -71,7 +66,7 @@ for k= 1:imu.num_readings-1
     % ------------- virtual msmt update >> Z vel  -------------  
     if timeSumVirt_Z >= params.dT_virt_Z && params.SWITCH_VIRT_UPDATE_Z && ~params.SWITCH_CALIBRATION
         
-        [estimator.XX,estimator.PX]= zVelocityUpdate( estimator.XX, estimator.PX, params.R_virt_Z);
+        zVelocityUpdate( params.R_virt_Z);
         
         % Reset counter
         timeSumVirt_Z= 0;
@@ -84,11 +79,8 @@ for k= 1:imu.num_readings-1
         % Yaw update
         if params.SWITCH_YAW_UPDATE && norm(estimator.XX(4:6)) > params.minVelocityYaw
             disp('yaw udpate');
-%             yawUpdate( imu.msmt(4:6,k), params.R_yaw_fn( norm(XX(4:6))), params.r_IMU2rearAxis );
             estimator.yaw_update(...
                 imu.msmt(4:6,k), params.R_yaw_fn( norm(estimator.XX(4:6))), params.r_IMU2rearAxis );
-        else
-            disp('--------no yaw update------');
         end
         
         % Reset counter
@@ -102,23 +94,15 @@ for k= 1:imu.num_readings-1
         
         if ~params.SWITCH_CALIBRATION && params.SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
-%             GPS_update( gps.msmt(:,k_GPS), gps.R(:,k_GPS),...
-%                 params.minVelocityGPS, params.SWITCH_GPS_VEL_UPDATE );
-            estimator.gps_update( gps.msmt(:,k_GPS), gps.R(:,k_GPS),...
-                params.minVelocityGPS, params.SWITCH_GPS_VEL_UPDATE );
-            
+            estimator.gps_update( gps.msmt(:,k_GPS), gps.R(:,k_GPS), params);
             
             % Yaw update
             if params.SWITCH_YAW_UPDATE && norm(estimator.XX(4:6)) > params.minVelocityYaw
                 disp('yaw udpate');
-%                 yawUpdate( imu.msmt(4:6,k), params.R_yaw_fn(norm(XX(4:6))), params.r_IMU2rearAxis );
                 estimator.yaw_update(...
                    imu.msmt(4:6,k), params.R_yaw_fn( norm(estimator.XX(4:6))), params.r_IMU2rearAxis );
-            else
-                disp('--------no yaw update------');
             end
-%             [Phi,D_bar]= linearize_discretize( imu.msmt(:,k),params.S,taua,tauw,params.dT_IMU);
-            [Phi,D_bar]= estimator.linearize_discretize( imu.msmt(:,k),params.S,taua,tauw,params.dT_IMU);
+            estimator.linearize_discretize( imu.msmt(:,k),params.S,taua,tauw,params.dT_IMU);
 
             % Store data
             k_update= storeData(estimator.XX, estimator.PX, timeSim,k_update);
@@ -145,39 +129,29 @@ for k= 1:imu.num_readings-1
             epochLIDAR= lidar.time(k_LIDAR,1);
             lidar.get_msmt( epochLIDAR, params );
             
-            % Remove people-features for (20180725 data)
+            % Remove people-features for the data set 
             for i= 1:size(lidar.areas_to_remove,1)
-                lidar.remove_fatures_in_area(estimator.XX(1:9), lidar.areas_to_remove(i,:));
+                lidar.remove_features_in_area(estimator.XX(1:9), lidar.areas_to_remove(i,:));
             end
                         
             % NN data association
-%             [association,appearances]= nearestNeighbor(lidar.msmt(:,1:2),...
-%                 appearances, params.R_lidar, params.T_NN, params.T_newLM);
-            [association]= estimator.nearest_neighbor(lidar.msmt(:,1:2),...
-                params.R_lidar, params.T_NN, params.T_newLM);
+            [association]= estimator.nearest_neighbor(lidar.msmt(:,1:2), params);
             
             % Lidar update
-%             lidarUpdate(lidar.msmt(:,1:2), association, appearances,...
-%                 params.R_lidar, params.SWITCH_CALIBRATION);
             estimator.lidarUpdate(lidar.msmt(:,1:2), association, ...
                 params.R_lidar, params.SWITCH_CALIBRATION);
 
             % Increase landmark covariance to the minimum
-%             increaseLandmarkCov(params.R_minLM);
             estimator.increase_landmarks_cov(params.R_minLM);
             
             % Add new landmarks
-%             addNewLM( lidar.msmt(association' == -1,:), params.R_lidar );
             estimator.addNewLM( lidar.msmt(association' == -1,:), params.R_lidar );
             
             % Add the current msmts in Nav-frame to plot
             LM= [LM; body2nav(lidar.msmt, estimator.XX(1:9))];
             
             % Lineariza and discretize
-%             [Phi,D_bar]= linearize_discretize( imu.msmt(:,k), params.S,...
-%                 taua, tauw, params.dT_IMU);
-            [Phi,D_bar]= estimator.linearize_discretize( imu.msmt(:,k), params.S,...
-                taua, tauw, params.dT_IMU);
+            estimator.linearize_discretize( imu.msmt(:,k), params.S, taua, tauw, params.dT_IMU);
             
             % Store data
             k_update= storeData(estimator.XX, estimator.PX, timeSim, k_update);
