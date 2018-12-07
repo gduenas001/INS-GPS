@@ -1,9 +1,31 @@
 
-clear; format short; clc; %close all;
-
+clear; format short; clc; close all;
 dbstop if error
 
-configureFile;
+addpath('../utils/')
+
+% create objects
+params= ParametersClass();
+gps= GPSClass(params.numEpochStatic * params.dT_IMU, params);
+lidar= LidarClass(params, gps.timeInit);
+imu= IMUClass(params, gps.timeInit);
+estimator= EstimatorClass(imu.msmt(1:3, params.numEpochInclCalibration), params);
+data_obj= DataClass(imu.num_readings);
+
+
+% Initialize loop variables
+timeSum= 0;
+timeSumVirt_Z= 0;
+timeSumVirt_Y= 0;
+timeGPS= gps.time(1); % this is zero, as the GPS time is the reference
+timeLIDAR= lidar.time(1,2);
+k_update= 1;
+k_GPS= 1;
+k_LIDAR= 1;
+taua= params.taua_calibration;
+tauw= params.tauw_calibration;
+GPS_Index_exceeded = 0;
+LIDAR_Index_exceeded = 0;
 
 % Initial discretization for cov. propagation
 estimator.linearize_discretize( imu.msmt(:,1), params.S_cal, taua, tauw, params.dT_IMU );
@@ -36,8 +58,7 @@ for k= 1:imu.num_readings-1
     % -------------------------------
     
     % Store data
-    DATA.pred.XX(:,k)= estimator.XX(1:15);
-    DATA.pred.time(k)= timeSim;
+    data_obj.store_prediction(k, estimator, timeSim);
     
     % ------------- Calibration -------------
     if timeSum >= params.dT_cal && params.SWITCH_CALIBRATION
@@ -56,7 +77,7 @@ for k= 1:imu.num_readings-1
             diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
         
         % Store data
-        k_update= storeData(estimator.XX, estimator.PX, timeSim, k_update);
+        k_update= data_obj.store_update(k_update, estimator, timeSim);
 
         % Reset counter
         timeSum= 0;
@@ -105,7 +126,7 @@ for k= 1:imu.num_readings-1
             estimator.linearize_discretize( imu.msmt(:,k),params.S,taua,tauw,params.dT_IMU);
 
             % Store data
-            k_update= storeData(estimator.XX, estimator.PX, timeSim,k_update);
+            k_update= data_obj.store_update(k_update, estimator, timeSim);
         end
         
         % Time GPS counter
@@ -147,14 +168,13 @@ for k= 1:imu.num_readings-1
             % Add new landmarks
             estimator.addNewLM( lidar.msmt(association' == -1,:), params.R_lidar );
             
-            % Add the current msmts in Nav-frame to plot
-            LM= [LM; body2nav(lidar.msmt, estimator.XX(1:9))];
-            
             % Lineariza and discretize
             estimator.linearize_discretize( imu.msmt(:,k), params.S, taua, tauw, params.dT_IMU);
             
             % Store data
-            k_update= storeData(estimator.XX, estimator.PX, timeSim, k_update);
+            % Add the current msmts in Nav-frame to plot
+            data_obj.store_msmts( body2nav(lidar.msmt, estimator.XX(1:9)) );
+            k_update= data_obj.store_update(k_update, estimator, timeSim);
         end
         
         % Increase counters
@@ -173,18 +193,24 @@ for k= 1:imu.num_readings-1
 end
 
 % Store data for last epoch
-storeData(estimator.XX, estimator.PX, timeSim,k_update);
+data_obj.store_update(k_update, estimator, timeSim);
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------
 
-% create a map of landmarks
-lm_map= [DATA.update.LM{k_update}(1:2:end),...
-    DATA.update.LM{k_update}(2:2:end), zeros((length(estimator.XX)-15)/2,1)];
+% remove extra allocated space 
+data_obj.update.XX(:, k_update+1:end)= [];
+data_obj.update.PX(:, k_update+1:end)= [];
+data_obj.update.time(k_update+1:end)= [];
+
 
 % ------------- PLOTS -------------
-numEpochInitPlot= params.numEpochStatic;
-timeComplete= 0:params.dT_IMU:timeSim+params.dT_IMU/2;
-timeMove= timeComplete(numEpochInitPlot:end);
+data_obj.plot_map(gps, imu.num_readings, params)
+data_obj.plot_estimates();
+% ------------------------------------------------------------
+
+
+% timeComplete= 0:params.dT_IMU:timeSim+params.dT_IMU/2;
+% timeMove= timeComplete(params.numEpochStatic:end);
 
 % % Plot estimates
 % figure; hold on;
@@ -225,72 +251,54 @@ timeMove= timeComplete(numEpochInitPlot:end);
 % plot(timeComplete,rad2deg(DATA.pred.XX(9,:)))
 % ylabel('\psi [deg]');
 
-% Plot GPS+IMU estimated path
-figPath= figure; hold on; grid on;
-plot3(DATA.pred.XX(1,:), DATA.pred.XX(2,:), DATA.pred.XX(3,:), 'b.');
-plot3(DATA.update.XX(1,1:k_update), DATA.update.XX(2,1:k_update), DATA.update.XX(3,1:k_update),...
-            'b.','markersize', 7);
-plot3(gps.msmt(1,:),gps.msmt(2,:),gps.msmt(3,:),'r*');
-if params.SWITCH_LIDAR_UPDATE % Plot landmarks
-    plot3(LM(:,1),LM(:,2),zeros(size(LM,1),1),'k.'); 
-    plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'g+', 'markersize',20);
-%     plot3(DATA.update.LM{k_update}(1:2:end) ,DATA.update.LM{k_update}(2:2:end),zeros((length(XX)-15)/2,1),...
-%     'g+', 'markersize',20);
-end 
+
+% % Plot variance estimates
+% SD= sqrt( data_obj.update.PX(:,1:k_update) );
+% update_time= data_obj.update.time(1:k_update);
+% 
+% % Plot SD -- pose
+% figure; hold on; title('Standard Deviations');
+% 
+% subplot(3,3,1); hold on; grid on;
+% plot(update_time, SD(1,:),'b-','linewidth',2);
+% ylabel('x [m]');
+% 
+% subplot(3,3,2); hold on; grid on;
+% plot(update_time, SD(2,:),'r-','linewidth',2);
+% ylabel('y [m]');
+% 
+% subplot(3,3,3); hold on; grid on;
+% plot(update_time, SD(3,:),'g-','linewidth',2);
+% ylabel('z [m]');
+% 
+% subplot(3,3,4); hold on; grid on;
+% plot(update_time, SD(4,:),'b-','linewidth',2);
+% ylabel('v_x [m/s]');
+% 
+% subplot(3,3,5); hold on; grid on;
+% plot(update_time, SD(5,:),'r-','linewidth',2);
+% ylabel('v_y [m/s]');
+% 
+% subplot(3,3,6); hold on; grid on;
+% plot(update_time, SD(6,:),'g-','linewidth',2);
+% ylabel('v_z [m/s]');
+% 
+% subplot(3,3,7); hold on; grid on;
+% plot(update_time, rad2deg(SD(7,:)),'b-','linewidth',2);
+% ylabel('\phi [deg]'); xlabel('Time [s]');
+% 
+% subplot(3,3,8); hold on; grid on;
+% plot(update_time, rad2deg(SD(8,:)),'r-','linewidth',2);
+% ylabel('\theta [deg]'); xlabel('Time [s]');
+% 
+% subplot(3,3,9); hold on; grid on;
+% plot(update_time, rad2deg(SD(9,:)),'g-','linewidth',2);
+% ylabel('\psi [deg]'); xlabel('Time [s]');
 
 
-for i= 1:imu.num_readings
-    if rem(i,100) == 0
-        R_NB= R_NB_rot(DATA.pred.XX(7,i),DATA.pred.XX(8,i),DATA.pred.XX(9,i));
-        xyz_N= R_NB*params.xyz_B + DATA.pred.XX(1:3,i);
-        plot3(xyz_N(1,:), xyz_N(2,:), xyz_N(3,:), 'g-', 'linewidth', 2);
-    end
-end
-xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
-axis equal
 
-% Plot variance estimates
-SD= sqrt( DATA.update.PX(:,1:k_update) );
-update_time= DATA.update.time(1:k_update);
 
-% Plot SD -- pose
-figure; hold on; title('Standard Deviations');
 
-subplot(3,3,1); hold on; grid on;
-plot(update_time, SD(1,:),'b-','linewidth',2);
-ylabel('x [m]');
-
-subplot(3,3,2); hold on; grid on;
-plot(update_time, SD(2,:),'r-','linewidth',2);
-ylabel('y [m]');
-
-subplot(3,3,3); hold on; grid on;
-plot(update_time, SD(3,:),'g-','linewidth',2);
-ylabel('z [m]');
-
-subplot(3,3,4); hold on; grid on;
-plot(update_time, SD(4,:),'b-','linewidth',2);
-ylabel('v_x [m/s]');
-
-subplot(3,3,5); hold on; grid on;
-plot(update_time, SD(5,:),'r-','linewidth',2);
-ylabel('v_y [m/s]');
-
-subplot(3,3,6); hold on; grid on;
-plot(update_time, SD(6,:),'g-','linewidth',2);
-ylabel('v_z [m/s]');
-
-subplot(3,3,7); hold on; grid on;
-plot(update_time, rad2deg(SD(7,:)),'b-','linewidth',2);
-ylabel('\phi [deg]'); xlabel('Time [s]');
-
-subplot(3,3,8); hold on; grid on;
-plot(update_time, rad2deg(SD(8,:)),'r-','linewidth',2);
-ylabel('\theta [deg]'); xlabel('Time [s]');
-
-subplot(3,3,9); hold on; grid on;
-plot(update_time, rad2deg(SD(9,:)),'g-','linewidth',2);
-ylabel('\psi [deg]'); xlabel('Time [s]');
 
 % % Plot SD -- Biases
 % figure; hold on;

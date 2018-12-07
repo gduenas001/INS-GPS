@@ -65,9 +65,12 @@ classdef IMUClass < handle
             % -------------------------------------------
             
             
-            
-            if params.SWITCH_NUM_of_LOOPS, obj.num_readings= 46500; end %%%%%%%%%%%%% CAREFUL
-            
+            % reduce the number of epochs to test
+            if params.SWITCH_NUM_of_LOOPS
+                obj.num_readings= params.numEpochStatic + 5000;
+            elseif params.SWITCH_NUM_of_LOOPS
+                obj.num_readings= 46500; %%%%%%%%%%%%% CAREFUL
+            end 
         end
     end
 end
