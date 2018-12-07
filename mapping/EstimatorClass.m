@@ -49,15 +49,31 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------     
-        function calibration(obj, z, H, R)
+        function calibration(obj, imu_msmt, params)
+            % create a fake msmt and do a KF update to calibrate biases.
+            % Also increase D_bar so that biases keep changing (not too
+            % small variance)
+            
+            % create a fake msmt and make a KF update
+            z= [zeros(6,1); obj.initial_attitude];
             
             % Calibration msmt update
-            L= obj.PX(1:15,1:15)*H' / (H*obj.PX(1:15,1:15)*H' + R);
-            z_hat= H*obj.XX(1:15);
+            L= obj.PX(1:15,1:15) * params.H_cal' /...
+                (params.H_cal*obj.PX(1:15,1:15)*params.H_cal' + params.R_cal);
+            z_hat= params.H_cal * obj.XX(1:15);
             innov= z - z_hat;
             innov(end)= pi_to_pi(innov(end));
             obj.XX(1:15)= obj.XX(1:15) + L*innov;
-            obj.PX(1:15,1:15)= obj.PX(1:15,1:15) - L*H*obj.PX(1:15,1:15);
+            obj.PX(1:15,1:15)= obj.PX(1:15,1:15) - L * params.H_cal * obj.PX(1:15,1:15);
+            
+            % linearize and discretize after every non-IMU update
+            obj.linearize_discretize( imu_msmt, params.dT_IMU, params);
+            
+            % If GPS is calibrating initial biases, increse bias variance
+            obj.D_bar(10:12,10:12)= obj.D_bar(10:12,10:12) +...
+                diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
+            obj.D_bar(13:15,13:15)= obj.D_bar(13:15,13:15) +...
+                diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -89,14 +105,16 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function yaw_update(obj, w, R, r_IMU2rearAxis) % TODO: optimize
+        function yaw_update(obj, w, params)
+            
             
             n_L= (length(obj.XX) - 15) / 2;
             H= zeros(1, 15 + 2*n_L);
             H(9)= 1;
             
-            z= obj.yawMeasurement(w, r_IMU2rearAxis);
+            z= obj.yawMeasurement(w, params);
             
+            R= params.R_yaw_fn( norm(obj.XX(4:6)));
             L= obj.PX*H' / (H*obj.PX*H' + R);
             innov= z - H*obj.XX;
             innov= pi_to_pi(innov);
@@ -106,9 +124,9 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function yaw= yawMeasurement(obj, w, r_IMU2rearAxis) % TODO: optimize
+        function yaw= yawMeasurement(obj, w, params)
             
-            r= [-r_IMU2rearAxis;0;0];
+            r= [-params.r_IMU2rearAxis; 0; 0];
             v_o= obj.XX(4:6);
             R_NB= R_NB_rot( obj.XX(7), obj.XX(8), obj.XX(9));
             
@@ -336,8 +354,18 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function linearize_discretize(obj, u, S, taua, tauw, dT)
+        function linearize_discretize(obj, u, dT, params)
             % updates Phi & D_bar
+            
+            if params.SWITCH_CALIBRATION
+                taua= params.taua_calibration;
+                tauw= params.tauw_calibration;
+                S= params.S_cal;
+            else
+                taua= params.taua_normal_operation;
+                tauw= params.tauw_normal_operation;
+                S= params.S;
+            end
             
             % Compute the F and G matrices (linear continuous time)
             [F,G]= FG_fn(u(1),u(2),u(3),u(5),u(6),...

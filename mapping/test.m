@@ -1,6 +1,7 @@
 clear all; clc;
 
-estimator= EstimatorClass();
+k= 5;
 
-
-estimator.XX
+for k= k:10
+    disp(k)
+end

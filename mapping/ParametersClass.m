@@ -12,7 +12,7 @@ classdef ParametersClass < handle
 
         % --------------- Switches (options) ---------------
         SWITCH_NUM_of_LOOPS= 1; % --Osama--
-        SWITCH_REDUCE_TESTING= 1; % to test only a few frames 
+        SWITCH_REDUCE_TESTING= 0; % to test only a few frames 
         SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
         SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
         SWITCH_YAW_UPDATE= 1;
@@ -40,8 +40,10 @@ classdef ParametersClass < handle
         sig_lidar= 0.3; % 20cm -- lidar measurement in the nav frame
         minVelocityGPS= 2/3.6; % 2 km/h
         minVelocityYaw= 2/3.6; % 2 km/h
-        taua0= 3000; % Tau for acc bias -- from manufacturer
-        tauw0= 3000; % Tau for gyro bias -- from manufacturer
+%         taua0= 3000; % Tau for acc bias -- from manufacturer TODO
+%         tauw0= 3000; % Tau for gyro bias -- from manufacturer TODO
+        taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer
+        tauw_normal_operation= 3000; % Tau for gyro bias -- from manufacturer
         taua_calibration= 100; % 200 acc tau value during initial calibration
         tauw_calibration= 100; % 200 gyro tau value during initial calibration
         g_val= 9.80279; % value of g [m/s2] at the IIT
