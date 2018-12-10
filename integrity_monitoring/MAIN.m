@@ -7,6 +7,7 @@ addpath('../utils/classes')
 
 % create objects
 params= ParametersClass();
+im= IntegrityMonitoringClass(params);
 gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
@@ -22,7 +23,7 @@ estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
-for epoch= 1:imu.num_readings-1
+for epoch= 1:imu.num_readings - 1
     disp(strcat('Epoch -> ', num2str(epoch)));
     
     % set the simulation time to the IMU time
@@ -60,7 +61,7 @@ for epoch= 1:imu.num_readings-1
     
     % ------------- virtual msmt update >> Z vel  -------------  
     if counters.time_sum_virt_z >= params.dt_virt_z && params.SWITCH_VIRT_UPDATE_Z && ~params.SWITCH_CALIBRATION
-        zVelocityUpdate( params.R_virt_Z );
+        estimator.vel_update_z(params.R_virt_Z);
         counters.reset_time_sum_virt_z();
     end
     % ---------------------------------------------------------
@@ -112,7 +113,7 @@ for epoch= 1:imu.num_readings-1
     % ------------- LIDAR -------------
     if (counters.time_sim + params.dt_imu) > counters.time_lidar && params.SWITCH_LIDAR_UPDATE
         
-        if epoch > params.num_epochs_static + 1500 % TODO: osama, why are you adding 1500
+        if epoch > params.num_epochs_static + 1500 % TODO: adding 1500 to remove people
             % Read the lidar features
             epochLIDAR= lidar.time(counters.k_lidar,1);
             lidar.get_msmt( epochLIDAR, params );
@@ -121,17 +122,11 @@ for epoch= 1:imu.num_readings-1
             lidar.remove_features_in_areas(estimator.XX(1:9));
             
             % NN data association
-            association= estimator.nearest_neighbor(lidar.msmt(:,1:2), params);
+            association= estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
             
             % Lidar update
-            estimator.lidar_update_slam(lidar.msmt(:,1:2), association, params);
+            estimator.lidar_update_localization(lidar.msmt(:,1:2), association, params);
 
-            % Increase landmark covariance to the minimum
-            estimator.increase_landmarks_cov(params.R_minLM);
-            
-            % Add new landmarks
-            estimator.addNewLM( lidar.msmt(association' == -1,:), params.R_lidar );
-            
             % Lineariza and discretize
             estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);
             
@@ -140,7 +135,7 @@ for epoch= 1:imu.num_readings-1
             counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
         end
         
-        % Increase counters
+        % Increase counter
         counters.increase_lidar_counter();
         
         % -----Osama----- TODO: osama, what is this again?
@@ -152,7 +147,6 @@ for epoch= 1:imu.num_readings-1
         end
     end
     % ---------------------------------
-    
 end
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------
@@ -166,7 +160,8 @@ data_obj.remove_extra_allocated_memory(counters.k_update)
 
 
 % ------------- PLOTS -------------
-data_obj.plot_map_slam(gps, imu.num_readings, params)
+% data_obj.plot_map(gps, imu.num_readings, params)
+data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
 data_obj.plot_estimates();
 % ------------------------------------------------------------
 

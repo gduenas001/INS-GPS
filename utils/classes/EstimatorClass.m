@@ -1,11 +1,19 @@
 
 classdef EstimatorClass < handle
+    properties (SetAccess = immutable)
+        landmark_map
+    end
     properties
         XX= zeros(15,1)
         PX= zeros(15)
         
+        Y_k
+        H_k
+        L_k
         Phi   % state evolution matrix
         D_bar % covariance increase for the state evolution
+        
+        num_landmarks
         
         initial_attitude
         appearances
@@ -28,6 +36,14 @@ classdef EstimatorClass < handle
             obj.PX(10:12, 10:12)= diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
             obj.PX(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
             obj.appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
+            
+            % load map if exists
+            try
+                data= load(strcat( params.path, 'landmark_map.mat' ));
+                obj.landmark_map= data.landmark_map;
+                obj.num_landmarks= size(obj.landmark_map, 1);
+            catch
+            end
             
         end
         % ----------------------------------------------
@@ -67,7 +83,7 @@ classdef EstimatorClass < handle
             obj.PX(1:15,1:15)= obj.PX(1:15,1:15) - L * params.H_cal * obj.PX(1:15,1:15);
             
             % linearize and discretize after every non-IMU update
-            obj.linearize_discretize( imu_msmt, params.dT_IMU, params);
+            obj.linearize_discretize( imu_msmt, params.dt_imu, params);
             
             % If GPS is calibrating initial biases, increse bias variance
             obj.D_bar(10:12,10:12)= obj.D_bar(10:12,10:12) +...
@@ -77,7 +93,7 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function imu_update( obj, imu_msmt, taua, tauw, params )
+        function imu_update( obj, imu_msmt, params )
             % updates the state with the IMU reading, NO cov update
             
             % Create variables (for clarity)
@@ -87,6 +103,14 @@ classdef EstimatorClass < handle
             b_w= obj.XX(13:15);
             f= imu_msmt(1:3);
             w= imu_msmt(4:6);
+            
+            if params.SWITCH_CALIBRATION
+                taua= params.taua_calibration;
+                tauw= params.tauw_calibration;
+            else
+                taua= params.taua_normal_operation;
+                tauw= params.tauw_normal_operation;
+            end
             
             % Calculate parameters
             R_NB= R_NB_rot (phi,theta,psi);
@@ -100,7 +124,7 @@ classdef EstimatorClass < handle
             x_dot= [r_dot; v_dot; E_dot; b_f_dot; b_w_dot];
             
             % udpate estimate
-            obj.XX(1:15)= obj.XX(1:15) + params.dT_IMU * x_dot;    
+            obj.XX(1:15)= obj.XX(1:15) + params.dt_imu * x_dot;    
             obj.PX(1:15,1:15)= obj.Phi * obj.PX(1:15,1:15) * obj.Phi' + obj.D_bar;
         end
         % ----------------------------------------------
@@ -137,7 +161,7 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function zVelocityUpdate(obj, R)
+        function vel_update_z(obj, R)
             
             % Normalize yaw
             obj.XX(9)= pi_to_pi( obj.XX(9) );
@@ -148,6 +172,7 @@ classdef EstimatorClass < handle
             L= obj.PX*H' / (H*obj.PX*H' + R);
             z_hat= H * obj.XX;
             innov= 0 - z_hat;
+            
             obj.XX= obj.XX + L*innov;
             obj.PX= obj.PX - L*H*obj.PX;
             
@@ -171,7 +196,7 @@ classdef EstimatorClass < handle
            
             n_L= (length(obj.XX) - 15) / 2;
             
-            if norm(z(4:6)) > params.minVelocityGPS && params.SWITCH_GPS_VEL_UPDATE % sense velocity
+            if norm(z(4:6)) > params.min_vel_gps && params.SWITCH_GPS_VEL_UPDATE % sense velocity
                 R= diag( R );
                 H= [eye(6), zeros(6,9), zeros(6,n_L*2)];
                 disp('GPS velocity')
@@ -206,7 +231,7 @@ classdef EstimatorClass < handle
             zHat= zeros(2,1);
             % Loop over extracted features
             for i= 1:n_F
-                minY= params.T_newLM;
+                minY= params.threshold_new_landmark;
                 
                 for l= 1:n_L
                     ind= (15 + (2*l-1)):(15 + 2*l);
@@ -232,7 +257,7 @@ classdef EstimatorClass < handle
                 end
                 
                 % If the minimum value is very large --> new landmark
-                if minY > params.T_NN && minY < params.T_newLM
+                if minY > params.T_NN && minY < params.threshold_new_landmark
                     association(i)= 0;
                 end
             end
@@ -246,7 +271,57 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function lidarUpdate(obj, z, association, params)
+        function association= nearest_neighbor_localization(obj, z, params)
+            
+            n_F= size(z,1);
+            n_L= obj.num_landmarks;
+            
+            % initialize with zero, if SLAM --> initialize with (-1)
+            association= zeros(1,n_F);
+            
+            if n_F == 0 || n_L == 0, return, end
+            
+            spsi= sin(obj.XX(9));
+            cpsi= cos(obj.XX(9));
+            zHat= zeros(2,1);
+            % Loop over extracted features
+            for i= 1:n_F
+                minY= params.T_NN;
+                
+                for l= 1:n_L
+                    landmark= obj.landmark_map(l,:);
+                    
+                    dx= landmark(1) - obj.XX(1);
+                    dy= landmark(2) - obj.XX(2);
+                    
+                    zHat(1)=  dx*cpsi + dy*spsi;
+                    zHat(2)= -dx*spsi + dy*cpsi;
+                    gamma= z(i,:)' - zHat;
+                    
+                    H= [-cpsi, -spsi, -dx*spsi + dy*cpsi;
+                        spsi, -cpsi, -dx*cpsi - dy*spsi ];
+                    
+                    Y= H * obj.PX([1:2,9],[1:2,9]) * H' + params.R_lidar;
+                    
+                    y2= gamma' / Y * gamma;
+                    
+                    if y2 < minY
+                        minY= y2;
+                        association(i)= l;
+                    end
+                end
+                
+                % If the minimum value is very large --> ignore
+                if minY >= params.T_NN
+                    association(i)= 0;
+                else % Increase appearances counter
+                    obj.appearances(association(i))= obj.appearances(association(i)) + 1;
+                end
+            end
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function lidar_update_slam(obj, z, association, params)
             
             R= params.R_lidar;
             
@@ -310,6 +385,56 @@ classdef EstimatorClass < handle
                 obj.XX= obj.XX + L*innov;
                 obj.PX= obj.PX - L*H*obj.PX;
             end
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------     
+        function lidar_update_localization(obj, z, association, params)
+            
+            R= params.R_lidar; % TODO: move to the kron
+            
+            obj.XX(9)= pi_to_pi( obj.XX(9) );
+            
+            if all(association == 0), return; end
+            
+            % Eliminate the non-associated features
+            z(association == 0, :)= [];
+            association(association == 0) = [];
+            
+            lenz= length(association);
+            lenx= length(obj.XX);
+            
+            R= kron( R,eye(lenz) );
+            obj.H_k= zeros(2*lenz, lenx);
+            
+            %Build Jacobian H
+            spsi= sin(obj.XX(9));
+            cpsi= cos(obj.XX(9));
+            zHat= zeros(2*lenz,1);
+            for i= 1:length(association)
+                % Indexes
+                indz= 2*i + (-1:0);
+                
+                dx= obj.landmark_map(association(i), 1) - obj.XX(1);
+                dy= obj.landmark_map(association(i), 2) - obj.XX(2);
+                
+                % Predicted measurement
+                zHat(indz)= [dx*cpsi + dy*spsi;
+                            -dx*spsi + dy*cpsi];
+                
+                % Jacobian -- H
+                obj.H_k(indz,1)= [-cpsi; spsi];
+                obj.H_k(indz,2)= [-spsi; -cpsi];
+                obj.H_k(indz,9)= [-dx * spsi + dy * cpsi;
+                            -dx * cpsi - dy * spsi];
+            end
+            
+            % Update
+            obj.Y_k= obj.H_k * obj.PX * obj.H_k' + R;
+            obj.L_k= obj.PX * obj.H_k' / obj.Y_k;
+            zVector= z'; zVector= zVector(:);
+            innov= zVector - zHat;
+            obj.XX= obj.XX + obj.L_k*innov;
+            obj.PX= obj.PX - obj.L_k * obj.H_k * obj.PX;
         end
         % ----------------------------------------------
         % ----------------------------------------------     

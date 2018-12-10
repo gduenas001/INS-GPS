@@ -5,10 +5,10 @@ global DATA XX PX hlm Hlm LM PARAMS
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180426/Guillermo/GPS/GPS.mat');
 
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/IMU.mat');
-fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/IMU/20180419_1.txt');
-fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/GPS/GPS.mat');
-fileLIDAR= strcat('../DATA/DATA_COMPLETE/20180419/Smooth_turn/LIDAR/');
-fileMAP= '../DATA/DATA_COMPLETE/20180419/Smooth_turn/LM/LM.mat';
+fileIMU= strcat('../data/cart/20180419/Smooth_turn/IMU/20180419_1.txt');
+fileGPS= strcat('../data/cart/20180419/Smooth_turn/GPS/GPS.mat');
+fileLIDAR= strcat('../data/cart/20180419/Smooth_turn/LIDAR/');
+fileMAP= '../data/cart/20180419/Smooth_turn/LM/LM.mat';
 
 % fileIMU= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/IMU/IMU.mat');
 % fileGPS= strcat('../DATA/DATA_COMPLETE/20180419/Sharp_turn/GPS/GPS.mat');

@@ -11,6 +11,7 @@ classdef CountersClass < handle
         k_update= 1
         k_gps= 1
         k_lidar= 1
+        k_im= 1;
     end
     
     methods
@@ -29,10 +30,14 @@ classdef CountersClass < handle
             obj.k_lidar= obj.k_lidar + 1;
         end
         
+        function increase_integrity_monitoring_counter(obj)
+            obj.k_im= obj.k_im + 1;
+        end
+        
         function increase_time_sums(obj, params)
-            obj.time_sum= obj.time_sum + params.dT_IMU;
-            obj.time_sum_virt_z= obj.time_sum_virt_z + params.dT_IMU;
-            obj.time_sum_virt_y= obj.time_sum_virt_y + params.dT_IMU;           
+            obj.time_sum= obj.time_sum + params.dt_imu;
+            obj.time_sum_virt_z= obj.time_sum_virt_z + params.dt_imu;
+            obj.time_sum_virt_y= obj.time_sum_virt_y + params.dt_imu;           
         end
         
         function reset_time_sum(obj)
