@@ -63,16 +63,22 @@ classdef LidarClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function remove_features_in_area(obj, x, area)
-            % remove features from area: [minX, maxX, minY, maxY]
+        function remove_features_in_areas(obj, x)
+            % remove features from areas, each area is: [minX, maxX, minY, maxY]
             
-            % transform to nav-frame first
-            msmt_nav_frame= body2nav(obj.msmt,x);
-            
-            % Remove people-features
-            inX= (msmt_nav_frame(:,1) > area(1)) & (msmt_nav_frame(:,1) < area(2));
-            inY= (msmt_nav_frame(:,2) > area(3)) & (msmt_nav_frame(:,2) < area(4));
-            obj.msmt( inX & inY, :)= [];
+            % Remove people-features for the data set 
+            for i= 1:size(obj.areas_to_remove,1)
+                
+                area= obj.areas_to_remove(i,:);
+                
+                % transform to nav-frame first
+                msmt_nav_frame= body2nav(obj.msmt,x);
+                
+                % Remove people-features
+                inX= (msmt_nav_frame(:,1) > area(1)) & (msmt_nav_frame(:,1) < area(2));
+                inY= (msmt_nav_frame(:,2) > area(3)) & (msmt_nav_frame(:,2) < area(4));
+                obj.msmt( inX & inY, :)= [];
+            end        
         end
         % ----------------------------------------------
         % ----------------------------------------------
