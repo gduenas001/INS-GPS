@@ -12,7 +12,7 @@ classdef ParametersClass < handle
 
         % --------------- Switches (options) ---------------
         SWITCH_NUM_of_LOOPS= 1; % --Osama--
-        SWITCH_REDUCE_TESTING= 0; % to test only a few frames 
+        SWITCH_REDUCE_TESTING= 1; % to test only a few frames 
         SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
         SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
         SWITCH_YAW_UPDATE= 1;

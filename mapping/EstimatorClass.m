@@ -191,7 +191,7 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function [association]= nearest_neighbor(obj, z, params)
+        function association= nearest_neighbor(obj, z, params)
             
             n_F= size(z,1);
             n_L= (length(obj.XX) - 15) / 2;
@@ -246,7 +246,10 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function lidarUpdate(obj, z, association, R, SWITCH_CALIBRATION)
+        function lidarUpdate(obj, z, association, params)
+            
+            R= params.R_lidar;
+            
             
             obj.XX(9)= pi_to_pi( obj.XX(9) );
             
@@ -259,7 +262,8 @@ classdef EstimatorClass < handle
             lenz= length(association);
             lenx= length(obj.XX);
             
-            R= kron(R,eye(lenz));
+            
+            R= kron( R,eye(lenz) );
             H= zeros(2*lenz,lenx);
             
             %Build Jacobian H
@@ -295,7 +299,7 @@ classdef EstimatorClass < handle
             innov= zVector - zHat;
             
             % If it is calibrating, update only landmarks
-            if SWITCH_CALIBRATION
+            if params.SWITCH_CALIBRATION
                 XX0= obj.XX(1:15);
                 PX0= obj.PX(1:15,1:15);
                 obj.XX= obj.XX + L*innov;
