@@ -10,7 +10,7 @@ classdef EstimatorClass < handle
         Y_k
         H_k
         L_k
-        Phi   % state evolution matrix
+        Phi_k   % state evolution matrix
         D_bar % covariance increase for the state evolution
         
         num_landmarks
@@ -125,7 +125,7 @@ classdef EstimatorClass < handle
             
             % udpate estimate
             obj.XX(1:15)= obj.XX(1:15) + params.dt_imu * x_dot;    
-            obj.PX(1:15,1:15)= obj.Phi * obj.PX(1:15,1:15) * obj.Phi' + obj.D_bar;
+            obj.PX(1:15,1:15)= obj.Phi_k * obj.PX(1:15,1:15) * obj.Phi_k' + obj.D_bar;
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -484,7 +484,7 @@ classdef EstimatorClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function linearize_discretize(obj, u, dT, params)
-            % updates Phi & D_bar
+            % updates Phi_k & D_bar
             
             if params.SWITCH_CALIBRATION
                 taua= params.taua_calibration;
@@ -509,11 +509,11 @@ classdef EstimatorClass < handle
         function discretize(obj, F, G, S, dT)
             % MATRICES2DISCRETE This function discretize the continuous time model. It
             % works for either the GPS or IMU discretization times.
-            % updates Phi & D_bar
+            % updates Phi_k & D_bar
             
             % sysc= ss(F, zeros(15,1), zeros(1,15), 0);
             % sysd= c2d(sysc, dT);
-            % Phi= sysd.A;
+            % Phi_k= sysd.A;
             
             % Methdo to obtain covariance matrix for dicrete system
             C= [-F, G*S*G';
@@ -521,8 +521,8 @@ classdef EstimatorClass < handle
             
             % Proper method
             EXP= expm(C*dT);
-            obj.Phi= EXP(16:end,16:end)';
-%             obj.D_bar= Phi * EXP(1:15,16:end);
+            obj.Phi_k= EXP(16:end,16:end)';
+%             obj.D_bar= Phi_k * EXP(1:15,16:end);
             
             % Simplified method
             obj.D_bar= (G*dT) * (S/dT) * (G*dT)'; % simplified version

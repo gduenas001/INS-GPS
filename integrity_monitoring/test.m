@@ -1,7 +1,10 @@
 clear all; clc;
 
-k= 5;
+a= cell(2,1);
+a{1}= 1;
+a{2}= 2;
 
-for k= k:10
-    disp(k)
-end
+a
+a(end)= []
+a= [0, a]
+

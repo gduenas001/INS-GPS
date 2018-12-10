@@ -130,9 +130,15 @@ for epoch= 1:imu.num_readings - 1
             % Lineariza and discretize
             estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);
             
+            % integrity monitoring
+            im.monitor_integrity(estimator, counters);
+            
             % Store data
             data_obj.store_msmts( body2nav(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
             counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
+            
+            % increase integrity counter
+            counters.increase_integrity_monitoring_counter();
         end
         
         % Increase counter
