@@ -1,10 +1,18 @@
 clear all; clc;
 
-a= cell(2,1);
-a{1}= 1;
-a{2}= 2;
+n= 50000;
+cell_array= cell(1,5);
+new_number= rand(60,60);
 
-a
-a(end)= []
-a= [0, a]
+tic
+for i= 1:n
+    cell_array= circshift(cell_array,1);
+    cell_array{1}= new_number;
+end
+toc
 
+% tic
+% for i= 1:n
+%     cell_array= [new_number, cell_array(1:end-1)];
+% end
+% toc

@@ -4,6 +4,11 @@ classdef DataClass < handle
         pred
         update
         
+        detector
+        detector_threshold
+        p_hmi
+        
+        
         msmts
         landmarks
         
@@ -34,6 +39,13 @@ classdef DataClass < handle
         % ----------------------------------------------
         function store_msmts(obj, msmts) % TODO: optimize this mess!!
             obj.msmts= [obj.msmts; msmts];
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function store_integrity_data(obj, im, counters)
+            obj.detector(counters.k_im)= im.q_k;
+            obj.detector_threshold(counters.k_im)= im.detector_threshold;
+            obj.p_hmi(counters.k_im)= im.p_hmi;
         end
         % ----------------------------------------------
         % ----------------------------------------------

@@ -7,13 +7,18 @@ classdef EstimatorClass < handle
         XX= zeros(15,1)
         PX= zeros(15)
         
+        n_k
+        
+        gamma_k
         Y_k
         H_k
         L_k
         Phi_k   % state evolution matrix
         D_bar % covariance increase for the state evolution
         
+        
         num_landmarks
+        
         
         initial_attitude
         appearances
@@ -400,16 +405,16 @@ classdef EstimatorClass < handle
             z(association == 0, :)= [];
             association(association == 0) = [];
             
-            lenz= length(association);
+            obj.n_k= length(association) * params.m_F;
             lenx= length(obj.XX);
             
-            R= kron( R,eye(lenz) );
-            obj.H_k= zeros(2*lenz, lenx);
+            R= kron( R, eye( obj.n_k / params.m_F ) );
+            obj.H_k= zeros(obj.n_k, lenx);
             
             %Build Jacobian H
             spsi= sin(obj.XX(9));
             cpsi= cos(obj.XX(9));
-            zHat= zeros(2*lenz,1);
+            zHat= zeros(obj.n_k,1);
             for i= 1:length(association)
                 % Indexes
                 indz= 2*i + (-1:0);
@@ -432,8 +437,8 @@ classdef EstimatorClass < handle
             obj.Y_k= obj.H_k * obj.PX * obj.H_k' + R;
             obj.L_k= obj.PX * obj.H_k' / obj.Y_k;
             zVector= z'; zVector= zVector(:);
-            innov= zVector - zHat;
-            obj.XX= obj.XX + obj.L_k*innov;
+            obj.gamma_k= zVector - zHat;
+            obj.XX= obj.XX + obj.L_k * obj.gamma_k;
             obj.PX= obj.PX - obj.L_k * obj.H_k * obj.PX;
         end
         % ----------------------------------------------

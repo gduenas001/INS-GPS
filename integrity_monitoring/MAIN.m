@@ -15,8 +15,8 @@ estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_incl_calibration), par
 data_obj= DataClass(imu.num_readings);
 counters= CountersClass(gps, lidar);
 
-GPS_Index_exceeded = 0;   % TODO: osama is this needeed?
-LIDAR_Index_exceeded = 0; % TODO: osama is this needeed?
+% GPS_Index_exceeded = 0;   % TODO: osama is this needeed?
+% LIDAR_Index_exceeded = 0; % TODO: osama is this needeed?
 
 % Initial discretization for cov. propagation
 estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
@@ -80,7 +80,7 @@ for epoch= 1:imu.num_readings - 1
     
     
     % ------------------- GPS -------------------
-    if (counters.time_sim + params.dt_imu) > counters.time_gps && ~GPS_Index_exceeded
+    if (counters.time_sim + params.dt_imu) > counters.time_gps % && ~GPS_Index_exceeded
         
         if ~params.SWITCH_CALIBRATION && params.SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
@@ -105,7 +105,7 @@ for epoch= 1:imu.num_readings - 1
             counters.time_gps= gps.time(counters.k_gps);
         else
            counters.k_gps = counters.k_gps -1 ;
-           GPS_Index_exceeded = 1;
+%            GPS_Index_exceeded = 1;
         end
     end
     % ----------------------------------------
@@ -131,7 +131,7 @@ for epoch= 1:imu.num_readings - 1
             estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);
             
             % integrity monitoring
-            im.monitor_integrity(estimator, counters);
+            im.monitor_integrity(estimator, counters, data_obj, params);
             
             % Store data
             data_obj.store_msmts( body2nav(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
@@ -149,7 +149,7 @@ for epoch= 1:imu.num_readings - 1
             counters.time_lidar= lidar.time(counters.k_lidar,2);
         else
            counters.k_lidar = counters.k_lidar -1 ;
-           LIDAR_Index_exceeded = 1;
+%            LIDAR_Index_exceeded = 1;
         end
     end
     % ---------------------------------

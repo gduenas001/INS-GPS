@@ -19,6 +19,7 @@ classdef ParametersClass < handle
         % --------------------------------------------------
         
         % --------------- Parameters ---------------
+        m_F= 2; % measurements per feature/landmark
         dt_imu= 1/125; % IMU sampling time
         dt_cal= 1/10; % KF Update period during initial calibration
         dt_virt_z= 1/10; % Virtual msmt update period
@@ -53,6 +54,8 @@ classdef ParametersClass < handle
         feature_height= 1.5; % height of the features
         initial_yaw_angle= -90 % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
         preceding_horizon_size= 2;
+        continuity_requirement= 1e-5;
+        alert_limit= 1;
         % -------------------------------------------
         
         

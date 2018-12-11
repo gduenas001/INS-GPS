@@ -47,7 +47,6 @@ for k= 1:num_epochs
     
     % alpha
     alpha= [-sin(XX_bar(3));cos(XX_bar(3));0];
-
     
     % number of msmts in the PH
     n_M_array= (-1) * ones(1,M+1);
