@@ -1,0 +1,110 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/osamarobotics-lab/Documents/OH-FE/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_2f778/fast"
+/usr/bin/make -f CMakeFiles/cmTC_2f778.dir/build.make CMakeFiles/cmTC_2f778.dir/build
+make[1]: Entering directory '/home/osamarobotics-lab/Documents/OH-FE/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_2f778.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_2f778.dir/CheckSymbolExists.c.o   -c /home/osamarobotics-lab/Documents/OH-FE/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_2f778
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2f778.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_2f778.dir/CheckSymbolExists.c.o  -o cmTC_2f778 
+CMakeFiles/cmTC_2f778.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_2f778.dir/build.make:86: recipe for target 'cmTC_2f778' failed
+make[1]: *** [cmTC_2f778] Error 1
+make[1]: Leaving directory '/home/osamarobotics-lab/Documents/OH-FE/build/CMakeFiles/CMakeTmp'
+Makefile:121: recipe for target 'cmTC_2f778/fast' failed
+make: *** [cmTC_2f778/fast] Error 2
+
+File /home/osamarobotics-lab/Documents/OH-FE/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/osamarobotics-lab/Documents/OH-FE/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_15c9e/fast"
+/usr/bin/make -f CMakeFiles/cmTC_15c9e.dir/build.make CMakeFiles/cmTC_15c9e.dir/build
+make[1]: Entering directory '/home/osamarobotics-lab/Documents/OH-FE/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_15c9e.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_15c9e.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.12/Modules/CheckFunctionExists.c
+Linking C executable cmTC_15c9e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_15c9e.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_15c9e.dir/CheckFunctionExists.c.o  -o cmTC_15c9e -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_15c9e.dir/build.make:86: recipe for target 'cmTC_15c9e' failed
+make[1]: *** [cmTC_15c9e] Error 1
+make[1]: Leaving directory '/home/osamarobotics-lab/Documents/OH-FE/build/CMakeFiles/CMakeTmp'
+Makefile:121: recipe for target 'cmTC_15c9e/fast' failed
+make: *** [cmTC_15c9e/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/osamarobotics-lab/OH-FE_copy/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_95443/fast"
+/usr/bin/make -f CMakeFiles/cmTC_95443.dir/build.make CMakeFiles/cmTC_95443.dir/build
+make[1]: Entering directory '/home/osamarobotics-lab/OH-FE_copy/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_95443.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_95443.dir/CheckSymbolExists.c.o   -c /home/osamarobotics-lab/OH-FE_copy/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_95443
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_95443.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_95443.dir/CheckSymbolExists.c.o  -o cmTC_95443 
+CMakeFiles/cmTC_95443.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_95443.dir/build.make:86: recipe for target 'cmTC_95443' failed
+make[1]: *** [cmTC_95443] Error 1
+make[1]: Leaving directory '/home/osamarobotics-lab/OH-FE_copy/build/CMakeFiles/CMakeTmp'
+Makefile:121: recipe for target 'cmTC_95443/fast' failed
+make: *** [cmTC_95443/fast] Error 2
+
+File /home/osamarobotics-lab/OH-FE_copy/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/osamarobotics-lab/OH-FE_copy/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_14d66/fast"
+/usr/bin/make -f CMakeFiles/cmTC_14d66.dir/build.make CMakeFiles/cmTC_14d66.dir/build
+make[1]: Entering directory '/home/osamarobotics-lab/OH-FE_copy/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_14d66.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_14d66.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.12/Modules/CheckFunctionExists.c
+Linking C executable cmTC_14d66
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_14d66.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_14d66.dir/CheckFunctionExists.c.o  -o cmTC_14d66 -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_14d66.dir/build.make:86: recipe for target 'cmTC_14d66' failed
+make[1]: *** [cmTC_14d66] Error 1
+make[1]: Leaving directory '/home/osamarobotics-lab/OH-FE_copy/build/CMakeFiles/CMakeTmp'
+Makefile:121: recipe for target 'cmTC_14d66/fast' failed
+make: *** [cmTC_14d66/fast] Error 2
+
+
