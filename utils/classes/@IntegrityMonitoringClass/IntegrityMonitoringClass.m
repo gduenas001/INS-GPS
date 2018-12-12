@@ -18,6 +18,7 @@ classdef IntegrityMonitoringClass < handle
         n_F_ph % number of features associated in the preceding horizon
         
         % (maybe unnecessary)
+        E
         B_bar
         
         % current-time (k) only used when needed to extract elements        
@@ -68,6 +69,21 @@ classdef IntegrityMonitoringClass < handle
             
             obj.C_req= params.continuity_requirement;
         end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function compute_E_matrix(obj, i, m_F)
+            if i == 0 % E matrix for only previous state faults
+                obj.E= zeros( obj.m, obj.n_M + obj.m );
+                obj.E(:, end-obj.m + 1:end)= eye(obj.m);
+            else % E matrix with faults in the PH
+                obj.E= zeros( obj.m + m_F , obj.n_M + obj.m );
+                obj.E( end-obj.m+1 : end , end-obj.m+1:end )= eye(obj.m); % previous bias
+                obj.E( 1:m_F , (i-1)*m_F + 1 : i*m_F )= eye(m_F); % landmark i faulted
+            end
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_Y_M_matrix(obj,estimator)
         % ----------------------------------------------
         % ----------------------------------------------
         compute_A_M_matrix(obj)
