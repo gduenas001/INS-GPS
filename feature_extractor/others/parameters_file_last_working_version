@@ -1,0 +1,14 @@
+initial_frame 0
+final_frame 14844
+leafSizeXY 0.05
+leafSizeZ 1
+minClusterSize 8
+clusterTolerance 0.5
+limitsXY 20
+limitZlow 0
+limitZhigh 0.7
+densityThreshold 200
+slindernessThreshold 1
+sdXYThreshold 0.4
+Basic 0
+Debug 0
