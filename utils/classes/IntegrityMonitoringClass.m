@@ -1,8 +1,9 @@
 
 classdef IntegrityMonitoringClass < handle
     properties (Constant)
-        m= 15
+        m= 3
         p_H= 1e-3
+        ind_im= [1,2,9];
     end
     properties (SetAccess = immutable)
         M % size of the preceding horizon in epochs
@@ -16,7 +17,15 @@ classdef IntegrityMonitoringClass < handle
         n_ph
         n_F_ph % number of features associated in the preceding horizon
         
-        
+
+        XX
+        PX
+        n_k
+        gamma_k
+        Phi_k
+        H_k
+        L_k
+        Y_k
         Lpp_k
         q_k
         
@@ -61,9 +70,19 @@ classdef IntegrityMonitoringClass < handle
         
         function monitor_integrity(obj, estimator, counters, data, params)
             
+            % keep only the elements for the x-y-theta
+            obj.XX= estimator.XX(obj.ind_im);
+            obj.PX= estimator.PX(obj.ind_im, obj.ind_im);
+            obj.n_k= estimator.n_k;
+            obj.gamma_k= estimator.gamma_k;
+            obj.Phi_k= estimator.Phi_k^12; obj.Phi_k= obj.Phi_k( obj.ind_im, obj.ind_im ); %%%%%%%% CAREFUL
+            obj.H_k= estimator.H_k(:, obj.ind_im);
+            obj.L_k= estimator.L_k(obj.ind_im,:);
+            obj.Y_k= estimator.Y_k;
+            
             % if it's only 1 --> cannot compute Lpp_k
             if counters.k_im > 1
-                obj.Lpp_k= obj.Phi_ph{1} - estimator.L_k * estimator.H_k * obj.Phi_ph{1};
+                obj.Lpp_k= obj.Phi_ph{1} - obj.L_k * obj.H_k * obj.Phi_ph{1};
             else
                 obj.Lpp_k= 0;
             end
@@ -87,7 +106,7 @@ classdef IntegrityMonitoringClass < handle
                 end
                 
                 % create matrix A_M at k
-                obj.A_M= estimator.L_k;
+                obj.A_M= obj.L_k;
                 for i= 1:obj.M
                     if i == 1
                         Dummy_Variable= obj.Lpp_k;
@@ -102,7 +121,7 @@ classdef IntegrityMonitoringClass < handle
                 B_bar= inf* ones( obj.n_M , obj.n_M + obj.m );
                 A_prev= obj.Lpp_k \ obj.A_M( : , estimator.n_k + 1:end );
                 B_bar(1:estimator.n_k , :)=...
-                    [ eye(estimator.n_k), -estimator.H_k * obj.Phi_ph{1} * A_prev ];
+                    [ eye(estimator.n_k), -obj.H_k * obj.Phi_ph{1} * A_prev ];
                 B_ind_row_start= estimator.n_k + 1;
                 B_ind_col_end= estimator.n_k;
                 
@@ -149,7 +168,7 @@ classdef IntegrityMonitoringClass < handle
                     f_M_dir= f_M_dir / norm(f_M_dir); % normalize
                     
                     % worst-case fault magnitude
-                    sigma2_hat= alpha' * estimator.PX * alpha;
+                    sigma2_hat= alpha' * obj.PX * alpha;
                     fx_hat_dir= alpha' * obj.A_M * f_M_dir;
                     M_dir= f_M_dir' * obj.M_M * f_M_dir;
                     
@@ -172,15 +191,15 @@ classdef IntegrityMonitoringClass < handle
                 % store integrity related data
                 data.store_integrity_data(obj, counters)                
             end
-            
+           
             % update the preceding horizon
-            obj.n_ph=     [estimator.n_k; obj.n_ph(1:end-1)];
-            obj.gamma_ph= [estimator.gamma_k, obj.gamma_ph(1:end-1)];
-            obj.Phi_ph=   [estimator.Phi_k^12, obj.Phi_ph(1:end-1)]; %%%%%%%% CAREFUL
-            obj.H_ph=     [estimator.H_k, obj.H_ph(1:end-1)];
-            obj.L_ph=     [estimator.L_k, obj.L_ph(1:end-1)];
+            obj.n_ph=     [obj.n_k; obj.n_ph(1:end-1)];
+            obj.gamma_ph= [obj.gamma_k, obj.gamma_ph(1:end-1)];
+            obj.Phi_ph=   [obj.Phi_k^12, obj.Phi_ph(1:end-1)]; %%%%%%%% CAREFUL
+            obj.H_ph=     [obj.H_k, obj.H_ph(1:end-1)];
+            obj.L_ph=     [obj.L_k, obj.L_ph(1:end-1)];
             obj.Lpp_ph=   [obj.Lpp_k, obj.Lpp_ph(1:end-1)];
-            obj.Y_ph=     [estimator.Y_k, obj.Y_ph(1:end-1)];
+            obj.Y_ph=     [obj.Y_k, obj.Y_ph(1:end-1)];
         end
     end
 end
