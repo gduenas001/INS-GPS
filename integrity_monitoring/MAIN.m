@@ -13,7 +13,7 @@ gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
 estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_incl_calibration), params);
-data_obj= DataClass(imu.num_readings);
+data_obj= DataClass(imu.num_readings, gps.num_readings);
 counters= CountersClass(gps, lidar);
 
 % Initial discretization for cov. propagation
@@ -150,13 +150,15 @@ end
 
 % Store data for last epoch
 data_obj.store_update(counters.k_update, estimator, counters.time_sim);
-data_obj.remove_extra_allocated_memory(counters.k_update)
+data_obj.delete_extra_allocated_memory(counters)
 
 
 % ------------- PLOTS -------------
 % data_obj.plot_map(gps, imu.num_readings, params)
 data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
+data_obj.plot_number_of_landmarks_in_preceding_horizon();
 data_obj.plot_estimates();
+data_obj.plot_integrity_risk();
 % ------------------------------------------------------------
 
 

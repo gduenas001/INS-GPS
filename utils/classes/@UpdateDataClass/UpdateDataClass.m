@@ -21,6 +21,12 @@ classdef UpdateDataClass < handle
             obj.PX(:,epoch)= diag( estimator.PX(1:15,1:15) ); % store only variances
             obj.time(epoch)= time;
         end
+        
+        function delete_extra_allocated_memory(obj, counters)
+            obj.XX(:, counters.k_update+1:end)= [];
+            obj.PX(:, counters.k_update+1:end)= [];
+            obj.time( counters.k_update+1:end)= [];
+        end
     end
 end
 

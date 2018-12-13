@@ -3,11 +3,7 @@ classdef DataClass < handle
     properties
         pred
         update
-        
-        detector
-        detector_threshold
-        p_hmi
-        
+        im
         
         msmts
         landmarks
@@ -17,9 +13,10 @@ classdef DataClass < handle
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj= DataClass(num_readings)
-            obj.pred= PredictionDataClass(num_readings);
-            obj.update= UpdateDataClass(num_readings);
+        function obj= DataClass(imu_num_readings, gps_num_readings)
+            obj.pred= PredictionDataClass(imu_num_readings);
+            obj.update= UpdateDataClass(imu_num_readings);
+            obj.im= IntegrityDataClass(gps_num_readings * 10);
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -42,18 +39,17 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function store_integrity_data(obj, im, counters)
-            obj.detector(counters.k_im)= im.q_k;
-            obj.detector_threshold(counters.k_im)= im.detector_threshold;
-            obj.p_hmi(counters.k_im)= im.p_hmi;
+        function store_integrity_data(obj, im, counters, params)
+            obj.im.store(im, counters, params);
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function remove_extra_allocated_memory(obj, last_epoch)
-            % remove extra allocated space
-            obj.update.XX(:, last_epoch+1:end)= [];
-            obj.update.PX(:, last_epoch+1:end)= [];
-            obj.update.time( last_epoch+1:end)= [];
+            
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function delete_extra_allocated_memory(obj, counters)
+            obj.update.delete_extra_allocated_memory(counters);
+            obj.im.delete_extra_allocated_memory(counters);
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -160,6 +156,20 @@ classdef DataClass < handle
             subplot(3,3,9); hold on; grid on;
             plot(obj.update.time, rad2deg(standard_dev(9,:)),'g-','linewidth',2);
             ylabel('\psi [deg]'); xlabel('Time [s]');
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_integrity_risk(obj)
+            figure; hold on; grid on;
+            plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
+            plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
+            set(gca, 'YScale', 'log')
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_number_of_landmarks_in_preceding_horizon(obj)
+            figure; hold on; grid on;
+            plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
         end
         % ----------------------------------------------
         % ----------------------------------------------

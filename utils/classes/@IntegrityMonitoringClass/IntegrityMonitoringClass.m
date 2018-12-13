@@ -21,8 +21,8 @@ classdef IntegrityMonitoringClass < handle
         E
         B_bar
         
-        % current-time (k) only used when needed to extract elements        
-        PX
+        % current-time (k) only used when needed to extract elements
+        sigma_hat
         Phi_k
         H_k
         L_k
