@@ -1,11 +1,8 @@
 
 
 classdef ParametersClass < handle
-    properties (Constant)
-        
-        % dataset obtained with ROS
-        path= '../data/cart/20180725/';
-
+    
+    properties (SetAccess = private)
         % --------------- Switches (options) ---------------
         SWITCH_NUM_of_LOOPS= 1; % TODO: this depends on the data set
         SWITCH_REDUCE_TESTING= 1; % to test only a few frames 
@@ -16,8 +13,15 @@ classdef ParametersClass < handle
         SWITCH_GPS_VEL_UPDATE= 1; % update of the GPS
         SWITCH_LIDAR_UPDATE= 1;
         SWITCH_REMOVE_FAR_FEATURES= 1;
+        SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
         % --------------------------------------------------
+    end
+    
+    properties (Constant)
         
+        % dataset obtained with ROS
+        path= '../data/cart/20180725/';
+
         % --------------- Parameters ---------------
         m_F= 2; % measurements per feature/landmark
         dt_imu= 1/125; % IMU sampling time
@@ -110,11 +114,7 @@ classdef ParametersClass < handle
         ARW= 0.15 % angular random walk [deg]
         
     end
-    
-    properties
-        SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
-    end
-    
+        
     methods
         % ----------------------------------------------
         % ----------------------------------------------
@@ -177,5 +177,22 @@ classdef ParametersClass < handle
         function R_yaw= R_yaw_fn(obj, v)
             R_yaw= obj.sig_yaw_fn(v)^2;
         end 
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function turn_off_calibration(obj)
+            obj.SWITCH_CALIBRATION= 0;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function turn_off_lidar(obj)
+            obj.SWITCH_LIDAR_UPDATE= 0;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function turn_off_gps(obj)
+            obj.SWITCH_GPS_UPDATE= 0;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
     end 
 end

@@ -16,9 +16,6 @@ estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_incl_calibration), par
 data_obj= DataClass(imu.num_readings);
 counters= CountersClass(gps, lidar);
 
-% GPS_Index_exceeded = 0;   % TODO: osama is this needeed?
-% LIDAR_Index_exceeded = 0; % TODO: osama is this needeed?
-
 % Initial discretization for cov. propagation
 estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
 
@@ -32,7 +29,7 @@ for epoch= 1:imu.num_readings - 1
     
     % Turn off GPS updates if start moving
     if epoch == params.num_epochs_static
-        params.SWITCH_CALIBRATION= 0; 
+        params.turn_off_calibration();
         estimator.PX(7,7)= params.sig_phi0^2;
         estimator.PX(8,8)= params.sig_phi0^2;
         estimator.PX(9,9)= params.sig_yaw0^2;
@@ -81,7 +78,7 @@ for epoch= 1:imu.num_readings - 1
     
     
     % ------------------- GPS -------------------
-    if (counters.time_sim + params.dt_imu) > counters.time_gps % && ~GPS_Index_exceeded
+    if (counters.time_sim + params.dt_imu) > counters.time_gps 
         
         if ~params.SWITCH_CALIBRATION && params.SWITCH_GPS_UPDATE
             % GPS update -- only use GPS vel if it's fast
@@ -100,14 +97,9 @@ for epoch= 1:imu.num_readings - 1
         
         % Time GPS counter
         counters.increase_gps_counter();
+        counters.time_gps= gps.time(counters.k_gps);
         
-        % -----Osama----- TODO: Osama what is this??
-        if counters.k_gps <= size(gps.time,1)
-            counters.time_gps= gps.time(counters.k_gps);
-        else
-           counters.k_gps = counters.k_gps -1 ;
-%            GPS_Index_exceeded = 1;
-        end
+        if counters.k_gps > size(gps.time,1), params.turn_off_gps(); end
     end
     % ----------------------------------------
     
@@ -144,14 +136,9 @@ for epoch= 1:imu.num_readings - 1
         
         % Increase counter
         counters.increase_lidar_counter();
+        counters.time_lidar= lidar.time(counters.k_lidar,2);
         
-        % -----Osama----- TODO: osama, what is this again?
-        if counters.k_lidar <= length(lidar.time)
-            counters.time_lidar= lidar.time(counters.k_lidar,2);
-        else
-           counters.k_lidar = counters.k_lidar -1 ;
-%            LIDAR_Index_exceeded = 1;
-        end
+        if counters.k_lidar > length(lidar.time), params.turn_off_lidar; end
     end
     % ---------------------------------
 end
