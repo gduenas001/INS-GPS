@@ -49,7 +49,7 @@ for epoch= 1:imu.num_readings - 1
     if counters.time_sum >= params.dt_cal && params.SWITCH_CALIBRATION
         
         % create a fake msmt and do a KF update to set biases 
-        estimator.calibration(imu.msmt(:,epoch), params); 
+        estimator.calibration(imu.msmt(:,epoch+1), params); %Osama 
         
         % Store data
         counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
@@ -64,13 +64,13 @@ for epoch= 1:imu.num_readings - 1
     end
     % ---------------------------------------------------------
     
-    % ------------- virtual msmt update >> Y vel  -------------  
+    % ------------- virtual msmt update >> Y vel  -------------
     if counters.time_sum_virt_y >= params.dt_virt_y && params.SWITCH_VIRT_UPDATE_Y && ~params.SWITCH_CALIBRATION
          
         % Yaw update
         if params.SWITCH_YAW_UPDATE && norm(estimator.XX(4:6)) > params.min_vel_yaw
             disp('yaw udpate');
-            estimator.yaw_update( imu.msmt(4:6,epoch), params);
+            estimator.yaw_update( imu.msmt(4:6,epoch+1), params); %Osama
         end
         counters.reset_time_sum_virt_y();
     end
@@ -87,9 +87,9 @@ for epoch= 1:imu.num_readings - 1
             % Yaw update
             if params.SWITCH_YAW_UPDATE && norm(estimator.XX(4:6)) > params.min_vel_yaw
                 disp('yaw udpate');
-                estimator.yaw_update( imu.msmt(4:6,epoch), params );
+                estimator.yaw_update( imu.msmt(4:6,epoch+1), params ); %Osama
             end
-            estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);
+            estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
 
             % Store data
             counters.k_update= data_obj.store_update( counters.k_update, estimator, counters.time_sim );
@@ -121,7 +121,7 @@ for epoch= 1:imu.num_readings - 1
             estimator.lidar_update_localization(lidar.msmt(:,1:2), association, params);
 
             % Lineariza and discretize
-            estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);
+            estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
             
             % integrity monitoring
             im.monitor_integrity(estimator, counters, data_obj, params);
@@ -141,6 +141,9 @@ for epoch= 1:imu.num_readings - 1
         if counters.k_lidar > length(lidar.time), params.turn_off_lidar; end
     end
     % ---------------------------------
+    
+    % linearize and discretize
+    % estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
 end
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------

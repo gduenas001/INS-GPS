@@ -4,6 +4,7 @@ classdef IntegrityMonitoringClass < handle
         m= 3
         p_H= 1e-3
         ind_im= [1,2,9];
+        calculate_A_M_recursively = 0
     end
     properties (SetAccess = immutable)
         M % size of the preceding horizon in epochs
@@ -63,7 +64,7 @@ classdef IntegrityMonitoringClass < handle
             obj.q_ph=   cell(1, obj.M);
             obj.gamma_ph= cell(1, obj.M);
             obj.L_ph=     cell(1, obj.M);
-            obj.Lpp_ph=   cell(1, obj.M);
+            obj.Lpp_ph=   cell(1, obj.M + 1); % need an extra epoch here (osama)
             obj.H_ph=     cell(1, obj.M);
             obj.Y_ph=     cell(1, obj.M);
             
@@ -93,7 +94,7 @@ classdef IntegrityMonitoringClass < handle
         compute_Y_M_matrix(obj,estimator)
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_A_M_matrix(obj)
+        compute_A_M_matrix(obj,estimator)
         % ----------------------------------------------
         % ----------------------------------------------
         compute_B_bar_matrix(obj, estimator)

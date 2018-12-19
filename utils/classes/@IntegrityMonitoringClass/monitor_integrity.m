@@ -7,7 +7,7 @@ obj.L_k= estimator.L_k(obj.ind_im,:);
 
 
 % monitor integrity if there are enough epochs
-if counters.k_im > obj.M + 1 % need an extra epoch to store Lpp
+if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
     
     % common parameters
     alpha= [-sin(estimator.XX(3)); cos(estimator.XX(3)); zeros(obj.m-2,1)];
@@ -20,7 +20,7 @@ if counters.k_im > obj.M + 1 % need an extra epoch to store Lpp
     obj.compute_Y_M_matrix(estimator)
     
     % compute the A matrix for the preceding horizon
-    obj.compute_A_M_matrix()
+    obj.compute_A_M_matrix(estimator)
         
     % compute B_bar matrix
     obj.compute_B_bar_matrix(estimator)
@@ -35,7 +35,15 @@ if counters.k_im > obj.M + 1 % need an extra epoch to store Lpp
     obj.detector_threshold= chi2inv(1 - obj.C_req, obj.n_M);
     
     % compute detector
-    obj.gamma_M= [ estimator.gamma_k ; cell2mat(obj.gamma_ph') ];
+    if isempty(obj.gamma_M) == 1
+        
+        obj.gamma_M= [ estimator.gamma_k ; cell2mat(obj.gamma_ph') ];
+        
+    else
+        
+        obj.gamma_M= [ estimator.gamma_k ; obj.gamma_M(1:sum( obj.n_ph ))];
+        
+    end
     obj.q_k= obj.gamma_M' * invY_M * obj.gamma_M;
     
     % Loop over hypotheses in the PH (only 1 fault)
