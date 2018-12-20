@@ -10,6 +10,7 @@ classdef EstimatorClass < handle
         n_k
         
         gamma_k
+        q_k
         Y_k
         H_k
         L_k
@@ -24,6 +25,7 @@ classdef EstimatorClass < handle
         appearances
         
     end
+    
     
     methods
         % ----------------------------------------------

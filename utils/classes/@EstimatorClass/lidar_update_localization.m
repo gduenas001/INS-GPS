@@ -43,6 +43,7 @@ obj.Y_k= obj.H_k * obj.PX * obj.H_k' + R;
 obj.L_k= obj.PX * obj.H_k' / obj.Y_k;
 zVector= z'; zVector= zVector(:);
 obj.gamma_k= zVector - zHat;
+obj.q_k= obj.gamma_k' / obj.Y_k * obj.gamma_k;
 obj.XX= obj.XX + obj.L_k * obj.gamma_k;
 obj.PX= obj.PX - obj.L_k * obj.H_k * obj.PX;
 end

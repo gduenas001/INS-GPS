@@ -25,7 +25,7 @@ classdef IntegrityDataClass < handle
         end
         
         function store(obj, im, counters, params)
-            obj.detector(counters.k_im)= im.q_k;
+            obj.detector(counters.k_im)= im.q_M;
             obj.detector_threshold(counters.k_im)= im.detector_threshold;
             obj.p_hmi(counters.k_im)= im.p_hmi;
             obj.n_L_M(counters.k_im)= im.n_L_M;

@@ -28,7 +28,6 @@ classdef IntegrityMonitoringClass < handle
         H_k
         L_k
         Lpp_k
-        q_k
         
         % augmented (M) 
         n_M % num msmts in the preceding horizon (including k)
@@ -61,8 +60,8 @@ classdef IntegrityMonitoringClass < handle
             
             obj.n_ph=     ones(obj.M,1) * (-1);
             obj.Phi_ph=   cell(1, obj.M + 1); % need an extra epoch here
-            obj.q_ph=   cell(1, obj.M);
             obj.gamma_ph= cell(1, obj.M);
+            obj.q_ph=     ones(obj.M, 1) * (-1);
             obj.L_ph=     cell(1, obj.M);
             obj.Lpp_ph=   cell(1, obj.M + 1); % need an extra epoch here (osama)
             obj.H_ph=     cell(1, obj.M);
@@ -70,6 +69,9 @@ classdef IntegrityMonitoringClass < handle
             
             obj.C_req= params.continuity_requirement;
         end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        monitor_integrity(obj, estimator, counters, data, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function neg_p_hmi= optimization_fn(obj, f_M_mag, fx_hat_dir, M_dir, sigma_hat, l, dof)
@@ -104,6 +106,7 @@ classdef IntegrityMonitoringClass < handle
             
             obj.n_ph=     [estimator.n_k; obj.n_ph(1:end-1)];
             obj.gamma_ph= [estimator.gamma_k, obj.gamma_ph(1:end-1)];
+            obj.q_ph=     [estimator.q_k; obj.q_ph(1:end-1)];
             obj.Phi_ph=   [obj.Phi_k^12, obj.Phi_ph(1:end-1)]; %%%%%%%% CAREFUL
             obj.H_ph=     [obj.H_k, obj.H_ph(1:end-1)];
             obj.L_ph=     [obj.L_k, obj.L_ph(1:end-1)];

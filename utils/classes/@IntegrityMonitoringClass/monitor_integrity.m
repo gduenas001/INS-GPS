@@ -23,28 +23,16 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
     obj.compute_A_M_matrix(estimator)
         
     % compute B_bar matrix
-    obj.compute_B_bar_matrix(estimator)
-    
-    % compute inverse of Y_M for future use
-    invY_M= inv(obj.Y_M);
+    obj.compute_B_bar_matrix(estimator)    
     
     % M matrix
-    obj.M_M= obj.B_bar' * invY_M * obj.B_bar;
+    obj.M_M= obj.B_bar' / obj.Y_M * obj.B_bar;
     
     % set the threshold from the continuity req
     obj.detector_threshold= chi2inv(1 - obj.C_req, obj.n_M);
     
     % compute detector
-    if isempty(obj.gamma_M) == 1
-        
-        obj.gamma_M= [ estimator.gamma_k ; cell2mat(obj.gamma_ph') ];
-        
-    else
-        
-        obj.gamma_M= [ estimator.gamma_k ; obj.gamma_M(1:sum( obj.n_ph ))];
-        
-    end
-    obj.q_k= obj.gamma_M' * invY_M * obj.gamma_M;
+    obj.q_M= sum(obj.q_ph) + estimator.q_k;
     
     % Loop over hypotheses in the PH (only 1 fault)
     n_H= obj.n_M / params.m_F; % one hypothesis per associated landmark in ph
