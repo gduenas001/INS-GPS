@@ -22,6 +22,8 @@ classdef EstimatorClass < handle
         
         initial_attitude
         appearances
+        FoV_landmarks_at_k
+        associated_landmarks_at_k
         
     end
     

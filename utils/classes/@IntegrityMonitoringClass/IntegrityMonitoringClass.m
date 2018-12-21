@@ -5,6 +5,7 @@ classdef IntegrityMonitoringClass < handle
         p_H= 1e-3
         ind_im= [1,2,9];
         calculate_A_M_recursively = 0
+        I_MA = 1e-12
     end
     properties (SetAccess = immutable)
         M % size of the preceding horizon in epochs
@@ -49,6 +50,7 @@ classdef IntegrityMonitoringClass < handle
         Lpp_ph
         H_ph
         Y_ph
+        T_d
         
     end
     
@@ -91,6 +93,12 @@ classdef IntegrityMonitoringClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        monitor_integrity(obj, estimator, counters, data, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        P_MA_k = prob_of_MA(obj, estimator, params);
+        % ----------------------------------------------
+        % ----------------------------------------------
         compute_Y_M_matrix(obj,estimator)
         % ----------------------------------------------
         % ----------------------------------------------
@@ -104,8 +112,9 @@ classdef IntegrityMonitoringClass < handle
             
             obj.n_ph=     [estimator.n_k; obj.n_ph(1:end-1)];
             obj.gamma_ph= [estimator.gamma_k, obj.gamma_ph(1:end-1)];
-            obj.Phi_ph=   [obj.Phi_k^12, obj.Phi_ph(1:end-1)]; %%%%%%%% CAREFUL
-            obj.H_ph=     [obj.H_k, obj.H_ph(1:end-1)];
+            obj.Phi_ph=   [obj.Phi_k, obj.Phi_ph(1:end-1)]; 
+            %%%%%%%% (guilllermo) CAREFUL; (osama) 12 is removed because it is already multiplied by 12 in monitor_integrity.m
+            obj.H_ph=     [obj.H_k, obj.H_ph(1:end-1)];   
             obj.L_ph=     [obj.L_k, obj.L_ph(1:end-1)];
             obj.Lpp_ph=   [obj.Lpp_k, obj.Lpp_ph(1:end-1)];
             obj.Y_ph=     [estimator.Y_k, obj.Y_ph(1:end-1)];

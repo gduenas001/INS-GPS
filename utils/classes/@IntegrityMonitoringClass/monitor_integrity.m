@@ -13,6 +13,7 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
     alpha= [-sin(estimator.XX(3)); cos(estimator.XX(3)); zeros(obj.m-2,1)];
     obj.sigma_hat= sqrt(alpha' * estimator.PX(obj.ind_im, obj.ind_im) * alpha);
     obj.n_M= sum( obj.n_ph ) + estimator.n_k;
+    obj.T_d = sqrt( chi2inv( 1 - params.continuity_requirement , obj.n_M ) );
     obj.n_L_M= obj.n_M / params.m_F;
     obj.Lpp_k= obj.Phi_ph{1} - obj.L_k * obj.H_k * obj.Phi_ph{1};
     
