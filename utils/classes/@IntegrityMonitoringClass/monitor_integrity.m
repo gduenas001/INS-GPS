@@ -35,6 +35,8 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
     % set the threshold from the continuity req
     obj.detector_threshold= chi2inv(1 - obj.C_req, obj.n_M);
     
+    obj.P_MA_M = [ obj.P_MA_k ; cell2mat(obj.P_MA_ph') ];
+    
     % compute detector
     if isempty(obj.gamma_M) == 1
         
@@ -50,7 +52,7 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
     % Loop over hypotheses in the PH (only 1 fault)
     n_H= obj.n_M / params.m_F; % one hypothesis per associated landmark in ph
     obj.p_hmi= 0;
-    for i= 0:0 %n_H
+    for i= 0:n_H
         % build extraction matrix 
         obj.compute_E_matrix(i, params.m_F)
         
@@ -77,9 +79,17 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
         
         % Add P(HMI | H) to the integrity risk
         if i == 0
-            obj.p_hmi= obj.p_hmi + p_hmi_H * 1; % unity prior for previous estimate bias
+            % previous-estimate fault hypothesis probability
+            % scaled to make sure that the sum of all hypotheses' probabilities
+            % equals to one (Total probability theorm)
+            P_H = obj.p_prev_f_CA / ( obj.p_prev_f_CA + n_H*obj.p_UA + sum(obj.P_MA_M) ); 
+            obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
         else
-            obj.p_hmi= obj.p_hmi + p_hmi_H * obj.p_H;
+            % UA & MA fault hypothesis probability (for one landmark)
+            % scaled to make sure that the sum of all hypotheses' probabilities
+            % equals to one (Total probability theorm)
+            P_H = ( obj.p_UA + obj.P_MA_M(i) ) / ( obj.p_prev_f_CA + n_H*obj.p_UA + sum(obj.P_MA_M) ); 
+            obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
         end
     end
     % store integrity related data

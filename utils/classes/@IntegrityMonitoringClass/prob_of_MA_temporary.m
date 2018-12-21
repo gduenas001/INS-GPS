@@ -1,4 +1,4 @@
-function prob_of_MA(obj, estimator, params)
+function prob_of_MA_temporary(obj, estimator, params)
 
 if isempty(obj.A_M) == 1
     
@@ -16,10 +16,10 @@ spsi= sin(estimator.XX(9));
 cpsi= cos(estimator.XX(9));
 h_t = zeros(2,1);
 h_l = zeros(2,1);
-obj.P_MA_k = inf * ones(size(estimator.associated_landmarks_at_k));
-for t=1:size(estimator.associated_landmarks_at_k , 1)
+obj.P_MA_k = inf * ones(size(estimator.landmarks_of_associated_features_at_k));
+for t=1:size(estimator.landmarks_of_associated_features_at_k , 1)
     P_MA_k_t = size(estimator.FoV_landmarks_at_k, 1) - 1;
-    landmark= estimator.landmark_map( estimator.associated_landmarks_at_k(t) ,: );
+    landmark= estimator.landmark_map( estimator.landmarks_of_associated_features_at_k(t) ,: );
     dx= landmark(1) - estimator.XX(1);
     dy= landmark(2) - estimator.XX(2);
     h_t(1)=  dx*cpsi + dy*spsi;

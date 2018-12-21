@@ -4,6 +4,7 @@ n_F= size(z,1);
 n_L= obj.num_landmarks;
 obj.associated_landmarks_at_k = [];
 obj.FoV_landmarks_at_k = [];
+obj.landmarks_of_associated_features_at_k = [];
 % initialize with zero, if SLAM --> initialize with (-1)
 association= zeros(1,n_F);
 
@@ -48,6 +49,7 @@ for i= 1:n_F
         association(i)= 0;
     else % Increase appearances counter
         obj.appearances(association(i))= obj.appearances(association(i)) + 1;
+        obj.landmarks_of_associated_features_at_k = [ obj.landmarks_of_associated_features_at_k; association(i) ];
         
         if sum(obj.associated_landmarks_at_k == association(i)) == 0
             obj.associated_landmarks_at_k=[obj.associated_landmarks_at_k;association(i)];

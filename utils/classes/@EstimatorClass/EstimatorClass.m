@@ -24,6 +24,7 @@ classdef EstimatorClass < handle
         appearances
         FoV_landmarks_at_k
         associated_landmarks_at_k
+        landmarks_of_associated_features_at_k
         
     end
     
