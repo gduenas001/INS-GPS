@@ -2,7 +2,8 @@
 classdef IntegrityMonitoringClass < handle
     properties (Constant)
         m= 3
-        p_H= 1e-3
+        p_UA= 1e-5
+        p_prev_f_CA= 1e-5
         ind_im= [1,2,9];
         calculate_A_M_recursively = 0
         I_MA = 1e-12
@@ -49,6 +50,9 @@ classdef IntegrityMonitoringClass < handle
         Lpp_ph
         H_ph
         Y_ph
+        P_MA_M
+        P_MA_k
+        P_MA_ph
         T_d
         
     end
@@ -68,12 +72,10 @@ classdef IntegrityMonitoringClass < handle
             obj.Lpp_ph=   cell(1, obj.M + 1); % need an extra epoch here (osama)
             obj.H_ph=     cell(1, obj.M);
             obj.Y_ph=     cell(1, obj.M);
+            obj.P_MA_ph=  cell(1, obj.M);
             
             obj.C_req= params.continuity_requirement;
         end
-        % ----------------------------------------------
-        % ----------------------------------------------
-        monitor_integrity(obj, estimator, counters, data, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function neg_p_hmi= optimization_fn(obj, f_M_mag, fx_hat_dir, M_dir, sigma_hat, l, dof)
@@ -95,7 +97,13 @@ classdef IntegrityMonitoringClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        P_MA_k = prob_of_MA(obj, estimator, params);
+        monitor_integrity(obj, estimator, counters, data, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        prob_of_MA(obj, estimator, params);
+        % ----------------------------------------------
+        % ----------------------------------------------
+        prob_of_MA_temporary(obj, estimator, params);
         % ----------------------------------------------
         % ----------------------------------------------
         compute_Y_M_matrix(obj,estimator)
@@ -117,6 +125,7 @@ classdef IntegrityMonitoringClass < handle
             obj.L_ph=     [obj.L_k, obj.L_ph(1:end-1)];
             obj.Lpp_ph=   [obj.Lpp_k, obj.Lpp_ph(1:end-1)];
             obj.Y_ph=     [estimator.Y_k, obj.Y_ph(1:end-1)];
+            obj.P_MA_ph=  [obj.P_MA_k, obj.P_MA_ph(1:end-1)];
         end
         
     end
