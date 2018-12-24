@@ -1,6 +1,6 @@
 function compute_A_M_matrix(obj,estimator)
 
-if isempty(obj.A_M) == 1 || (obj.calculate_A_M_recursively == 0) % build matrix A_M in the first time
+if isempty(obj.A_M) || ~obj.calculate_A_M_recursively % build matrix A_M in the first time
     
     obj.A_M=zeros(obj.m, obj.n_M + obj.m);
     obj.A_M(:,1:estimator.n_k)=obj.L_k;

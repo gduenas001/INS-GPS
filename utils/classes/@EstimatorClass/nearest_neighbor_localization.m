@@ -15,7 +15,7 @@ cpsi= cos(obj.XX(9));
 zHat= zeros(2,1);
 % Loop over extracted features
 for i= 1:n_F
-    minY= params.T_NN;
+    min_y2= params.T_NN;
     
     for l= 1:n_L
         landmark= obj.landmark_map(l,:);
@@ -38,14 +38,14 @@ for i= 1:n_F
         
         y2= gamma' / Y * gamma;
         
-        if y2 < minY
-            minY= y2;
+        if y2 < min_y2
+            min_y2= y2;
             association(i)= l;
         end
     end
     
     % If the minimum value is very large --> ignore
-    if minY >= params.T_NN
+    if min_y2 >= params.T_NN
         association(i)= 0;
     else % Increase appearances counter
         obj.appearances(association(i))= obj.appearances(association(i)) + 1;
