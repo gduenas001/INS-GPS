@@ -18,13 +18,13 @@ classdef EstimatorClass < handle
         D_bar % covariance increase for the state evolution
         
         
-        num_landmarks
+        num_landmarks % nunber of landmarks in the map
         
         
         initial_attitude
         appearances
-        FoV_landmarks_at_k
-        associated_landmarks_at_k
+        FoV_landmarks_at_k % landmarks in the field of view
+        associated_landmarks_at_k % landmarks associated at k
         landmarks_of_associated_features_at_k
         
     end

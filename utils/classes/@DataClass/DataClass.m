@@ -162,7 +162,7 @@ classdef DataClass < handle
         function plot_integrity_risk(obj)
             figure; hold on; grid on;
             plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
-            plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
+%             plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
             set(gca, 'YScale', 'log')
         end
         % ----------------------------------------------

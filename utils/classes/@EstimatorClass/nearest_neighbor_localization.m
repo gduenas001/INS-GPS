@@ -1,46 +1,73 @@
+
 function association= nearest_neighbor_localization(obj, z, params)
 
+% number of features
 n_F= size(z,1);
-n_L= obj.num_landmarks;
-obj.associated_landmarks_at_k = [];
-obj.FoV_landmarks_at_k = [];
-obj.landmarks_of_associated_features_at_k = [];
+
 % initialize with zero, if SLAM --> initialize with (-1)
 association= zeros(1,n_F);
 
-if n_F == 0 || n_L == 0, return, end
+if n_F == 0, return, end
 
+% initialize variables
+obj.associated_landmarks_at_k = [];
+obj.landmarks_of_associated_features_at_k = [];
 spsi= sin(obj.XX(9));
 cpsi= cos(obj.XX(9));
 zHat= zeros(2,1);
+
+% select landmarks in the field of view
+obj.FoV_landmarks_at_k= zeros(n_F,1);
+for i= 1:obj.num_landmarks
+    
+    dx= obj.landmark_map(i,1) - obj.XX(1);
+    if abs(dx) > params.lidarRange, continue, end
+    dy= obj.landmark_map(i,2) - obj.XX(2);
+    if abs(dy) > params.lidarRange, continue, end
+    
+    if sqrt( dx^2 + dy^2 ) <= params.lidarRange
+        obj.FoV_landmarks_at_k(i)= i;
+    end
+end
+% remove the ones that are zeros
+obj.FoV_landmarks_at_k( obj.FoV_landmarks_at_k == 0 )= [];
+
 % Loop over extracted features
 for i= 1:n_F
     min_y2= params.T_NN;
     
-    for l= 1:n_L
-        landmark= obj.landmark_map(l,:);
+    % loop through landmarks
+    for l= 1:length(obj.FoV_landmarks_at_k)
+%         l= 1:obj.num_landmarks
+        lm_ind= obj.FoV_landmarks_at_k(l);
+        landmark= obj.landmark_map( lm_ind,: );
         
         dx= landmark(1) - obj.XX(1);
+        if abs(dx) > params.lidarRange, continue, end
         dy= landmark(2) - obj.XX(2);
+        if abs(dy) > params.lidarRange, continue, end      
         
-        if ( sqrt( dx^2 + dy^2 ) <= params.lidarRange ) && (i == 1)% build FoV landmarks in only one loop
-            obj.FoV_landmarks_at_k = [ obj.FoV_landmarks_at_k; l];
-        end
-        
+        % build innovation vector
         zHat(1)=  dx*cpsi + dy*spsi;
         zHat(2)= -dx*spsi + dy*cpsi;
         gamma= z(i,:)' - zHat;
         
-        H= [-cpsi, -spsi, -dx*spsi + dy*cpsi;
-            spsi, -cpsi, -dx*cpsi - dy*spsi ];
+        % quick check (10 m in X or Y)
+        if abs(gamma(1)) > 10 || abs(gamma(2)) > 10, continue, end
         
+        % Jacobian
+        H= [-cpsi, -spsi, -dx*spsi + dy*cpsi;
+             spsi, -cpsi, -dx*cpsi - dy*spsi ];
+        
+        % covariance matrix
         Y= H * obj.PX([1:2,9],[1:2,9]) * H' + params.R_lidar;
         
+        % IIN squared
         y2= gamma' / Y * gamma;
         
         if y2 < min_y2
             min_y2= y2;
-            association(i)= l;
+            association(i)= lm_ind;
         end
     end
     
@@ -51,16 +78,11 @@ for i= 1:n_F
         obj.appearances(association(i))= obj.appearances(association(i)) + 1;
         obj.landmarks_of_associated_features_at_k = [ obj.landmarks_of_associated_features_at_k; association(i) ];
         
-        if sum(obj.associated_landmarks_at_k == association(i)) == 0
-            obj.associated_landmarks_at_k=[obj.associated_landmarks_at_k;association(i)];
-            
-            % add associated landmark to FoV landmarks if it is not already
-            % in there
-            if sum(obj.FoV_landmarks_at_k == association(i)) == 0
-                obj.FoV_landmarks_at_k = [ obj.FoV_landmarks_at_k; association(i)];
-            end
+        % if the associated landmark 
+        if ~any(obj.associated_landmarks_at_k == association(i))
+            obj.associated_landmarks_at_k= [obj.associated_landmarks_at_k; association(i)];
         end
-        
     end
 end
 end
+
