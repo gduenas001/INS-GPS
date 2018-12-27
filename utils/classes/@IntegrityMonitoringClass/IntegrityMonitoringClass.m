@@ -100,10 +100,10 @@ classdef IntegrityMonitoringClass < handle
         monitor_integrity(obj, estimator, counters, data, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        prob_of_MA(obj, estimator, params);
+%         prob_of_MA(obj, estimator, params);
         % ----------------------------------------------
         % ----------------------------------------------
-        prob_of_MA_temporary(obj, estimator, params);
+        prob_of_MA_temporary(obj, estimator, association, params);
         % ----------------------------------------------
         % ----------------------------------------------
         compute_Y_M_matrix(obj,estimator)

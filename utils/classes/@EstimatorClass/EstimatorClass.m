@@ -23,10 +23,7 @@ classdef EstimatorClass < handle
         
         initial_attitude
         appearances
-        FoV_landmarks_at_k % landmarks in the field of view
-        associated_landmarks_at_k % landmarks associated at k
-        landmarks_of_associated_features_at_k
-        
+        FoV_landmarks_at_k % landmarks in the field of view        
     end
     
     

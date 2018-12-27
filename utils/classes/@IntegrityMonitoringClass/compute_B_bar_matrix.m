@@ -1,4 +1,5 @@
 function compute_B_bar_matrix(obj, estimator)
+
 % Augmented B
 obj.B_bar= inf* ones( obj.n_M , obj.n_M + obj.m );
 A_prev= obj.Lpp_k \ obj.A_M( : , estimator.n_k + 1:end );

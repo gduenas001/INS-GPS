@@ -5,13 +5,11 @@ function association= nearest_neighbor_localization(obj, z, params)
 n_F= size(z,1);
 
 % initialize with zero, if SLAM --> initialize with (-1)
-association= zeros(1,n_F);
+association= zeros(n_F,1);
 
 if n_F == 0, return, end
 
 % initialize variables
-obj.associated_landmarks_at_k = [];
-obj.landmarks_of_associated_features_at_k = [];
 spsi= sin(obj.XX(9));
 cpsi= cos(obj.XX(9));
 zHat= zeros(2,1);
@@ -38,7 +36,6 @@ for i= 1:n_F
     
     % loop through landmarks
     for l= 1:length(obj.FoV_landmarks_at_k)
-%         l= 1:obj.num_landmarks
         lm_ind= obj.FoV_landmarks_at_k(l);
         landmark= obj.landmark_map( lm_ind,: );
         
@@ -71,17 +68,9 @@ for i= 1:n_F
         end
     end
     
-    % If the minimum value is very large --> ignore
-    if min_y2 >= params.T_NN
-        association(i)= 0;
-    else % Increase appearances counter
-        obj.appearances(association(i))= obj.appearances(association(i)) + 1;
-        obj.landmarks_of_associated_features_at_k = [ obj.landmarks_of_associated_features_at_k; association(i) ];
-        
-        % if the associated landmark 
-        if ~any(obj.associated_landmarks_at_k == association(i))
-            obj.associated_landmarks_at_k= [obj.associated_landmarks_at_k; association(i)];
-        end
+    % Increase appearances counter
+    if association(i) ~= 0  
+        obj.appearances(association(i))= obj.appearances(association(i)) + 1;        
     end
 end
 end
