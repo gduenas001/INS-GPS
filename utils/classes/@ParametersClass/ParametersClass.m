@@ -8,7 +8,7 @@ classdef ParametersClass < handle
         SWITCH_REDUCE_TESTING= 1; % to test only a few frames 
         SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
         SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
-        SWITCH_YAW_UPDATE= 1;
+        SWITCH_YAW_UPDATE= 1; 
         SWITCH_GPS_UPDATE= 1; % update of the GPS
         SWITCH_GPS_VEL_UPDATE= 1; % update of the GPS
         SWITCH_LIDAR_UPDATE= 1;
@@ -21,14 +21,16 @@ classdef ParametersClass < handle
         
         % dataset obtained with ROS
         path= '../data/cart/20180725/';
+%         path= '../data/vehicle/20190110/';
 
         % --------------- Parameters ---------------
+        num_epochs_static= 20000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
+        lidarRange= 25; % [m]
         m_F= 2; % measurements per feature/landmark
         dt_imu= 1/125; % IMU sampling time
         dt_cal= 1/10; % KF Update period during initial calibration
         dt_virt_z= 1/10; % Virtual msmt update period
         dt_virt_y= 1/10; % Virtual msmt update period
-        num_epochs_static= 20000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
         sig_cal_pos= 0.005; % 3cm   -- do not reduce too much or bias get instable
         sig_cal_vel= 0.005; % 3cm/s -- do not reduce too much or bias get instable
         sig_cal_E= deg2rad(0.1); % 0.1 deg
@@ -47,7 +49,6 @@ classdef ParametersClass < handle
         tauw_calibration= 100; % 200 gyro tau value during initial calibration
         g_val= 9.80279; % value of g [m/s2] at the IIT
         r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
-        lidarRange= 25; % [m]
         alpha_NN= 0.05; % prob of discard good features in NN
         threshold_new_landmark= 15; % Threshold in NIS to create a new landmark
         sig_minLM= 0.1; % minimum SD for the landmarks

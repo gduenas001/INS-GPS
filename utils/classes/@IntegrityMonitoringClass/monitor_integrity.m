@@ -41,7 +41,7 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
     % Loop over hypotheses in the PH (only 1 fault)
     n_H= obj.n_M / params.m_F; % one hypothesis per associated landmark in ph
     obj.p_hmi= 0;
-    for i= 0:n_H
+    for i= 0:0%n_H
         % build extraction matrix 
         obj.compute_E_matrix(i, params.m_F)
         

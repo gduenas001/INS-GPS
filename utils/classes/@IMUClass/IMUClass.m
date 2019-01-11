@@ -11,6 +11,8 @@ classdef IMUClass < handle
     end
     
     methods
+        % ----------------------------------------------
+        % ----------------------------------------------
         function obj= IMUClass(params, initial_time)
             % DATAREAD Reads a datafile and outputs a series of vectors of the data
             % Data id in columns
@@ -46,20 +48,19 @@ classdef IMUClass < handle
             obj.num_readings= size(obj.msmt,2);
             
             
-            
-            
-            % ------------ Initial calibration ------------
+            % ------------ Initial calibration ---------
             load(params.file_name_calibration); % loads iinvC, invC, ib_0, b_0
             invC= [invC, zeros(3); zeros(3), eye(3)];
             
-            % Initial rotation to get: x=foward & z=down
-            R_init= [ 0, -1, 0;
-                      -1, 0, 0;
-                      0, 0, -1];
-            R_init_block= blkdiag(R_init,R_init);
-            
             obj.inc_msmt= (iinvC * obj.inc_msmt) - ib_0;
             obj.msmt= (invC * obj.msmt) - b_0;
+            % -------------------------------------------
+            
+            % ------------ Initial rotation ------------
+            % Initial rotation to get: x=foward & z=down
+            % load R_init (depends on the horientation of the IMU)
+            load(strcat(params.path, 'IMU/R_init'));
+            R_init_block= blkdiag(R_init,R_init);
             obj.msmt= R_init_block * obj.msmt;
             obj.inc_msmt= R_init * obj.inc_msmt;
             % -------------------------------------------
@@ -70,9 +71,26 @@ classdef IMUClass < handle
                 obj.num_readings= params.num_epochs_static + 5000;
             elseif params.SWITCH_NUM_of_LOOPS == 1
                 obj.num_readings= 46500; %%%%%%%%%%%%% CAREFUL
-            end 
+            end
         end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_measurements(obj)
+            % plot accelerometers
+            figure; hold on; grid on;
+            plot(obj.time, obj.msmt(1:3,:));
+%             plot(1:length(obj.msmt)', obj.msmt(1:3,:));
+            legend('acc_x','acc_y','acc_z')
+            
+            % plot gyros
+            figure; hold on; grid on;
+            plot(obj.time, obj.msmt(4:6,:));
+            legend('w_x','w_y','w_z')
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
     end
+    
 end
 
 

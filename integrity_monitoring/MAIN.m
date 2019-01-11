@@ -111,30 +111,32 @@ for epoch= 1:imu.num_readings - 1
             epochLIDAR= lidar.time(counters.k_lidar,1);
             lidar.get_msmt( epochLIDAR, params );
             
-            % Remove people-features for the data set
-            lidar.remove_features_in_areas(estimator.XX(1:9));
-            
-            % NN data association
-            association= estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
-            
-            % Evaluate the probability of mis-associations
-            im.prob_of_MA_temporary( estimator, association, params);
-            
-            % Lidar update
-            estimator.lidar_update_localization(lidar.msmt(:,1:2), association, params);
-
-            % Lineariza and discretize
-            estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
-            
-            % integrity monitoring
-            im.monitor_integrity(estimator, counters, data_obj, params);
-            
-            % Store data
-            data_obj.store_msmts( body2nav(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
-            counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
-            
-            % increase integrity counter
-            counters.increase_integrity_monitoring_counter();
+            if ~isempty(lidar.msmt)
+                % Remove people-features for the data set
+                lidar.remove_features_in_areas(estimator.XX(1:9));
+                
+                % NN data association
+                association= estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
+                
+                % Evaluate the probability of mis-associations
+                im.prob_of_MA_temporary( estimator, association, params);
+                
+                % Lidar update
+                estimator.lidar_update_localization(lidar.msmt(:,1:2), association, params);
+                
+                % Lineariza and discretize
+                estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
+                
+                % integrity monitoring
+                im.monitor_integrity(estimator, counters, data_obj, params);
+                
+                % Store data
+                data_obj.store_msmts( body2nav(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
+                counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
+                
+                % increase integrity counter
+                counters.increase_integrity_monitoring_counter();
+            end
         end
         
         % Increase counter

@@ -1,7 +1,5 @@
 function lidar_update_localization(obj, z, association, params)
 
-R= params.R_lidar; % TODO: move to the kron
-
 obj.XX(9)= pi_to_pi( obj.XX(9) );
 
 if all(association == 0), return; end
@@ -13,7 +11,7 @@ association(association == 0) = [];
 obj.n_k= length(association) * params.m_F;
 lenx= length(obj.XX);
 
-R= kron( R, eye( obj.n_k / params.m_F ) );
+R= kron( params.R_lidar, eye( obj.n_k / params.m_F ) );
 obj.H_k= zeros(obj.n_k, lenx);
 
 %Build Jacobian H

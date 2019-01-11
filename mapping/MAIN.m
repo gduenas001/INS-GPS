@@ -11,7 +11,7 @@ gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
 estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_incl_calibration), params);
-data_obj= DataClass(imu.num_readings);
+data_obj= DataClass(imu.num_readings, gps.num_readings);
 counters= CountersClass(gps, lidar);
 
 GPS_Index_exceeded = 0;   % TODO: osama is this needeed?
@@ -30,7 +30,8 @@ for epoch= 1:imu.num_readings-1
     
     % Turn off GPS updates if start moving
     if epoch == params.num_epochs_static
-        params.SWITCH_CALIBRATION= 0; 
+%         params.SWITCH_CALIBRATION= 0; 
+        params.turn_off_calibration();
         estimator.PX(7,7)= params.sig_phi0^2;
         estimator.PX(8,8)= params.sig_phi0^2;
         estimator.PX(9,9)= params.sig_yaw0^2;
@@ -162,7 +163,7 @@ end
 
 % Store data for last epoch
 data_obj.store_update(counters.k_update, estimator, counters.time_sim);
-data_obj.remove_extra_allocated_memory(counters.k_update)
+data_obj.delete_extra_allocated_memory(counters)
 
 
 % ------------- PLOTS -------------

@@ -24,9 +24,10 @@ classdef LidarClass < handle
             obj.time= obj.time.T_LIDAR;
             
             % load the areas from where we remove people
-            obj.areas_to_remove= load(strcat(params.file_name_lidar_path,'areas_to_remove.mat'));
-            obj.areas_to_remove= obj.areas_to_remove.areas_to_remove;
-            
+            try
+                obj.areas_to_remove= load(strcat(params.file_name_lidar_path,'areas_to_remove.mat'));
+                obj.areas_to_remove= obj.areas_to_remove.areas_to_remove;
+            end
             
             % Use the GPS first reading time as reference
             obj.time(:,2)= obj.time(:,2) - init_time;
@@ -45,13 +46,15 @@ classdef LidarClass < handle
             obj.msmt= load(fileName);
             obj.msmt= obj.msmt.z;
             
-            if params.SWITCH_REMOVE_FAR_FEATURES
-                obj.remove_far_features(params.lidarRange);
+            % if there are features --> prepare the measurement
+            if ~isempty(obj.msmt)
+                if params.SWITCH_REMOVE_FAR_FEATURES
+                    obj.remove_far_features(params.lidarRange);
+                end
+                
+                % Add height
+                obj.msmt= [obj.msmt, ones(size(obj.msmt,1),1) * params.feature_height];
             end
-            
-            % Add height
-            obj.msmt= [obj.msmt, ones(size(obj.msmt,1),1) * params.feature_height];
-            
         end
         % ----------------------------------------------
         % ----------------------------------------------

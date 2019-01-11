@@ -65,10 +65,7 @@ classdef GPSClass < handle
             for i= 1:length(obj.time)
                 obj.R(:,i)= diag( R_NE_block * diag( obj.R(:,i) ) * R_NE_block' );
             end
-            
-            
-            
-            
+                        
             % increase GPS variance
             obj.R(1:3,:)= obj.R(1:3,:)*(params.mult_factor_pose_gps^2); %%%%%%%%%%%%%%%%%% CAREFUL
             obj.R(4:6,:)= obj.R(4:6,:)*(params.mult_factor_vel_gps^2);  %%%%%%%%%%%%%%%%%% CAREFUL
