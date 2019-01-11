@@ -113,7 +113,7 @@ for epoch= 1:imu.num_readings-1
     % ------------- LIDAR -------------
     if (counters.time_sim + params.dt_imu) > counters.time_lidar && params.SWITCH_LIDAR_UPDATE
         
-        if epoch > params.num_epochs_static + 1500 % TODO: osama, why are you adding 1500
+        if epoch > params.num_epochs_static
             % Read the lidar features
             epochLIDAR= lidar.time(counters.k_lidar,1);
             lidar.get_msmt( epochLIDAR, params );

@@ -4,7 +4,7 @@ classdef ParametersClass < handle
     
     properties (SetAccess = private)
         % --------------- Switches (options) ---------------
-        SWITCH_NUM_of_LOOPS= 1; % TODO: this depends on the data set
+        SWITCH_NUM_of_LOOPS= 2; % TODO: this depends on the data set
         SWITCH_REDUCE_TESTING= 1; % to test only a few frames 
         SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
         SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
@@ -20,11 +20,11 @@ classdef ParametersClass < handle
     properties (Constant)
         
         % dataset obtained with ROS
-        path= '../data/cart/20180725/';
-%         path= '../data/vehicle/20190110/';
+%         path= '../data/cart/20180725/';
+        path= '../data/vehicle/20190110/';
 
         % --------------- Parameters ---------------
-        num_epochs_static= 20000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
+        num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
         lidarRange= 25; % [m]
         m_F= 2; % measurements per feature/landmark
         dt_imu= 1/125; % IMU sampling time
@@ -40,7 +40,7 @@ classdef ParametersClass < handle
         sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
         sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
         sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
-        sig_lidar= 0.3; % 20cm -- lidar measurement in the nav frame
+        sig_lidar= 0.2; % 20cm -- lidar measurement in the nav frame
         min_vel_gps= 2/3.6; % 2 km/h
         min_vel_yaw= 2/3.6; % 2 km/h
         taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer
@@ -52,10 +52,10 @@ classdef ParametersClass < handle
         alpha_NN= 0.05; % prob of discard good features in NN
         threshold_new_landmark= 15; % Threshold in NIS to create a new landmark
         sig_minLM= 0.1; % minimum SD for the landmarks
-        mult_factor_acc_imu= 30; % multiplicative factor for the accel SD
-        mult_factor_gyro_imu= 30; % multiplicative factor for the gyros SD
-        mult_factor_pose_gps= 3; % multiplicative factor for the GPS pose SD
-        mult_factor_vel_gps= 20;  % multiplicative factor for the GPS velocity SD
+        mult_factor_acc_imu= 15; % multiplicative factor for the accel SD
+        mult_factor_gyro_imu= 10; % multiplicative factor for the gyros SD
+        mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
+        mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
         feature_height= 1.5; % height of the features
         initial_yaw_angle= -90 % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
         preceding_horizon_size= 2;
