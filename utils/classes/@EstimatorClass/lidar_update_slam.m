@@ -8,12 +8,20 @@ obj.XX(9)= pi_to_pi( obj.XX(9) );
 if all(association == -1), return; end
 
 % Eliminate the non-associated features
-z(association == -1 | association == 0,:)= [];
-association(association == -1 | association == 0) = [];
+ind_to_eliminate= association == -1 | association == 0;
+z(ind_to_eliminate,:)= [];
+association(ind_to_eliminate) = [];
+
+% Eliminate features associated to landmarks that has appeared less than X times
+ind_to_eliminate= obj.appearances(association) <= params.min_appearances;
+z(ind_to_eliminate,:)= [];
+association(ind_to_eliminate)= [];
+
+% if no measurent can be associated --> return
+if isempty(z), return, end
 
 lenz= length(association);
 lenx= length(obj.XX);
-
 
 R= kron( R,eye(lenz) );
 H= zeros(2*lenz,lenx);

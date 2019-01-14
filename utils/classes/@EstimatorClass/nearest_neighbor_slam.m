@@ -1,6 +1,6 @@
 % ----------------------------------------------
 % ----------------------------------------------
-function association= nearest_neighbor(obj, z, params)
+function association= nearest_neighbor_slam(obj, z, params)
 
 n_F= size(z,1);
 n_L= (length(obj.XX) - 15) / 2;

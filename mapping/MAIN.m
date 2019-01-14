@@ -122,7 +122,7 @@ for epoch= 1:imu.num_readings-1
             lidar.remove_features_in_areas(estimator.XX(1:9));
             
             % NN data association
-            association= estimator.nearest_neighbor(lidar.msmt(:,1:2), params);
+            association= estimator.nearest_neighbor_slam(lidar.msmt(:,1:2), params);
             
             % Lidar update
             estimator.lidar_update_slam(lidar.msmt(:,1:2), association, params);
@@ -163,11 +163,11 @@ end
 
 % Store data for last epoch
 data_obj.store_update(counters.k_update, estimator, counters.time_sim);
-data_obj.delete_extra_allocated_memory(counters)
+data_obj.delete_extra_allocated_memory(counters);
 
 
 % ------------- PLOTS -------------
-data_obj.plot_map_slam(gps, imu.num_readings, params)
+landmark_map= data_obj.plot_map_slam( estimator, gps, imu.num_readings, params );
 data_obj.plot_estimates();
 % ------------------------------------------------------------
 

@@ -5,9 +5,7 @@ classdef DataClass < handle
         update
         im
         
-        msmts
-        landmarks
-        
+        msmts        
     end
     
     methods
@@ -27,7 +25,6 @@ classdef DataClass < handle
         % ----------------------------------------------
         function epoch= store_update(obj, epoch, estimator, time)
             obj.update.store(epoch, estimator, time);
-            obj.landmarks{epoch}= estimator.XX(16:end); % store the current landmarks
             
             % increase counter
             epoch= epoch + 1;
@@ -53,20 +50,27 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_map_slam(obj, gps, num_readings, params)
+        function lm_map= plot_map_slam(obj, estimator, gps, num_readings, params)
             % Plot GPS+IMU estimated path
 
-            figPath= figure; hold on; grid on;
+            figure; hold on; grid on;
             plot3(obj.pred.XX(1,:), obj.pred.XX(2,:), obj.pred.XX(3,:), 'b.');
             plot3(obj.update.XX(1,:), obj.update.XX(2,:), obj.update.XX(3,:),...
                 'b.','markersize', 7);
             plot3(gps.msmt(1,:),gps.msmt(2,:),gps.msmt(3,:),'r*');
             if params.SWITCH_LIDAR_UPDATE % Plot landmarks
                 % create a map of landmarks
-                lm_map= [obj.landmarks{end}(1:2:end),...
-                         obj.landmarks{end}(2:2:end),...
-                         zeros( length(obj.landmarks{end})/2, 1 )];
-                plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'g+', 'markersize',20);
+                lm_map= [estimator.XX(16:2:end), estimator.XX(17:2:end)];
+                lm_to_eliminate= [];
+                for i= 1:estimator.num_landmarks
+                    if estimator.appearances(i) < params.min_appearances
+                        lm_to_eliminate= [lm_to_eliminate; i];
+                    end
+                end
+                lm_map(lm_to_eliminate,:)= [];
+                
+                % plot
+                plot3(lm_map(:,1), lm_map(:,2), zeros(length(lm_map),1), 'g+', 'markersize',20);
                 plot3(obj.msmts(:,1), obj.msmts(:,2), zeros(size(obj.msmts,1),1), 'k.');
             end
             

@@ -4,8 +4,7 @@ classdef ParametersClass < handle
     
     properties (SetAccess = private)
         % --------------- Switches (options) ---------------
-        SWITCH_NUM_of_LOOPS= 2; % TODO: this depends on the data set
-        SWITCH_REDUCE_TESTING= 1; % to test only a few frames 
+        SWITCH_REDUCE_TESTING= 0; % to test only a few frames 
         SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
         SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
         SWITCH_YAW_UPDATE= 1; 
@@ -24,6 +23,8 @@ classdef ParametersClass < handle
         path= '../data/vehicle/20190110/';
 
         % --------------- Parameters ---------------
+        min_appearances= 2; % only update estimate landmarks detected more than this number
+        num_epochs_reduce_testing= 8000;
         num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
         lidarRange= 25; % [m]
         m_F= 2; % measurements per feature/landmark
@@ -40,7 +41,7 @@ classdef ParametersClass < handle
         sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
         sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
         sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
-        sig_lidar= 0.2; % 20cm -- lidar measurement in the nav frame
+        sig_lidar= 0.25; % 20cm -- lidar measurement in the nav frame
         min_vel_gps= 2/3.6; % 2 km/h
         min_vel_yaw= 2/3.6; % 2 km/h
         taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer

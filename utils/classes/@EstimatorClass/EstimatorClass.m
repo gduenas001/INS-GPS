@@ -49,6 +49,8 @@ classdef EstimatorClass < handle
                 data= load(strcat( params.path, 'landmark_map.mat' ));
                 obj.landmark_map= data.landmark_map;
                 obj.num_landmarks= size(obj.landmark_map, 1);
+            catch
+                obj.num_landmarks= 0;
             end
             
         end
@@ -167,7 +169,7 @@ classdef EstimatorClass < handle
         gps_update(obj, z, R, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        association= nearest_neighbor(obj, z, params)
+        association= nearest_neighbor_slam(obj, z, params)
         % ----------------------------------------------
         % ----------------------------------------------
         association= nearest_neighbor_localization(obj, z, params)
@@ -200,6 +202,9 @@ classdef EstimatorClass < handle
             
             % Number of landmarks to add
             n_L= size(z,1);
+            
+            % update total number of landmarks
+            obj.num_landmarks= obj.num_landmarks + n_L;
             
             % Add new landmarks to state vector
             z= body2nav(z,obj.XX(1:9));
