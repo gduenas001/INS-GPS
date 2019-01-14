@@ -168,6 +168,7 @@ classdef DataClass < handle
 %             plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
             set(gca, 'YScale', 'log')
             ylim([1e-15,1]);
+            xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
             xlabel('Time [s]')
             ylabel('P(HMI)')
         end

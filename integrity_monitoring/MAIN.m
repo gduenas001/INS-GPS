@@ -150,10 +150,6 @@ for epoch= 1:imu.num_readings - 1
             counters.time_lidar= lidar.time(counters.k_lidar,2);
         end
     end
-    % ---------------------------------
-    
-    % linearize and discretize
-    % estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
 end
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------

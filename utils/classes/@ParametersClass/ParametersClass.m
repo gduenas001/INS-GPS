@@ -4,15 +4,15 @@ classdef ParametersClass < handle
     
     properties (SetAccess = private)
         % --------------- Switches (options) ---------------
-        SWITCH_REDUCE_TESTING= 1; % to test only a few frames 
-        SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
-        SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
-        SWITCH_YAW_UPDATE= 1; 
-        SWITCH_GPS_UPDATE= 1; % update of the GPS
-        SWITCH_GPS_VEL_UPDATE= 1; % update of the GPS
-        SWITCH_LIDAR_UPDATE= 1;
-        SWITCH_REMOVE_FAR_FEATURES= 1;
-        SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
+        SWITCH_REDUCE_TESTING
+        SWITCH_VIRT_UPDATE_Z
+        SWITCH_VIRT_UPDATE_Y
+        SWITCH_YAW_UPDATE
+        SWITCH_GPS_UPDATE
+        SWITCH_GPS_VEL_UPDATE
+        SWITCH_LIDAR_UPDATE
+        SWITCH_REMOVE_FAR_FEATURES
+        SWITCH_CALIBRATION
         SWITCH_SLAM
         % --------------------------------------------------
     end
@@ -64,8 +64,8 @@ classdef ParametersClass < handle
         % path= '../data/cart/20180725/';
         path= '../data/vehicle/20190110/';     
         
-        sn_f= ( 0.05 * 9.80279 / 1000 )^2 % bias acc white noise PSD
-        sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
+%         sn_f= ( 0.05 * 9.80279 / 1000 )^2 % bias acc white noise PSD
+%         sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
@@ -110,6 +110,10 @@ classdef ParametersClass < handle
         preceding_horizon_size
         continuity_requirement
         alert_limit
+        VRW
+        ARW
+        sn_f
+        sn_w
         % -------------------------------------------
         
         file_name_imu
@@ -149,9 +153,6 @@ classdef ParametersClass < handle
         % PSD for continuous model
         S
         S_cal
-
-        VRW= 0.07 % vel random walk
-        ARW= 0.15 % angular random walk [deg]
         
     end
         
@@ -163,6 +164,19 @@ classdef ParametersClass < handle
             
             % ------------ paramters specified in file ----------------
             run([obj.path, 'parameters.m']);
+            
+            % --------------- Switches (options) ---------------
+            obj.SWITCH_REDUCE_TESTING= SWITCH_REDUCE_TESTING;
+            obj.SWITCH_VIRT_UPDATE_Z= SWITCH_VIRT_UPDATE_Z;
+            obj.SWITCH_VIRT_UPDATE_Y= SWITCH_VIRT_UPDATE_Y;
+            obj.SWITCH_YAW_UPDATE= SWITCH_YAW_UPDATE;
+            obj.SWITCH_GPS_UPDATE= SWITCH_GPS_UPDATE; 
+            obj.SWITCH_GPS_VEL_UPDATE= SWITCH_GPS_VEL_UPDATE;
+            obj.SWITCH_LIDAR_UPDATE= SWITCH_LIDAR_UPDATE;
+            obj.SWITCH_REMOVE_FAR_FEATURES= SWITCH_REMOVE_FAR_FEATURES;
+            obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
+             % --------------------------------------------------
+            
             obj.min_appearances= min_appearances;
             obj.num_epochs_reduce_testing= num_epochs_reduce_testing;
             obj.num_epochs_static= num_epochs_static;
@@ -202,6 +216,10 @@ classdef ParametersClass < handle
             obj.preceding_horizon_size= preceding_horizon_size;
             obj.continuity_requirement= continuity_requirement;
             obj.alert_limit= alert_limit;
+            obj.VRW= VRW;
+            obj.ARW= ARW;
+            obj.sn_f= sn_f;
+            obj.sn_w= sn_w;
             % -------------------------------------------
             
             % differenciate between slam and localization
