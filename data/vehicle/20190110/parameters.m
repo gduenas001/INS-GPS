@@ -1,4 +1,6 @@
 % --------------- Parameters ---------------
+min_appearances= 2; % only update estimate landmarks detected more than this number
+num_epochs_reduce_testing= 5000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
 lidarRange= 25; % [m]
 m_F= 2; % measurements per feature/landmark
@@ -6,8 +8,8 @@ dt_imu= 1/125; % IMU sampling time
 dt_cal= 1/10; % KF Update period during initial calibration
 dt_virt_z= 1/10; % Virtual msmt update period
 dt_virt_y= 1/10; % Virtual msmt update period
-sig_cal_pos= 0.005; % 3cm   -- do not reduce too much or bias get instable
-sig_cal_vel= 0.005; % 3cm/s -- do not reduce too much or bias get instable
+sig_cal_pos= 0.01; % 3cm   -- do not reduce too much or bias get instable
+sig_cal_vel= 0.01; % 3cm/s -- do not reduce too much or bias get instable
 sig_cal_E= deg2rad(0.1); % 0.1 deg
 sig_yaw0= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
 sig_phi0= deg2rad(1); % 2 deg -- Initial uncertatinty in attitude
@@ -15,7 +17,7 @@ sig_ba= 0.05; % 0.1 m/s2 -- Initial acc bias uncertainty
 sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
 sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
 sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
-sig_lidar= 0.2; % 20cm -- lidar measurement in the nav frame
+sig_lidar= 0.25; % 20cm -- lidar measurement in the nav frame
 min_vel_gps= 2/3.6; % 2 km/h
 min_vel_yaw= 2/3.6; % 2 km/h
 taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer

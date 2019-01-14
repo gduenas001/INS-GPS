@@ -4,7 +4,7 @@ classdef ParametersClass < handle
     
     properties (SetAccess = private)
         % --------------- Switches (options) ---------------
-        SWITCH_REDUCE_TESTING= 0; % to test only a few frames 
+        SWITCH_REDUCE_TESTING= 1; % to test only a few frames 
         SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
         SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
         SWITCH_YAW_UPDATE= 1; 
@@ -71,6 +71,8 @@ classdef ParametersClass < handle
     properties (SetAccess = immutable) % parameters to be built with constructor
         
         % ------------ paramters specified in file ----------------
+        min_appearances
+        num_epochs_reduce_testing
         num_epochs_static
         lidarRange
         m_F
@@ -161,6 +163,8 @@ classdef ParametersClass < handle
             
             % ------------ paramters specified in file ----------------
             run([obj.path, 'parameters.m']);
+            obj.min_appearances= min_appearances;
+            obj.num_epochs_reduce_testing= num_epochs_reduce_testing;
             obj.num_epochs_static= num_epochs_static;
             obj.lidarRange= lidarRange;
             obj.m_F= m_F;
