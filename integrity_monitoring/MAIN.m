@@ -7,12 +7,12 @@ addpath('../utils/classes')
 
 
 % create objects
-params= ParametersClass();
+params= ParametersClass("localization");
 im= IntegrityMonitoringClass(params);
 gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
-estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_incl_calibration), params);
+estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_static), params);
 data_obj= DataClass(imu.num_readings, gps.num_readings);
 counters= CountersClass(gps, lidar);
 
@@ -96,17 +96,20 @@ for epoch= 1:imu.num_readings - 1
         end
         
         % Time GPS counter
-        counters.increase_gps_counter();
-        counters.time_gps= gps.time(counters.k_gps);
+        if counters.k_gps == gps.num_readings
+            params.turn_off_gps(); 
+        else
+            counters.increase_gps_counter();
+            counters.time_gps= gps.time(counters.k_gps);
+        end
         
-        if counters.k_gps > size(gps.time,1), params.turn_off_gps(); end
     end
     % ----------------------------------------
     
     % ------------- LIDAR -------------
     if (counters.time_sim + params.dt_imu) > counters.time_lidar && params.SWITCH_LIDAR_UPDATE
         
-        if epoch > params.num_epochs_static + 1500 % TODO: adding 1500 to remove people
+        if epoch > params.num_epochs_static
             % Read the lidar features
             epochLIDAR= lidar.time(counters.k_lidar,1);
             lidar.get_msmt( epochLIDAR, params );
@@ -139,11 +142,13 @@ for epoch= 1:imu.num_readings - 1
             end
         end
         
-        % Increase counter
-        counters.increase_lidar_counter();
-        counters.time_lidar= lidar.time(counters.k_lidar,2);
-        
-        if counters.k_lidar > length(lidar.time), params.turn_off_lidar; end
+        % Time lidar counter
+        if counters.k_lidar == lidar.num_readings
+            params.turn_off_lidar; 
+        else
+            counters.increase_lidar_counter();
+            counters.time_lidar= lidar.time(counters.k_lidar,2);
+        end
     end
     % ---------------------------------
     

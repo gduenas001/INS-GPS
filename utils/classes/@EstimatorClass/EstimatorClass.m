@@ -45,14 +45,13 @@ classdef EstimatorClass < handle
             obj.appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
             
             % load map if exists
-            try
+            if params.SWITCH_SLAM 
+                obj.num_landmarks= 0;
+            else
                 data= load(strcat( params.path, 'landmark_map.mat' ));
                 obj.landmark_map= data.landmark_map;
                 obj.num_landmarks= size(obj.landmark_map, 1);
-            catch
-                obj.num_landmarks= 0;
             end
-            
         end
         % ----------------------------------------------
         % ----------------------------------------------

@@ -3,6 +3,7 @@ classdef LidarClass < handle
     
     properties (SetAccess = immutable)
         time
+        num_readings
         R
         areas_to_remove
     end
@@ -34,6 +35,9 @@ classdef LidarClass < handle
             
             % If some of the initial times are negative (prior to first GPS reading) --> eliminate them
             obj.time(obj.time(:,2) < 0 , :)= []; 
+            
+            % number of lidar scans
+            obj.num_readings= length(obj.time);
         end
         % ----------------------------------------------
         % ----------------------------------------------

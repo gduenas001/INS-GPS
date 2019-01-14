@@ -6,11 +6,11 @@ addpath('../utils/functions')
 addpath('../utils/classes')
 
 % create objects
-params= ParametersClass();
+params= ParametersClass('slam');
 gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
-estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_incl_calibration), params);
+estimator= EstimatorClass(imu.inc_msmt(1:3, params.num_epochs_static), params);
 data_obj= DataClass(imu.num_readings, gps.num_readings);
 counters= CountersClass(gps, lidar);
 
@@ -30,7 +30,6 @@ for epoch= 1:imu.num_readings-1
     
     % Turn off GPS updates if start moving
     if epoch == params.num_epochs_static
-%         params.SWITCH_CALIBRATION= 0; 
         params.turn_off_calibration();
         estimator.PX(7,7)= params.sig_phi0^2;
         estimator.PX(8,8)= params.sig_phi0^2;
@@ -113,7 +112,7 @@ for epoch= 1:imu.num_readings-1
     % ------------- LIDAR -------------
     if (counters.time_sim + params.dt_imu) > counters.time_lidar && params.SWITCH_LIDAR_UPDATE
         
-        if epoch > params.num_epochs_static
+        if epoch > 2000 %params.num_epochs_static - 3000
             % Read the lidar features
             epochLIDAR= lidar.time(counters.k_lidar,1);
             lidar.get_msmt( epochLIDAR, params );

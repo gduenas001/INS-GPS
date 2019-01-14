@@ -58,7 +58,7 @@ classdef DataClass < handle
             plot3(obj.update.XX(1,:), obj.update.XX(2,:), obj.update.XX(3,:),...
                 'b.','markersize', 7);
             plot3(gps.msmt(1,:),gps.msmt(2,:),gps.msmt(3,:),'r*');
-            if params.SWITCH_LIDAR_UPDATE % Plot landmarks
+            if estimator.num_landmarks > 0 % Plot landmarks
                 % create a map of landmarks
                 lm_map= [estimator.XX(16:2:end), estimator.XX(17:2:end)];
                 lm_to_eliminate= [];
@@ -90,19 +90,18 @@ classdef DataClass < handle
         function plot_map_localization(obj, estimator, gps, num_readings, params)
             % Plot GPS+IMU estimated path
 
-            figPath= figure; hold on; grid on;
+            figure; hold on; grid on;
             plot3(obj.pred.XX(1,:), obj.pred.XX(2,:), obj.pred.XX(3,:), 'b.');
             plot3(obj.update.XX(1,:), obj.update.XX(2,:), obj.update.XX(3,:),...
                 'b.','markersize', 7);
             plot3(gps.msmt(1,:),gps.msmt(2,:),gps.msmt(3,:),'r*');
-            if params.SWITCH_LIDAR_UPDATE % Plot landmarks
-                % create a map of landmarks
-                lm_map= [estimator.landmark_map(:,1),...
-                         estimator.landmark_map(:,2),...
-                         zeros(estimator.num_landmarks,1)];
-                plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'g+', 'markersize',20);
-                plot3(obj.msmts(:,1), obj.msmts(:,2), zeros(size(obj.msmts,1),1), 'k.');
-            end
+            
+            % create a map of landmarks
+            lm_map= [estimator.landmark_map(:,1),...
+                estimator.landmark_map(:,2),...
+                zeros(estimator.num_landmarks,1)];
+            plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'g+', 'markersize',20);
+            plot3(obj.msmts(:,1), obj.msmts(:,2), zeros(size(obj.msmts,1),1), 'k.');
             
             % plot attitude every 100 IMU readings
             for i= 1:num_readings
@@ -168,12 +167,28 @@ classdef DataClass < handle
             plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
 %             plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
             set(gca, 'YScale', 'log')
+            ylim([1e-15,1]);
+            xlabel('Time [s]')
+            ylabel('P(HMI)')
         end
         % ----------------------------------------------
         % ----------------------------------------------
         function plot_number_of_landmarks_in_preceding_horizon(obj)
             figure; hold on; grid on;
             plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
+            xlabel('time [s]')
+            ylabel('Number of landmarks in the preceding horizon')
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_bias_calibration(obj)
+            figure; hold on; grid on;
+            plot(obj.update.time, obj.update.XX(10:12,:), 'linewidth',2)
+            legend('acc_x','acc_y','acc_z')
+            
+            figure; hold on; grid on;
+            plot(obj.update.time, obj.update.XX(13:15,:), 'linewidth',2)
+            legend('w_x','w_y','w_z')
         end
         % ----------------------------------------------
         % ----------------------------------------------

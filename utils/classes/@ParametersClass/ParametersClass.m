@@ -13,6 +13,7 @@ classdef ParametersClass < handle
         SWITCH_LIDAR_UPDATE= 1;
         SWITCH_REMOVE_FAR_FEATURES= 1;
         SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
+        SWITCH_SLAM
         % --------------------------------------------------
     end
     
@@ -24,16 +25,16 @@ classdef ParametersClass < handle
 
         % --------------- Parameters ---------------
         min_appearances= 2; % only update estimate landmarks detected more than this number
-        num_epochs_reduce_testing= 8000;
-        num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
+        num_epochs_reduce_testing= 5000;
+        num_epochs_static= 9700; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
         lidarRange= 25; % [m]
         m_F= 2; % measurements per feature/landmark
         dt_imu= 1/125; % IMU sampling time
         dt_cal= 1/10; % KF Update period during initial calibration
         dt_virt_z= 1/10; % Virtual msmt update period
         dt_virt_y= 1/10; % Virtual msmt update period
-        sig_cal_pos= 0.005; % 3cm   -- do not reduce too much or bias get instable
-        sig_cal_vel= 0.005; % 3cm/s -- do not reduce too much or bias get instable
+        sig_cal_pos= 0.01; % 3cm   -- do not reduce too much or bias get unstable
+        sig_cal_vel= 0.01; % 3cm/s -- do not reduce too much or bias get unstable
         sig_cal_E= deg2rad(0.1); % 0.1 deg
         sig_yaw0= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
         sig_phi0= deg2rad(1); % 2 deg -- Initial uncertatinty in attitude
@@ -52,14 +53,14 @@ classdef ParametersClass < handle
         r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
         alpha_NN= 0.05; % prob of discard good features in NN
         threshold_new_landmark= 15; % Threshold in NIS to create a new landmark
-        sig_minLM= 0.1; % minimum SD for the landmarks
+        sig_minLM= 0.10; % minimum SD for the landmarks
         mult_factor_acc_imu= 15; % multiplicative factor for the accel SD
         mult_factor_gyro_imu= 10; % multiplicative factor for the gyros SD
         mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
         mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
         feature_height= 1.5; % height of the features
         initial_yaw_angle= -90 % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
-        preceding_horizon_size= 2;
+        preceding_horizon_size= 4;
         continuity_requirement= 1e-5;
         alert_limit= 1;
         % -------------------------------------------
@@ -78,7 +79,6 @@ classdef ParametersClass < handle
         file_name_calibration
 
 
-        num_epochs_incl_calibration
         g_N % G estimation (sense is same at grav acceleration in nav-frame)
         sig_cal_pos_blkMAtrix
         sig_cal_vel_blkMAtrix
@@ -120,7 +120,16 @@ classdef ParametersClass < handle
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj = ParametersClass()
+        function obj = ParametersClass(navigation_type)
+            
+            % differenciate between slam and localization
+            if navigation_type == 'slam'
+                obj.SWITCH_SLAM= 1;
+            elseif navigation_type == 'localization'
+                obj.SWITCH_SLAM= 0;
+            else
+                error('navigation_type must be either "slam" or "localization"');
+            end
             
             % set file names
             obj.file_name_imu=  strcat(obj.path, 'IMU/IMU.mat');
@@ -133,7 +142,6 @@ classdef ParametersClass < handle
             obj.ARW= obj.ARW * obj.mult_factor_gyro_imu; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
             
             % build parameters
-            obj.num_epochs_incl_calibration= round(obj.num_epochs_static);
             obj.g_N= [0; 0; obj.g_val]; % G estimation (sense is same at grav acceleration in nav-frame)
             obj.sig_cal_pos_blkMAtrix= diag([obj.sig_cal_pos, obj.sig_cal_pos, obj.sig_cal_pos]);
             obj.sig_cal_vel_blkMAtrix= diag([obj.sig_cal_vel, obj.sig_cal_vel, obj.sig_cal_vel]);
