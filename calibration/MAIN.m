@@ -1,15 +1,15 @@
 clear; format short;% clc; close all;      
 
-
 % ---------------- Read data X gravity ----------------
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF262/X_gravity/20180403_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180404_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180423_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/X_gravity/20180423_2.txt';
-file= '/home/osamarobotics-lab/Documents/GPS-IMU-LIDAR_test_data/DATA/DATA_STATIC/3axis_calibration_125Hz_LPF16_new_STIM/X_gravity/20180507_170212_1.txt';
+% file= '/home/osamarobotics-lab/Documents/GPS-IMU-LIDAR_test_data/DATA/DATA_STATIC/3axis_calibration_125Hz_LPF16_new_STIM/X_gravity/20180507_170212_1.txt';
+file= '/home/osamarobotics-lab/iit/integrity/INS-GPS/calibration/imu_calibration_files_14012019/x_up/20190114_220654_1.txt';
 
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
-    ~, ~, ~, ~, ~]= DataRead(file); % rads
+    ~, ~, ~, ~, ~]= DataRead(file); % rads 
 % -------------------------------------------
 
 % Set paramters
@@ -36,8 +36,8 @@ imux_z= mean(incz);
 % file= strcat('../DATA_STATIC/3axis_calibration_125Hz_LPF262/Y_gravity/20180403_1.txt');
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Y_gravity/20180404_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Y_gravity/20180423_1.txt';
-file= '/home/osamarobotics-lab/Documents/GPS-IMU-LIDAR_test_data/DATA/DATA_STATIC/3axis_calibration_125Hz_LPF16_new_STIM/Y_gravity/20180507_165754_1.txt';
-
+%file= '/home/osamarobotics-lab/Documents/GPS-IMU-LIDAR_test_data/DATA/DATA_STATIC/3axis_calibration_125Hz_LPF16_new_STIM/Y_gravity/20180507_165754_1.txt';
+file= '/home/osamarobotics-lab/iit/integrity/INS-GPS/calibration/imu_calibration_files_14012019/y_up/20190114_215805_1.txt';
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
     ~, ~, ~, ~, ~]= DataRead(file); % rads
 % -------------------------------------------
@@ -47,7 +47,7 @@ u= [accx, accy, accz, gyrox, gyroy, gyroz]';
 N_y= length(accx);
 
 % accelerometers
-g_y= abs(-mean(accy));
+g_y= abs(mean(accy));
 muy_x= mean(accx);
 muy_z= mean(accz);
 
@@ -57,7 +57,7 @@ wy_y= mean(gyroy);
 wy_z= mean(gyroz);
 
 % inclinometers
-ig_y= abs(-mean(incy));
+ig_y= abs(mean(incy));
 imuy_x= mean(incx);
 imuy_z= mean(incz);
 
@@ -67,7 +67,7 @@ imuy_z= mean(incz);
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180404_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180423_1.txt';
 % file= '../DATA_STATIC/3axis_calibration_125Hz_LPF16/Z_gravity/20180423_2.txt';
-file= '/home/osamarobotics-lab/Documents/GPS-IMU-LIDAR_test_data/DATA/DATA_STATIC/3axis_calibration_125Hz_LPF16_new_STIM/Z_gravity/20180507_164924_1.txt';
+file= '/home/osamarobotics-lab/iit/integrity/INS-GPS/calibration/imu_calibration_files_14012019/z_up/20190114_215439_1.txt';
 
 [~, gyrox, gyroy, gyroz, accx, accy, accz,incx,incy,incz,...
     ~, ~, ~, ~, ~]= DataRead(file); % rads
@@ -78,7 +78,7 @@ u= [accx, accy, accz, gyrox, gyroy, gyroz]';
 N_z= length(accx);
 
 % accelerometers
-g_z= abs(-mean(accz));
+g_z= abs(mean(accz));
 muz_x= mean(accx);
 muz_y= mean(accy);
 
@@ -88,7 +88,7 @@ wz_y= mean(gyroy);
 wz_z= mean(gyroz);
 
 % inclinometers
-ig_z= abs(-mean(incz));
+ig_z= abs(mean(incz));
 imuz_x= mean(incx);
 imuz_y= mean(incy);
 

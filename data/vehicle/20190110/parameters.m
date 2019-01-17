@@ -1,5 +1,5 @@
  % --------------- Switches (options) ---------------
- SWITCH_REDUCE_TESTING= 1; % to test only a few frames
+ SWITCH_REDUCE_TESTING= 0; % to test only a few frames
  SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
  SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
  SWITCH_YAW_UPDATE= 1;
@@ -48,7 +48,7 @@ mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
 mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
 feature_height= 1.5; % height of the features
 initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
-preceding_horizon_size= 15;
+preceding_horizon_size= 2;
 continuity_requirement= 1e-5;
 alert_limit= 1;
 VRW= 0.07; % vel random walk

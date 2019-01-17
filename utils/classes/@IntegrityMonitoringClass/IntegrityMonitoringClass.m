@@ -118,14 +118,14 @@ classdef IntegrityMonitoringClass < handle
         function update_preceding_horizon(obj, estimator)
             
             obj.n_ph=     [estimator.n_k; obj.n_ph(1:end-1)];
-            obj.gamma_ph= [estimator.gamma_k, obj.gamma_ph(1:end-1)];
+            obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:end-1}};
             obj.q_ph=     [estimator.q_k; obj.q_ph(1:end-1)];
-            obj.Phi_ph=   [obj.Phi_k, obj.Phi_ph(1:end-1)]; %%%%%%%% CAREFUL
-            obj.H_ph=     [obj.H_k, obj.H_ph(1:end-1)];
-            obj.L_ph=     [obj.L_k, obj.L_ph(1:end-1)];
-            obj.Lpp_ph=   [obj.Lpp_k, obj.Lpp_ph(1:end-1)];
-            obj.Y_ph=     [estimator.Y_k, obj.Y_ph(1:end-1)];
-            obj.P_MA_ph=  [obj.P_MA_k, obj.P_MA_ph(1:end-1)];
+            obj.Phi_ph=   {obj.Phi_k, obj.Phi_ph{1:end-1}}; %%%%%%%% CAREFUL
+            obj.H_ph=     {obj.H_k, obj.H_ph{1:end-1}};
+            obj.L_ph=     {obj.L_k, obj.L_ph{1:end-1}};
+            obj.Lpp_ph=   {obj.Lpp_k, obj.Lpp_ph{1:end-1}};
+            obj.Y_ph=     {estimator.Y_k, obj.Y_ph{1:end-1}};
+            obj.P_MA_ph=  {obj.P_MA_k, obj.P_MA_ph{1:end-1}};
         end
         
     end

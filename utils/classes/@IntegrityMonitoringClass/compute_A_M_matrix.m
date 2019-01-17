@@ -17,9 +17,13 @@ if isempty(obj.A_M) || ~obj.calculate_A_M_recursively % build matrix A_M in the 
             
         end
         
-        n_start= estimator.n_k + sum( obj.n_ph(1:i-1) ) + 1;
-        n_end=   estimator.n_k + sum( obj.n_ph(1:i) );
-        obj.A_M(:,n_start : n_end)= Dummy_Variable * obj.L_ph{i};
+        % accounting for the case where there are no landmarks in the FoV at
+        % one of the epochs in the preceding horizon
+        if ~(obj.n_ph(1:i) == 0)
+            n_start= estimator.n_k + sum( obj.n_ph(1:i-1) ) + 1;
+            n_end=   estimator.n_k + sum( obj.n_ph(1:i) );
+            obj.A_M(:,n_start : n_end)= Dummy_Variable * obj.L_ph{i};
+       end
         
     end
     
