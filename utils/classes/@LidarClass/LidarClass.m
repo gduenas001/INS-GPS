@@ -85,7 +85,7 @@ classdef LidarClass < handle
                 area= obj.areas_to_remove(i,:);
                 
                 % transform to nav-frame first
-                msmt_nav_frame= body2nav(obj.msmt,x);
+                msmt_nav_frame= body2nav_3D(obj.msmt,x);
                 
                 % Remove people-features
                 inX= (msmt_nav_frame(:,1) > area(1)) & (msmt_nav_frame(:,1) < area(2));

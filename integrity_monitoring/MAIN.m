@@ -17,8 +17,8 @@ gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
 estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_static), params);
-data_obj= DataClass(params, imu.num_readings, gps.num_readings);
-counters= CountersClass(gps, lidar);
+data_obj= DataClass(imu.num_readings, gps.num_readings, params);
+counters= CountersClass(gps, lidar, params);
 
 % Initial discretization for cov. propagation
 estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
@@ -138,7 +138,7 @@ for epoch= 1:imu.num_readings - 1
                 im.monitor_integrity(estimator, counters, data_obj, params);
                 
                 % Store data
-                data_obj.store_msmts( body2nav(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
+                data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
                 counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
                 
                 % increase integrity counter

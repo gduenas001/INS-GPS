@@ -8,12 +8,14 @@
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
+ SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON= 1;
  % --------------------------------------------------
 
 
 % --------------- Parameters ---------------
 m= 3; % number of states in the state vector
 I_MA= 1e-8; % risk allocated to unmonitored modes
+P_UA= 1e-4;
 min_num_LMs_to_monitor= 10;
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 5000;

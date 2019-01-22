@@ -13,7 +13,9 @@
 
 
 % --------------- Parameters ---------------
+m= 15; % number of states in the state vector
 I_MA= 1e-8;
+P_UA= 1e-4;
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 5000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
@@ -58,6 +60,4 @@ VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
-p_UA= 1e-4;
-I_MA= 1e-8;
 % -------------------------------------------
