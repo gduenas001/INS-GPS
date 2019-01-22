@@ -29,7 +29,6 @@ for t= 1:length(association_of_associated_features)
     dy= landmark(2) - estimator.XX(2);
     h_t(1)=  dx*cpsi + dy*spsi;
     h_t(2)= -dx*spsi + dy*cpsi;
-    
     % loop through every possible landmark in the FoV (potential MA)
     for l= 1:length(estimator.FoV_landmarks_at_k)
         if l ~= t

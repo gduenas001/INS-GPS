@@ -2,7 +2,16 @@ function lidar_update_localization(obj, z, association, params)
 
 obj.XX(9)= pi_to_pi( obj.XX(9) );
 
-if all(association == 0), return; end
+if all(association == 0)
+    obj.n_k= 0;
+    obj.Y_k= [];
+    obj.L_k= [];
+    obj.gamma_k= [];
+    obj.q_k= 0;
+    obj.H_k= [];
+    obj.number_of_associated_LMs= 0;
+    return;
+end
 
 % Eliminate the non-associated features
 z(association == 0, :)= [];
@@ -44,4 +53,5 @@ obj.gamma_k= zVector - zHat;
 obj.q_k= obj.gamma_k' / obj.Y_k * obj.gamma_k;
 obj.XX= obj.XX + obj.L_k * obj.gamma_k;
 obj.PX= obj.PX - obj.L_k * obj.H_k * obj.PX;
+obj.number_of_associated_LMs= length(association);
 end

@@ -20,8 +20,8 @@ classdef ParametersClass < handle
     
     properties (Constant)
         % path= '../data/cart/20180725/';
-%         path= '../data/vehicle/20190110/';
-        path= '../data/simulation/simple_sim';
+        path= '../data/vehicle/20190110/';
+%         path= '../data/simulation/simple_sim';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
@@ -29,6 +29,7 @@ classdef ParametersClass < handle
         % ---------------------------------------------------------
         % ------------ paramters specified in file ----------------
         % ---------------------------------------------------------
+        I_MA
         min_appearances
         num_epochs_reduce_testing
         num_epochs_static
@@ -66,6 +67,7 @@ classdef ParametersClass < handle
         feature_height
         initial_yaw_angle
         preceding_horizon_size
+        min_num_LMs_to_monitor
         continuity_requirement
         alert_limit
         VRW
@@ -141,6 +143,7 @@ classdef ParametersClass < handle
             obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
              % --------------------------------------------------
             
+            obj.I_MA= I_MA;
             obj.min_appearances= min_appearances;
             obj.num_epochs_reduce_testing= num_epochs_reduce_testing;
             obj.num_epochs_static= num_epochs_static;
@@ -178,6 +181,7 @@ classdef ParametersClass < handle
             obj.feature_height= feature_height;
             obj.initial_yaw_angle= initial_yaw_angle;
             obj.preceding_horizon_size= preceding_horizon_size;
+            obj.min_num_LMs_to_monitor= min_num_LMs_to_monitor;
             obj.continuity_requirement= continuity_requirement;
             obj.alert_limit= alert_limit;
             obj.VRW= VRW;

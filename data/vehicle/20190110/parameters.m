@@ -12,6 +12,7 @@
 
 
 % --------------- Parameters ---------------
+I_MA= 1e-8;
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 5000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
@@ -48,7 +49,8 @@ mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
 mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
 feature_height= 1.5; % height of the features
 initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
-preceding_horizon_size= 15;
+preceding_horizon_size= 2;
+min_num_LMs_to_monitor= 15;
 continuity_requirement= 1e-5;
 alert_limit= 1;
 VRW= 0.07; % vel random walk

@@ -2,8 +2,7 @@
 classdef IntegrityMonitoringClass < handle
     properties (Constant)
         m= 3
-        p_UA= 1e-5
-        p_prev_f_CA= 1e-5
+        p_UA= 1e-12
         ind_im= [1,2,9];
         calculate_A_M_recursively = 0
         I_MA = 1e-12
@@ -64,7 +63,7 @@ classdef IntegrityMonitoringClass < handle
         function obj= IntegrityMonitoringClass(params)
             obj.M= params.preceding_horizon_size;
             
-            obj.n_ph=     ones(obj.M,1) * (-1);
+            obj.n_ph=     ones(obj.M,1) * (0);
             obj.Phi_ph=   cell(1, obj.M + 1); % need an extra epoch here
             obj.gamma_ph= cell(1, obj.M);
             obj.q_ph=     ones(obj.M, 1) * (-1);
@@ -118,14 +117,14 @@ classdef IntegrityMonitoringClass < handle
         function update_preceding_horizon(obj, estimator)
             
             obj.n_ph=     [estimator.n_k; obj.n_ph(1:end-1)];
-            obj.gamma_ph= [estimator.gamma_k, obj.gamma_ph(1:end-1)];
+            obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:end-1}};
             obj.q_ph=     [estimator.q_k; obj.q_ph(1:end-1)];
-            obj.Phi_ph=   [obj.Phi_k, obj.Phi_ph(1:end-1)]; %%%%%%%% CAREFUL
-            obj.H_ph=     [obj.H_k, obj.H_ph(1:end-1)];
-            obj.L_ph=     [obj.L_k, obj.L_ph(1:end-1)];
-            obj.Lpp_ph=   [obj.Lpp_k, obj.Lpp_ph(1:end-1)];
-            obj.Y_ph=     [estimator.Y_k, obj.Y_ph(1:end-1)];
-            obj.P_MA_ph=  [obj.P_MA_k, obj.P_MA_ph(1:end-1)];
+            obj.Phi_ph=   {obj.Phi_k, obj.Phi_ph{1:end-1}}; %%%%%%%% CAREFUL
+            obj.H_ph=     {obj.H_k, obj.H_ph{1:end-1}};
+            obj.L_ph=     {obj.L_k, obj.L_ph{1:end-1}};
+            obj.Lpp_ph=   {obj.Lpp_k, obj.Lpp_ph{1:end-1}};
+            obj.Y_ph=     {estimator.Y_k, obj.Y_ph{1:end-1}};
+            obj.P_MA_ph=  {obj.P_MA_k, obj.P_MA_ph{1:end-1}};
         end
         
     end
