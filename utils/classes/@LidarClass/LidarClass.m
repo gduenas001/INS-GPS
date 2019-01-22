@@ -18,6 +18,12 @@ classdef LidarClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function obj= LidarClass(params, init_time)
+            
+            if params.SWITCH_SIM
+                obj.time= 0;
+                return
+            end
+            
             % substracts the GPS start time which is used as reference
             
             % load the variable "T_LIDAR"
@@ -87,30 +93,6 @@ classdef LidarClass < handle
                 obj.msmt( inX & inY, :)= [];
             end        
         end
-        % ----------------------------------------------
-        % ----------------------------------------------
-        function simulate_msmt(obj, estimator, params)
-            spsi= sin(obj.x_true(3));
-            cpsi= cos(obj.x_true(3));
-            obj.msmt= [];
-            
-            for l= 1:estimator.num_landmarks
-                % check if the landmark is in the FoV
-                dx= estimator.landmark_map(l,1) - estimator.x_true(1);
-                if abs(dx) > params.lidarRange, continue, end
-                dy= estimator.landmark_map(l,2) - estimator.y_true(2);
-                if abs(dy) > params.lidarRange, continue, end
-                
-                % simulate msmt with noise
-                z_lm(1)=  dx*cpsi + dy*spsi + randn(1) * params.sig_lidar;
-                z_lm(2)= -dx*spsi + dy*cpsi + randn(1) * params.sig_lidar;
-                
-                % add measurement
-                obj.msmt= [obj.msmt; z_lm];
-            end
-        end
-        % ----------------------------------------------
-        % ----------------------------------------------
     end
 end
 

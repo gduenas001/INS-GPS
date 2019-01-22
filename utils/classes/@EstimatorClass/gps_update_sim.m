@@ -1,5 +1,5 @@
 
-function gps_update_simulation(obj, params)
+function gps_update_sim(obj, params)
 
 % simulate measurement
 z= obj.x_true + mvnrnd(zeros(1,3), params.R_gps_sim);

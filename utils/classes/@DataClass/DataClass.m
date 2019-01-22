@@ -11,8 +11,8 @@ classdef DataClass < handle
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj= DataClass(imu_num_readings, gps_num_readings)
-            obj.pred= PredictionDataClass(imu_num_readings);
+        function obj= DataClass(imu_num_readings, gps_num_readings, params)
+            obj.pred= PredictionDataClass(imu_num_readings, params);
             obj.update= UpdateDataClass(imu_num_readings);
             %obj.im= IntegrityDataClass(gps_num_readings * 10);
             obj.im= IntegrityDataClass_Fixed_num_of_LM_horizon(gps_num_readings * 10);
@@ -21,6 +21,11 @@ classdef DataClass < handle
         % ----------------------------------------------
         function store_prediction(obj, epoch, estimator, time)
             obj.pred.store(epoch, estimator, time);
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function store_prediction_sim(obj, epoch, estimator, time)
+            obj.pred.store_sim(epoch, estimator, time);
         end
         % ----------------------------------------------
         % ----------------------------------------------

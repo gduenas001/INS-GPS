@@ -12,6 +12,9 @@
 
 
 % --------------- Parameters ---------------
+m= 3; % number of states in the state vector
+I_MA= 1e-8; % risk allocated to unmonitored modes
+min_num_LMs_to_monitor= 10;
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 5000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
@@ -56,7 +59,12 @@ ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
 % -------------------- simulation -----------------------
+num_epochs_sim= 1000;
+dt_sim= 0.1; % time step for the simulation (equal for all updates)
+velocity_sim= 2;
+steering_angle_sim= deg2rad(10);
 sig_gps_sim= 0.02; % standar deviation for GPS in simulation (all z-y-x)
-
-
+sig_velocity_sim= 0.1;
+sig_steering_angle_sim= deg2rad(1);
+wheelbase_sim= 1; % for the simulated car
 % -------------------------------------------

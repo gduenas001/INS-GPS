@@ -16,6 +16,11 @@ classdef GPSClass < handle
         % ----------------------------------------------
         function obj= GPSClass(timeStatic, params)
             
+            if params.SWITCH_SIM
+                obj.time= 0;
+                return
+            end
+            
             numEpochStaticGPS= ceil(timeStatic);
             
             % loads "data" variable

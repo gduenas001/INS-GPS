@@ -3,10 +3,14 @@ classdef EstimatorClass < handle
     properties (SetAccess = immutable)
         landmark_map
     end
+    
     properties
         XX= zeros(15,1)
+        x_true= zeros(3,1)
+        
         PX= zeros(15)
-        number_of_associated_LMs
+        
+        number_of_associated_LMs= 0
         
         n_k
         
@@ -33,20 +37,25 @@ classdef EstimatorClass < handle
         % ----------------------------------------------
         function obj= EstimatorClass(imu_calibration_msmts, params)
             
-            % Initial attitude
-            obj.initialize_pitch_and_roll(imu_calibration_msmts)
-            obj.XX(9)= deg2rad(params.initial_yaw_angle);
-            
-            % save initial attitude for calibration
-            obj.initial_attitude= obj.XX(7:9);
-            
-            % initialize covariance
-            obj.PX(10:12, 10:12)= diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
-            obj.PX(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
-            obj.appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
-            
-            obj.number_of_associated_LMs= 0; %initialization
-            
+            if params.SWITCH_SIM
+                obj.XX= zeros(3,1);
+                obj.PX= ones(3,3) * eps;
+                return
+            else
+                
+                % Initial attitude
+                obj.initialize_pitch_and_roll(imu_calibration_msmts)
+                obj.XX(9)= deg2rad(params.initial_yaw_angle);
+                
+                % save initial attitude for calibration
+                obj.initial_attitude= obj.XX(7:9);
+                
+                % initialize covariance
+                obj.PX(10:12, 10:12)= diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
+                obj.PX(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
+                obj.appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
+            end
+                       
             % load map if exists
             if params.SWITCH_SLAM 
                 obj.num_landmarks= 0;
@@ -104,6 +113,9 @@ classdef EstimatorClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         imu_update( obj, imu_msmt, params )
+        % ----------------------------------------------
+        % ----------------------------------------------
+        odometry_update_sim( obj, imu_msmt, params )
         % ----------------------------------------------
         % ----------------------------------------------
         function yaw_update(obj, w, params)
@@ -171,7 +183,10 @@ classdef EstimatorClass < handle
         gps_update(obj, z, R, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        gps_update_simulation(obj, params)
+        gps_update_sim(obj, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        get_lidar_msmt_sim(obj, params)
         % ----------------------------------------------
         % ----------------------------------------------
         association= nearest_neighbor_slam(obj, z, params)

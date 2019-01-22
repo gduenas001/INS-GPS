@@ -20,8 +20,8 @@ classdef ParametersClass < handle
     
     properties (Constant)
         % path= '../data/cart/20180725/';
-        path= '../data/vehicle/20190110/';
-%         path= '../data/simulation/simple_sim';
+%         path= '../data/vehicle/20190110/';
+        path= '../data/simulation/simple_sim/';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
@@ -29,6 +29,7 @@ classdef ParametersClass < handle
         % ---------------------------------------------------------
         % ------------ paramters specified in file ----------------
         % ---------------------------------------------------------
+        m
         I_MA
         min_appearances
         num_epochs_reduce_testing
@@ -75,7 +76,16 @@ classdef ParametersClass < handle
         sn_f
         sn_w
         % -------------------- simulation -----------------------
+        num_epochs_sim
+        dt_sim
+        velocity_sim
+        steering_angle_sim
+        sig_gps_sim
+        sig_velocity_sim
+        sig_steering_angle_sim
         R_gps_sim
+        W_odometry_sim
+        wheelbase_sim
         
         % -------------------------------------------
         % -------------------------------------------
@@ -125,6 +135,19 @@ classdef ParametersClass < handle
         % ----------------------------------------------
         function obj = ParametersClass(navigation_type)
             
+            % differenciate between slam and localization
+            if navigation_type == 'slam'
+                obj.SWITCH_SLAM= 1;
+                obj.SWITCH_SIM= 0;
+            elseif navigation_type == 'localization'
+                obj.SWITCH_SLAM= 0;
+                obj.SWITCH_SIM= 0;
+            elseif navigation_type == 'simulation'
+                obj.SWITCH_SIM= 1;
+            else
+                error('navigation_type must be either "slam" or "localization"');
+            end
+
             
             % ---------------------------------------------------------
             % ------------ paramters specified in file ----------------
@@ -142,7 +165,8 @@ classdef ParametersClass < handle
             obj.SWITCH_REMOVE_FAR_FEATURES= SWITCH_REMOVE_FAR_FEATURES;
             obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
              % --------------------------------------------------
-            
+             
+            obj.m= m;
             obj.I_MA= I_MA;
             obj.min_appearances= min_appearances;
             obj.num_epochs_reduce_testing= num_epochs_reduce_testing;
@@ -189,23 +213,20 @@ classdef ParametersClass < handle
             obj.sn_f= sn_f;
             obj.sn_w= sn_w;
             % -------------------- simulation -----------------------
-            obj.R_gps_sim= R_gps_sim;
-
+            if obj.SWITCH_SIM
+                obj.num_epochs_sim= num_epochs_sim;
+                obj.dt_sim= dt_sim;
+                obj.velocity_sim= velocity_sim;
+                obj.steering_angle_sim= steering_angle_sim;
+                obj.sig_gps_sim= sig_gps_sim;
+                obj.sig_velocity_sim= sig_velocity_sim;
+                obj.sig_steering_angle_sim= sig_steering_angle_sim;
+        
+                obj.wheelbase_sim= wheelbase_sim;
+            end
             % -------------------------------------------
             % -------------------------------------------
             
-            % differenciate between slam and localization
-            if navigation_type == 'slam'
-                obj.SWITCH_SLAM= 1;
-                obj.SWITCH_SIM= 0;
-            elseif navigation_type == 'localization'
-                obj.SWITCH_SLAM= 0;
-                obj.SWITCH_SIM= 0;
-            elseif navigation_type == 'simulation'
-                obj.SWITCH_SIM= 1;
-            else
-                error('navigation_type must be either "slam" or "localization"');
-            end
             
             % set file names
             obj.file_name_imu=  strcat(obj.path, 'IMU/IMU.mat');
@@ -218,7 +239,7 @@ classdef ParametersClass < handle
             obj.VRW= obj.VRW * obj.mult_factor_acc_imu; 
             obj.ARW= obj.ARW * obj.mult_factor_gyro_imu; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
             
-            % build parameters
+            % ------------------ build parameters ------------------
             obj.g_N= [0; 0; obj.g_val]; % G estimation (sense is same at grav acceleration in nav-frame)
             obj.sig_cal_pos_blkMAtrix= diag([obj.sig_cal_pos, obj.sig_cal_pos, obj.sig_cal_pos]);
             obj.sig_cal_vel_blkMAtrix= diag([obj.sig_cal_vel, obj.sig_cal_vel, obj.sig_cal_vel]);
@@ -252,7 +273,15 @@ classdef ParametersClass < handle
             % PSD for continuous model
             obj.S     = blkdiag(obj.Sv, obj.Sn);
             obj.S_cal = blkdiag(obj.Sv_cal, obj.Sn);
-
+            
+            % -------------------- simulation -----------------------
+            obj.R_gps_sim= [obj.sig_gps_sim^2, 0, 0; 
+                            0, obj.sig_gps_sim^2, 0;
+                            0, 0, obj.sig_gps_sim^2];
+                        
+            obj.W_odometry_sim= [obj.sig_velocity_sim^2, 0;
+                                 0, obj.sig_steering_angle_sim^2];
+            % -------------------------------------------------------
         end
         
         
