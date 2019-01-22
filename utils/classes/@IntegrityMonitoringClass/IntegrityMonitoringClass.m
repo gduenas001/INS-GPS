@@ -2,8 +2,7 @@
 classdef IntegrityMonitoringClass < handle
     properties (Constant)
         m= 3
-        p_UA= 1e-5
-        p_prev_f_CA= 1e-5
+        p_UA= 1e-12
         ind_im= [1,2,9];
         calculate_A_M_recursively = 0
         I_MA = 1e-12
@@ -64,7 +63,7 @@ classdef IntegrityMonitoringClass < handle
         function obj= IntegrityMonitoringClass(params)
             obj.M= params.preceding_horizon_size;
             
-            obj.n_ph=     ones(obj.M,1) * (-1);
+            obj.n_ph=     ones(obj.M,1) * (0);
             obj.Phi_ph=   cell(1, obj.M + 1); % need an extra epoch here
             obj.gamma_ph= cell(1, obj.M);
             obj.q_ph=     ones(obj.M, 1) * (-1);

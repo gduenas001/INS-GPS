@@ -7,7 +7,7 @@ else
     % compute Q matrix with A_M_(k-1) , Phi_(k-1), P_k, n_M_(k-1)
     Q= obj.A_M' * obj.Phi_ph{1}' * estimator.PX([1:2,9],[1:2,9]) * obj.Phi_ph{1} * obj.A_M;
     lambda_max_Q= max( eig( Q ) );
-    mu_k= lambda_max_Q * ( sqrt(obj.T_d) - sqrt( chi2inv(1 - obj.I_MA , obj.n_M) ) )^2;
+    mu_k= lambda_max_Q * ( sqrt(obj.T_d) - sqrt( chi2inv(1 - params.I_MA , obj.n_M) ) )^2;
 end
 
 % dof of the non-central chi-square in the P(MA)
@@ -23,13 +23,12 @@ obj.P_MA_k= ones(size(association_of_associated_features)) * (-1);
 
 % loop through each associated landmark
 for t= 1:length(association_of_associated_features)
-    obj.P_MA_k(t)= length(estimator.FoV_landmarks_at_k) - 1;
+    obj.P_MA_k(t)= params.I_MA + length(estimator.FoV_landmarks_at_k) - 1;
     landmark= estimator.landmark_map( association_of_associated_features(t) ,: );
     dx= landmark(1) - estimator.XX(1);
     dy= landmark(2) - estimator.XX(2);
     h_t(1)=  dx*cpsi + dy*spsi;
     h_t(2)= -dx*spsi + dy*cpsi;
-    
     % loop through every possible landmark in the FoV (potential MA)
     for l= 1:length(estimator.FoV_landmarks_at_k)
         if l ~= t

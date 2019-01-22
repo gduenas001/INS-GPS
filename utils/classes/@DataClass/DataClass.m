@@ -14,7 +14,8 @@ classdef DataClass < handle
         function obj= DataClass(imu_num_readings, gps_num_readings)
             obj.pred= PredictionDataClass(imu_num_readings);
             obj.update= UpdateDataClass(imu_num_readings);
-            obj.im= IntegrityDataClass(gps_num_readings * 10);
+            %obj.im= IntegrityDataClass(gps_num_readings * 10);
+            obj.im= IntegrityDataClass_Fixed_num_of_LM_horizon(gps_num_readings * 10);
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -176,7 +177,8 @@ classdef DataClass < handle
         % ----------------------------------------------
         function plot_number_of_landmarks_in_preceding_horizon(obj)
             figure; hold on; grid on;
-            plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
+            plot(obj.im.time, obj.im.n_L_M_for_LM, 'b-', 'linewidth', 2)
+            %plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
             xlabel('time [s]')
             ylabel('Number of landmarks in the preceding horizon')
         end

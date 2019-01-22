@@ -8,7 +8,8 @@ addpath('../utils/classes')
 
 % create objects
 params= ParametersClass("localization");
-im= IntegrityMonitoringClass(params);
+%im= IntegrityMonitoringClass(params);
+im= IntegrityMonitoringClass_Fixed_num_of_LM_horizon(params);
 gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
@@ -35,7 +36,7 @@ for epoch= 1:imu.num_readings - 1
         estimator.PX(9,9)= params.sig_yaw0^2;
     end
         
-    % Increase time count
+    % Increase time count000000000000000000000000
     counters.increase_time_sums(params);
     
     % ------------- IMU -------------

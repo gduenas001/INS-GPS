@@ -6,6 +6,7 @@ classdef EstimatorClass < handle
     properties
         XX= zeros(15,1)
         PX= zeros(15)
+        number_of_associated_LMs
         
         n_k
         
@@ -43,6 +44,8 @@ classdef EstimatorClass < handle
             obj.PX(10:12, 10:12)= diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
             obj.PX(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
             obj.appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
+            
+            obj.number_of_associated_LMs= 0; %initialization
             
             % load map if exists
             if params.SWITCH_SLAM 

@@ -2,11 +2,9 @@
 classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
     properties (Constant)
         m= 3
-        p_UA= 1e-5
-        p_prev_f_CA= 1e-5
+        p_UA= 1e-4
         ind_im= [1,2,9];
         calculate_A_M_recursively = 0
-        I_MA = 1e-12
     end
     properties (SetAccess = immutable)
         M % size of the preceding horizon in epochs
@@ -34,6 +32,9 @@ classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
         % augmented (M) 
         n_M % num msmts in the preceding horizon (including k)
         n_L_M % num landmarks in the preceding horizon (including k)
+        n_M_for_LM % num msmts in the preceding horizon(for fixed LMs preceding horizon; including k)
+        n_L_M_for_LM % num landmarks in the preceding horizon(for fixed LMs preceding horizon; including k)
+        M_for_LM %the index of the last epoch to monitor (for fixed LMs preceding horizon)
         Phi_M
         q_M
         gamma_M
@@ -63,8 +64,9 @@ classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
         % ----------------------------------------------
         function obj= IntegrityMonitoringClass_Fixed_num_of_LM_horizon(params)
             obj.M= params.preceding_horizon_size;
+            obj.M_for_LM= 0; % initialization
             
-            obj.n_ph=     ones(obj.M,1) * (-1);
+            obj.n_ph=     ones(obj.M,1) * (0);
             obj.Phi_ph=   cell(1, obj.M + 1); % need an extra epoch here
             obj.gamma_ph= cell(1, obj.M);
             obj.q_ph=     ones(obj.M, 1) * (-1);
@@ -87,10 +89,10 @@ classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
         % ----------------------------------------------
         function compute_E_matrix(obj, i, m_F)
             if i == 0 % E matrix for only previous state faults
-                obj.E= zeros( obj.m, obj.n_M + obj.m );
+                obj.E= zeros( obj.m, obj.n_M_for_LM + obj.m );
                 obj.E(:, end-obj.m + 1:end)= eye(obj.m);
             else % E matrix with faults in the PH
-                obj.E= zeros( obj.m + m_F , obj.n_M + obj.m );
+                obj.E= zeros( obj.m + m_F , obj.n_M_for_LM + obj.m );
                 obj.E( end-obj.m+1 : end , end-obj.m+1:end )= eye(obj.m); % previous bias
                 obj.E( 1:m_F , (i-1)*m_F + 1 : i*m_F )= eye(m_F); % landmark i faulted
             end
@@ -117,15 +119,15 @@ classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
         % ----------------------------------------------
         function update_preceding_horizon(obj, estimator)
             
-            obj.n_ph=     [estimator.n_k; obj.n_ph(1:end-1)];
-            obj.gamma_ph= [estimator.gamma_k, obj.gamma_ph(1:end-1)];
-            obj.q_ph=     [estimator.q_k; obj.q_ph(1:end-1)];
-            obj.Phi_ph=   [obj.Phi_k, obj.Phi_ph(1:end-1)]; %%%%%%%% CAREFUL
-            obj.H_ph=     [obj.H_k, obj.H_ph(1:end-1)];
-            obj.L_ph=     [obj.L_k, obj.L_ph(1:end-1)];
-            obj.Lpp_ph=   [obj.Lpp_k, obj.Lpp_ph(1:end-1)];
-            obj.Y_ph=     [estimator.Y_k, obj.Y_ph(1:end-1)];
-            obj.P_MA_ph=  [obj.P_MA_k, obj.P_MA_ph(1:end-1)];
+            obj.n_ph=     [estimator.n_k; obj.n_ph(1:obj.M_for_LM+1)];
+            obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:obj.M_for_LM+1}};
+            obj.q_ph=     [estimator.q_k; obj.q_ph(1:obj.M_for_LM+1)];
+            obj.Phi_ph=   {obj.Phi_k, obj.Phi_ph{1:obj.M_for_LM+1}}; %%%%%%%% CAREFUL
+            obj.H_ph=     {obj.H_k, obj.H_ph{1:obj.M_for_LM+1}};
+            obj.L_ph=     {obj.L_k, obj.L_ph{1:obj.M_for_LM+1}};
+            obj.Lpp_ph=   {obj.Lpp_k, obj.Lpp_ph{1:obj.M_for_LM+1}};
+            obj.Y_ph=     {estimator.Y_k, obj.Y_ph{1:obj.M_for_LM+1}};
+            obj.P_MA_ph=  {obj.P_MA_k, obj.P_MA_ph{1:obj.M_for_LM+1}};
         end
         
     end
