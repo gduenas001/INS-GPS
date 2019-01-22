@@ -27,7 +27,7 @@ classdef EstimatorClass < handle
         
         
         initial_attitude
-        appearances
+        appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
         FoV_landmarks_at_k % landmarks in the field of view        
     end
     
@@ -38,11 +38,10 @@ classdef EstimatorClass < handle
         function obj= EstimatorClass(imu_calibration_msmts, params)
             
             if params.SWITCH_SIM
+                % simply set state to zero in simulation
                 obj.XX= zeros(3,1);
                 obj.PX= ones(3,3) * eps;
-                return
-            else
-                
+            else                
                 % Initial attitude
                 obj.initialize_pitch_and_roll(imu_calibration_msmts)
                 obj.XX(9)= deg2rad(params.initial_yaw_angle);
@@ -53,13 +52,12 @@ classdef EstimatorClass < handle
                 % initialize covariance
                 obj.PX(10:12, 10:12)= diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
                 obj.PX(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
-                obj.appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
             end
                        
             % load map if exists
             if params.SWITCH_SLAM 
                 obj.num_landmarks= 0;
-            else
+            else % either simulation or real localization
                 data= load(strcat( params.path, 'landmark_map.mat' ));
                 obj.landmark_map= data.landmark_map;
                 obj.num_landmarks= size(obj.landmark_map, 1);
@@ -180,13 +178,19 @@ classdef EstimatorClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function z= get_gps_msmt_sim(obj, params)
+            % simulate measurement
+            z= obj.x_true(1:2) + mvnrnd(zeros(2,1), params.R_gps_sim)';
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         gps_update(obj, z, R, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        gps_update_sim(obj, params)
+        gps_update_sim(obj, z, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        get_lidar_msmt_sim(obj, params)
+        z= get_lidar_msmt_sim(obj, params)
         % ----------------------------------------------
         % ----------------------------------------------
         association= nearest_neighbor_slam(obj, z, params)
@@ -199,6 +203,9 @@ classdef EstimatorClass < handle
         % ----------------------------------------------
         % ----------------------------------------------     
         lidar_update_localization(obj, z, association, params)
+        % ----------------------------------------------
+        % ----------------------------------------------     
+        lidar_update_localization_sim(obj, z, association, params)
         % ----------------------------------------------
         % ----------------------------------------------     
         function increase_landmarks_cov(obj, minPXLM)

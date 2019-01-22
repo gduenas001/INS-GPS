@@ -1,5 +1,5 @@
 
-function association= nearest_neighbor_localization(obj, z, params)
+function association= nearest_neighbor_localization_sim(obj, z, params)
 
 % number of features
 n_F= size(z,1);
@@ -10,8 +10,8 @@ association= zeros(n_F,1);
 if n_F == 0, return, end
 
 % initialize variables
-spsi= sin(obj.XX(9));
-cpsi= cos(obj.XX(9));
+spsi= sin(obj.XX(3));
+cpsi= cos(obj.XX(3));
 zHat= zeros(2,1);
 
 % select landmarks in the field of view
@@ -58,7 +58,7 @@ for i= 1:n_F
              spsi, -cpsi, -dx*cpsi - dy*spsi ];
         
         % covariance matrix
-        Y= H * obj.PX([1:2,9],[1:2,9]) * H' + params.R_lidar;
+        Y= H * obj.PX * H' + params.R_lidar;
         
         % IIN squared
         y2= gamma' / Y * gamma;

@@ -1,5 +1,5 @@
 
-function z= body2nav(z,x)
+function z= body2nav_3D(z,x)
 
 % % Convert in 2D
 % z= z(:,1:2);

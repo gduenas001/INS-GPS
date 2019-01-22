@@ -275,9 +275,8 @@ classdef ParametersClass < handle
             obj.S_cal = blkdiag(obj.Sv_cal, obj.Sn);
             
             % -------------------- simulation -----------------------
-            obj.R_gps_sim= [obj.sig_gps_sim^2, 0, 0; 
-                            0, obj.sig_gps_sim^2, 0;
-                            0, 0, obj.sig_gps_sim^2];
+            obj.R_gps_sim= [obj.sig_gps_sim^2, 0; 
+                            0, obj.sig_gps_sim^2];
                         
             obj.W_odometry_sim= [obj.sig_velocity_sim^2, 0;
                                  0, obj.sig_steering_angle_sim^2];

@@ -6,6 +6,7 @@ classdef DataClass < handle
         im
         
         msmts        
+        gps_msmts
     end
     
     methods
@@ -13,7 +14,7 @@ classdef DataClass < handle
         % ----------------------------------------------
         function obj= DataClass(imu_num_readings, gps_num_readings, params)
             obj.pred= PredictionDataClass(imu_num_readings, params);
-            obj.update= UpdateDataClass(imu_num_readings);
+            obj.update= UpdateDataClass(imu_num_readings, params);
             %obj.im= IntegrityDataClass(gps_num_readings * 10);
             obj.im= IntegrityDataClass_Fixed_num_of_LM_horizon(gps_num_readings * 10);
         end
@@ -37,8 +38,21 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function epoch= store_update_sim(obj, epoch, estimator, time)
+            obj.update.store_sim(epoch, estimator, time);
+            
+            % increase counter
+            epoch= epoch + 1;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function store_msmts(obj, msmts) % TODO: optimize this mess!!
             obj.msmts= [obj.msmts; msmts];
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function store_gps_msmts(obj, gps_msmt) % TODO: optimize this mess!!
+            obj.gps_msmts= [obj.gps_msmts; gps_msmt'];
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -115,6 +129,38 @@ classdef DataClass < handle
                     R_NB= R_NB_rot(obj.pred.XX(7,i), obj.pred.XX(8,i), obj.pred.XX(9,i));
                     xyz_N= R_NB*params.xyz_B + obj.pred.XX(1:3,i);
                     plot3(xyz_N(1,:), xyz_N(2,:), xyz_N(3,:), 'g-', 'linewidth', 2);
+                end
+            end
+            xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
+            axis equal
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_map_localization_sim(obj, estimator, num_readings, params)
+            % Plot GPS+IMU estimated path
+            figure; hold on; grid on;
+            plot(obj.pred.XX(1,:), obj.pred.XX(2,:), 'b.');
+            plot(obj.update.XX(1,:), obj.update.XX(2,:), 'b.','markersize', 7);
+            if ~isempty(obj.gps_msmts)
+                plot(obj.gps_msmts(:,1), obj.gps_msmts(:,2), 'r*', 'markersize', 4);
+            end
+            
+            % create a map of landmarks
+            lm_map= [estimator.landmark_map(:,1),...
+                estimator.landmark_map(:,2),...
+                zeros(estimator.num_landmarks,1)];
+            plot(lm_map(:,1), lm_map(:,2), 'g+', 'markersize',20);
+            
+            if ~isempty(obj.msmts)
+                plot(obj.msmts(:,1), obj.msmts(:,2), 'k.');
+            end
+            
+            % plot attitude every 100 IMU readings
+            for i= 1:num_readings
+                if rem(i,100) == 0
+                    R_NB= R_NB_rot( 0, 0, obj.pred.XX(3,i));
+                    xyz_N= R_NB*params.xyz_B + obj.pred.XX(:,i);
+                    plot(xyz_N(1,:), xyz_N(2,:), 'g-', 'linewidth', 2);
                 end
             end
             xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
