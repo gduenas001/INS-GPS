@@ -8,6 +8,7 @@
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
+ SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON= 1;
  % --------------------------------------------------
 
 
@@ -57,4 +58,6 @@ VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
+p_UA= 1e-4;
+I_MA= 1e-8;
 % -------------------------------------------

@@ -69,7 +69,7 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
             n_H = 0;
         end
 
-        for i= 0:n_H
+        for i= 0:0%n_H
             % build extraction matrix 
             obj.compute_E_matrix(i, params.m_F)
 
@@ -101,7 +101,7 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
                 % previous-estimate fault hypothesis probability
                 % scaled to make sure that the sum of all hypotheses' probabilities
                 % equals to one (Total probability theorm)
-                P_H = prod( 1-(obj.P_MA_M + obj.p_UA) );
+                P_H = prod( 1-(obj.P_MA_M +params.p_UA) );
                 norm_P_H= norm_P_H + P_H;
                 obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
             else
@@ -111,16 +111,16 @@ if counters.k_im > obj.M + 2 % need an extra two epoch to store Lpp (osama)
                 P_H = 1; % initialization
                 for j = 1 : size(obj.n_L_M)
                     if i == j
-                        P_H = P_H * (obj.P_MA_M(j) + obj.p_UA);
+                        P_H = P_H * (obj.P_MA_M(j) + params.p_UA);
                     else
-                        P_H = P_H * (1 -(obj.P_MA_M(j) + obj.p_UA));
+                        P_H = P_H * (1 -(obj.P_MA_M(j) + params.p_UA));
                     end
                 end
                 norm_P_H= norm_P_H + P_H;
                 obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
             end
         end
-        obj.p_hmi = ( (obj.p_hmi / norm_P_H*(1-obj.p_UA*n_H)) + obj.p_UA*n_H )*(1-obj.I_MA) + obj.I_MA;
+        obj.p_hmi = ( (obj.p_hmi / norm_P_H*(1-params.p_UA*n_H)) + params.p_UA*n_H )*(1-params.I_MA) + params.I_MA;
     end
     % store integrity related data
     data.store_integrity_data(obj, counters, params)

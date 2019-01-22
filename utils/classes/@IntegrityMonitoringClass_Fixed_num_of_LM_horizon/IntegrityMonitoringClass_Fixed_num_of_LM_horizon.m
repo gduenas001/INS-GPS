@@ -2,9 +2,8 @@
 classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
     properties (Constant)
         m= 3
-        p_UA= 1e-4
+        calculate_A_M_recursively = 0;
         ind_im= [1,2,9];
-        calculate_A_M_recursively = 0
     end
     properties (SetAccess = immutable)
         M % size of the preceding horizon in epochs
@@ -14,6 +13,8 @@ classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
         
         p_hmi
         detector_threshold
+        
+        Extra_epoch_is_need
         
         n_ph
         n_F_ph % number of features associated in the preceding horizon
@@ -30,8 +31,8 @@ classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
         Lpp_k
         
         % augmented (M) 
-        n_M % num msmts in the preceding horizon (including k)
-        n_L_M % num landmarks in the preceding horizon (including k)
+        %n_M % num msmts in the preceding horizon (including k)
+        %n_L_M % num landmarks in the preceding horizon (including k)
         n_M_for_LM % num msmts in the preceding horizon(for fixed LMs preceding horizon; including k)
         n_L_M_for_LM % num landmarks in the preceding horizon(for fixed LMs preceding horizon; including k)
         M_for_LM %the index of the last epoch to monitor (for fixed LMs preceding horizon)
@@ -64,7 +65,8 @@ classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
         % ----------------------------------------------
         function obj= IntegrityMonitoringClass_Fixed_num_of_LM_horizon(params)
             obj.M= params.preceding_horizon_size;
-            obj.M_for_LM= 0; % initialization
+            obj.M_for_LM= 1; % initialization
+            obj.Extra_epoch_is_need = -1; % for initializaing matrices
             
             obj.n_ph=     ones(obj.M,1) * (0);
             obj.Phi_ph=   cell(1, obj.M + 1); % need an extra epoch here
@@ -119,15 +121,15 @@ classdef IntegrityMonitoringClass_Fixed_num_of_LM_horizon < handle
         % ----------------------------------------------
         function update_preceding_horizon(obj, estimator)
             
-            obj.n_ph=     [estimator.n_k; obj.n_ph(1:obj.M_for_LM+1)];
-            obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:obj.M_for_LM+1}};
-            obj.q_ph=     [estimator.q_k; obj.q_ph(1:obj.M_for_LM+1)];
-            obj.Phi_ph=   {obj.Phi_k, obj.Phi_ph{1:obj.M_for_LM+1}}; %%%%%%%% CAREFUL
-            obj.H_ph=     {obj.H_k, obj.H_ph{1:obj.M_for_LM+1}};
-            obj.L_ph=     {obj.L_k, obj.L_ph{1:obj.M_for_LM+1}};
-            obj.Lpp_ph=   {obj.Lpp_k, obj.Lpp_ph{1:obj.M_for_LM+1}};
-            obj.Y_ph=     {estimator.Y_k, obj.Y_ph{1:obj.M_for_LM+1}};
-            obj.P_MA_ph=  {obj.P_MA_k, obj.P_MA_ph{1:obj.M_for_LM+1}};
+            obj.n_ph=     [estimator.n_k; obj.n_ph(1:obj.M_for_LM)];
+            obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:obj.M_for_LM}};
+            obj.q_ph=     [estimator.q_k; obj.q_ph(1:obj.M_for_LM)];
+            obj.Phi_ph=   {obj.Phi_k, obj.Phi_ph{1:obj.M_for_LM+ 1}}; %%%%%%%% CAREFUL
+            obj.H_ph=     {obj.H_k, obj.H_ph{1:obj.M_for_LM}};
+            obj.L_ph=     {obj.L_k, obj.L_ph{1:obj.M_for_LM}};
+            obj.Lpp_ph=   {obj.Lpp_k, obj.Lpp_ph{1:obj.M_for_LM}};
+            obj.Y_ph=     {estimator.Y_k, obj.Y_ph{1:obj.M_for_LM}};
+            obj.P_MA_ph=  {obj.P_MA_k, obj.P_MA_ph{1:obj.M_for_LM}};
         end
         
     end

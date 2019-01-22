@@ -2,10 +2,8 @@
 classdef IntegrityMonitoringClass < handle
     properties (Constant)
         m= 3
-        p_UA= 1e-12
+        calculate_A_M_recursively = 0;
         ind_im= [1,2,9];
-        calculate_A_M_recursively = 0
-        I_MA = 1e-12
     end
     properties (SetAccess = immutable)
         M % size of the preceding horizon in epochs

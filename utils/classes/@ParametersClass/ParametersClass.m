@@ -15,13 +15,14 @@ classdef ParametersClass < handle
         SWITCH_CALIBRATION
         SWITCH_SLAM
         SWITCH_SIM
+        SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
         % --------------------------------------------------
     end
     
     properties (Constant)
         % path= '../data/cart/20180725/';
-%         path= '../data/vehicle/20190110/';
-        path= '../data/simulation/simple_sim/';
+        path= '../data/vehicle/20190110/';
+%         path= '../data/simulation/simple_sim/';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
@@ -31,6 +32,7 @@ classdef ParametersClass < handle
         % ---------------------------------------------------------
         m
         I_MA
+        p_UA
         min_appearances
         num_epochs_reduce_testing
         num_epochs_static
@@ -86,7 +88,6 @@ classdef ParametersClass < handle
         R_gps_sim
         W_odometry_sim
         wheelbase_sim
-        
         % -------------------------------------------
         % -------------------------------------------
         
@@ -164,10 +165,11 @@ classdef ParametersClass < handle
             obj.SWITCH_LIDAR_UPDATE= SWITCH_LIDAR_UPDATE;
             obj.SWITCH_REMOVE_FAR_FEATURES= SWITCH_REMOVE_FAR_FEATURES;
             obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
+            obj.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON= SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON;
              % --------------------------------------------------
-             
             obj.m= m;
             obj.I_MA= I_MA;
+            obj.p_UA= p_UA;
             obj.min_appearances= min_appearances;
             obj.num_epochs_reduce_testing= num_epochs_reduce_testing;
             obj.num_epochs_static= num_epochs_static;

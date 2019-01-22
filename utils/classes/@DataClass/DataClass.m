@@ -15,8 +15,11 @@ classdef DataClass < handle
         function obj= DataClass(imu_num_readings, gps_num_readings, params)
             obj.pred= PredictionDataClass(imu_num_readings, params);
             obj.update= UpdateDataClass(imu_num_readings, params);
-            %obj.im= IntegrityDataClass(gps_num_readings * 10);
-            obj.im= IntegrityDataClass_Fixed_num_of_LM_horizon(gps_num_readings * 10);
+            if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
+                obj.im= IntegrityDataClass_Fixed_num_of_LM_horizon(gps_num_readings * 10);
+            else
+                obj.im= IntegrityDataClass(gps_num_readings * 10);
+            end
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -226,12 +229,35 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_number_of_landmarks_in_preceding_horizon(obj)
+        function plot_number_of_landmarks_in_preceding_horizon(obj,params)
             figure; hold on; grid on;
-            plot(obj.im.time, obj.im.n_L_M_for_LM, 'b-', 'linewidth', 2)
-            %plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
+            if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
+                plot(obj.im.time, obj.im.n_L_M_for_LM, 'b-', 'linewidth', 2)
+            else
+                plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
+            end
             xlabel('time [s]')
             ylabel('Number of landmarks in the preceding horizon')
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_number_of_preceding_horizon_epochs_at_each_epoch(obj,params)
+            figure()
+            if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
+                plot(obj.im.time, obj.im.M_for_LM, 'b-', 'linewidth', 2)
+            else
+                plot(obj.im.time, obj.im.M, 'b-', 'linewidth', 2)
+            end
+            xlabel('time [s]')
+            ylabel('Number of preceding horizon epochs')
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_number_of_associated_LMs_at_each_epoch(obj)
+            figure()
+            plot(obj.update.time, obj.update.number_of_associated_LMs, 'linewidth', 2)
+            xlabel('time [s]')
+            ylabel('Number of associated LMs')
         end
         % ----------------------------------------------
         % ----------------------------------------------
