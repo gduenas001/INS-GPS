@@ -61,8 +61,15 @@ end
 
 n_H
 
+%%
 
+clear; clc; close all;
 
+x = [-3:.1:3];
+norm = normpdf(x,0,1);
+
+figure;
+plot(x,norm, 'linewidth', 2)
 
 
 

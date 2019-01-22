@@ -3,10 +3,13 @@ function gps_update(obj, z, R, params)
 
 n_L= (length(obj.XX) - 15) / 2;
 
+% if we are fast enough --> use GPS velocity msmt
 if norm(z(4:6)) > params.min_vel_gps && params.SWITCH_GPS_VEL_UPDATE % sense velocity
     R= diag( R );
     H= [eye(6), zeros(6,9), zeros(6,n_L*2)];
     disp('GPS velocity')
+    
+% update only the position, no velocity
 else
     z= z(1:3);
     R= diag( R(1:3) );
