@@ -2,6 +2,7 @@
 classdef IntegrityMonitoringClass < handle
     properties (Constant)
         m= 3
+        calculate_A_M_recursively = 0;
         ind_im= [1,2,9];
     end
     properties (SetAccess = immutable)

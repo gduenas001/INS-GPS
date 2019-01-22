@@ -14,6 +14,7 @@ classdef ParametersClass < handle
         SWITCH_REMOVE_FAR_FEATURES
         SWITCH_CALIBRATION
         SWITCH_SLAM
+        SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
         % --------------------------------------------------
     end
     
@@ -71,7 +72,6 @@ classdef ParametersClass < handle
     properties (SetAccess = immutable) % parameters to be built with constructor
         
         % ------------ paramters specified in file ----------------
-        I_MA
         min_appearances
         num_epochs_reduce_testing
         num_epochs_static
@@ -158,7 +158,7 @@ classdef ParametersClass < handle
         
         % integrity risk parameters
         p_UA
-        calculate_A_M_recursively
+        I_MA
     end
         
     methods
@@ -180,9 +180,9 @@ classdef ParametersClass < handle
             obj.SWITCH_LIDAR_UPDATE= SWITCH_LIDAR_UPDATE;
             obj.SWITCH_REMOVE_FAR_FEATURES= SWITCH_REMOVE_FAR_FEATURES;
             obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
+            obj.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON= SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON;
              % --------------------------------------------------
-            
-            obj.I_MA= I_MA;
+             
             obj.min_appearances= min_appearances;
             obj.num_epochs_reduce_testing= num_epochs_reduce_testing;
             obj.num_epochs_static= num_epochs_static;
@@ -228,7 +228,7 @@ classdef ParametersClass < handle
             obj.sn_f= sn_f;
             obj.sn_w= sn_w;
             obj.p_UA= p_UA;
-            obj.calculate_A_M_recursively= calculate_A_M_recursively;
+            obj.I_MA= I_MA;
             % -------------------------------------------
             
             % differenciate between slam and localization

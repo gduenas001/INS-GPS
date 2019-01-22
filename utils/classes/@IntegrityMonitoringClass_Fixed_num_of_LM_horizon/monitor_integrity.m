@@ -97,7 +97,7 @@ if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F
         % variable to normalize P_H
         %norm_P_H= 0;
         
-        for i= 0:n_H
+        for i= 0:0%n_H
             % build extraction matrix 
             obj.compute_E_matrix(i, params.m_F)
 
@@ -129,7 +129,7 @@ if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F
                 % previous-estimate fault hypothesis probability
                 % scaled to make sure that the sum of all hypotheses' probabilities
                 % equals to one (Total probability theorm)
-%                 P_H = prod( 1-(obj.P_MA_M + obj.p_UA) );
+%                 P_H = prod( 1-(obj.P_MA_M + params.p_UA) );
                 P_H= 1;
 %                 norm_P_H= norm_P_H + P_H;
                 obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
@@ -140,19 +140,19 @@ if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F
 %                 P_H = 1; % initialization
 %                 for j = 1 : size(obj.n_L_M_for_LM)
 %                     if i == j
-%                         P_H = P_H * (obj.P_MA_M(j) + obj.p_UA);
+%                         P_H = P_H * (obj.P_MA_M(j) + params.p_UA);
 %                         elsec
-%                         P_H = P_H * (1 -(obj.P_MA_M(j) + obj.p_UA));
+%                         P_H = P_H * (1 -(obj.P_MA_M(j) + params.p_UA));
 %                     end
 %                 end
 %                 norm_P_H= norm_P_H + P_H;
 
-%                 P_H= obj.P_MA_M(i) + obj.p_UA;
+%                 P_H= obj.P_MA_M(i) + params.p_UA;
                 P_H= params.p_UA;
                 obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
             end
         end
-%         obj.p_hmi = ( (obj.p_hmi / norm_P_H));%*(1-obj.p_UA*n_H)) + obj.p_UA*n_H )*(1-obj.I_MA) + obj.I_MA;
+%         obj.p_hmi = ( (obj.p_hmi / norm_P_H));%*(1-params.p_UA*n_H)) + params.p_UA*n_H )*(1-params.I_MA) + params.I_MA;
     end
     % store integrity related data
     data.store_integrity_data(obj, counters, params)
