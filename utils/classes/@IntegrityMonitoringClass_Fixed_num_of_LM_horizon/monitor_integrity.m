@@ -13,17 +13,24 @@ else
     obj.L_k= estimator.L_k(obj.ind_im,:);
 end
 
-% monitor integrity if there are enough epochs
-if ( counters.k_im > obj.M + 5 ) && ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F)
+%add an extra epoch (initially) for matrices construction
+if (sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F && obj.Extra_epoch_is_need== -1)
+    obj.Extra_epoch_is_need= 0;
+end
+
+% monitor integrity if the number of LMs in the preceding horizon is more
+% than a specifc threshold
+if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F && obj.Extra_epoch_is_need)
     
     % common parameters
     alpha= [-sin(estimator.XX(3)); cos(estimator.XX(3)); zeros(obj.m-2,1)];
     obj.sigma_hat= sqrt(alpha' * estimator.PX(obj.ind_im, obj.ind_im) * alpha);
-    obj.n_M= sum( obj.n_ph ) + estimator.n_k;
-    obj.n_L_M= obj.n_M / params.m_F;
+    %obj.n_M= sum( obj.n_ph ) + estimator.n_k;
+    %obj.n_L_M= obj.n_M / params.m_F;
     
+    % Find the number of epochs needed to maintain a (specific) minimum number of
+    % landmarks in the preceding horizon
     for i = 0 : size(obj.n_ph,1)
-        
         if i == 0
             dummy_var = estimator.n_k;
         else
@@ -35,7 +42,6 @@ if ( counters.k_im > obj.M + 5 ) && ( sum( obj.n_ph ) + estimator.n_k >= params.
                 break;
             end
         end
-        
     end
     
     obj.T_d = sqrt( chi2inv( 1 - params.continuity_requirement , obj.n_M_for_LM ) );
@@ -49,7 +55,7 @@ if ( counters.k_im > obj.M + 5 ) && ( sum( obj.n_ph ) + estimator.n_k >= params.
     
     % accounting for the case where there are no landmarks in the FoV at
     % epoch k and the whole preceding horizon
-    if (obj.n_M == 0)
+    if (obj.n_M_for_LM == 0)
         obj.Y_M=[];
         obj.B_bar=[];
         obj.A_M=[];
@@ -79,6 +85,7 @@ if ( counters.k_im > obj.M + 5 ) && ( sum( obj.n_ph ) + estimator.n_k >= params.
         % Loop over hypotheses in the PH (only 1 fault)
         n_H= obj.n_M_for_LM / params.m_F; % one hypothesis per associated landmark in ph
         
+        %initialization of p_hmi
         obj.p_hmi= 0;
 
         % (Single) sensor faults can't be monitored if the number of 
@@ -86,9 +93,11 @@ if ( counters.k_im > obj.M + 5 ) && ( sum( obj.n_ph ) + estimator.n_k >= params.
         if n_H <= 2
             n_H = 0;
         end
+        
         % variable to normalize P_H
         %norm_P_H= 0;
-        for i= 0:0%n_H
+        
+        for i= 0:n_H
             % build extraction matrix 
             obj.compute_E_matrix(i, params.m_F)
 
@@ -139,7 +148,7 @@ if ( counters.k_im > obj.M + 5 ) && ( sum( obj.n_ph ) + estimator.n_k >= params.
 %                 norm_P_H= norm_P_H + P_H;
 
 %                 P_H= obj.P_MA_M(i) + obj.p_UA;
-                P_H= obj.p_UA;
+                P_H= params.p_UA;
                 obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
             end
         end
@@ -151,9 +160,15 @@ if ( counters.k_im > obj.M + 5 ) && ( sum( obj.n_ph ) + estimator.n_k >= params.
 elseif counters.k_im > 1 % if it's only 1 --> cannot compute Lpp_k
     obj.Lpp_k= obj.Phi_ph{1} - obj.L_k * obj.H_k * obj.Phi_ph{1};
     obj.M_for_LM = obj.M_for_LM +1;
+    if obj.Extra_epoch_is_need == 0
+        obj.Extra_epoch_is_need= 1;
+    end
 else
     obj.Lpp_k= 0;
     obj.M_for_LM = obj.M_for_LM +1;
+    if obj.Extra_epoch_is_need == 0
+        obj.Extra_epoch_is_need= 1;
+    end
 end
 
 % store time

@@ -7,7 +7,7 @@ else
     % compute Q matrix with A_M_(k-1) , Phi_(k-1), P_k, n_M_(k-1)
     Q= obj.A_M' * obj.Phi_ph{1}' * estimator.PX([1:2,9],[1:2,9]) * obj.Phi_ph{1} * obj.A_M;
     lambda_max_Q= max( eig( Q ) );
-    mu_k= lambda_max_Q * ( sqrt(obj.T_d) - sqrt( chi2inv(1 - params.I_MA , obj.n_M) ) )^2;
+    mu_k= lambda_max_Q * ( sqrt(obj.T_d) - sqrt( chi2inv(1 - params.I_MA , obj.n_M_for_LM) ) )^2;
 end
 
 % dof of the non-central chi-square in the P(MA)

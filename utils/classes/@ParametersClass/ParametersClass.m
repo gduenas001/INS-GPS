@@ -156,6 +156,9 @@ classdef ParametersClass < handle
         S
         S_cal
         
+        % integrity risk parameters
+        p_UA
+        calculate_A_M_recursively
     end
         
     methods
@@ -224,6 +227,8 @@ classdef ParametersClass < handle
             obj.ARW= ARW;
             obj.sn_f= sn_f;
             obj.sn_w= sn_w;
+            obj.p_UA= p_UA;
+            obj.calculate_A_M_recursively= calculate_A_M_recursively;
             % -------------------------------------------
             
             % differenciate between slam and localization
