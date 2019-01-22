@@ -14,63 +14,21 @@ classdef ParametersClass < handle
         SWITCH_REMOVE_FAR_FEATURES
         SWITCH_CALIBRATION
         SWITCH_SLAM
+        SWITCH_SIM
         % --------------------------------------------------
     end
     
     properties (Constant)
-        
-%         % --------------- Parameters ---------------
-%         min_appearances= 2; % only update estimate landmarks detected more than this number
-%         num_epochs_reduce_testing= 5000;
-%         num_epochs_static= 9700; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
-%         lidarRange= 25; % [m]
-%         m_F= 2; % measurements per feature/landmark
-%         dt_imu= 1/125; % IMU sampling time
-%         dt_cal= 1/10; % KF Update period during initial calibration
-%         dt_virt_z= 1/10; % Virtual msmt update period
-%         dt_virt_y= 1/10; % Virtual msmt update period
-%         sig_cal_pos= 0.01; % 3cm   -- do not reduce too much or bias get unstable
-%         sig_cal_vel= 0.01; % 3cm/s -- do not reduce too much or bias get unstable
-%         sig_cal_E= deg2rad(0.1); % 0.1 deg
-%         sig_yaw0= deg2rad(5); % 5 deg -- Initial uncertatinty in attitude
-%         sig_phi0= deg2rad(1); % 2 deg -- Initial uncertatinty in attitude
-%         sig_ba= 0.05; % 0.1 m/s2 -- Initial acc bias uncertainty
-%         sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
-%         sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
-%         sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
-%         sig_lidar= 0.25; % 20cm -- lidar measurement in the nav frame
-%         min_vel_gps= 2/3.6; % 2 km/h
-%         min_vel_yaw= 2/3.6; % 2 km/h
-%         taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer
-%         tauw_normal_operation= 3000; % Tau for gyro bias -- from manufacturer
-%         taua_calibration= 100; % 200 acc tau value during initial calibration
-%         tauw_calibration= 100; % 200 gyro tau value during initial calibration
-%         g_val= 9.80279; % value of g [m/s2] at the IIT
-%         r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
-%         alpha_NN= 0.05; % prob of discard good features in NN
-%         threshold_new_landmark= 15; % Threshold in NIS to create a new landmark
-%         sig_minLM= 0.10; % minimum SD for the landmarks
-%         mult_factor_acc_imu= 15; % multiplicative factor for the accel SD
-%         mult_factor_gyro_imu= 10; % multiplicative factor for the gyros SD
-%         mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
-%         mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
-%         feature_height= 1.5; % height of the features
-%         initial_yaw_angle= -90 % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
-%         preceding_horizon_size= 4;
-%         continuity_requirement= 1e-5;
-%         alert_limit= 1;
-%         % -------------------------------------------
-        
         % path= '../data/cart/20180725/';
-        path= '../data/vehicle/20190110/';     
-        
-%         sn_f= ( 0.05 * 9.80279 / 1000 )^2 % bias acc white noise PSD
-%         sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
+%         path= '../data/vehicle/20190110/';
+        path= '../data/simulation/simple_sim';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
         
+        % ---------------------------------------------------------
         % ------------ paramters specified in file ----------------
+        % ---------------------------------------------------------
         min_appearances
         num_epochs_reduce_testing
         num_epochs_static
@@ -114,6 +72,10 @@ classdef ParametersClass < handle
         ARW
         sn_f
         sn_w
+        % -------------------- simulation -----------------------
+        R_gps_sim
+        
+        % -------------------------------------------
         % -------------------------------------------
         
         file_name_imu
@@ -162,7 +124,9 @@ classdef ParametersClass < handle
         function obj = ParametersClass(navigation_type)
             
             
+            % ---------------------------------------------------------
             % ------------ paramters specified in file ----------------
+            % ---------------------------------------------------------
             run([obj.path, 'parameters.m']);
             
             % --------------- Switches (options) ---------------
@@ -220,13 +184,21 @@ classdef ParametersClass < handle
             obj.ARW= ARW;
             obj.sn_f= sn_f;
             obj.sn_w= sn_w;
+            % -------------------- simulation -----------------------
+            obj.R_gps_sim= R_gps_sim;
+
+            % -------------------------------------------
             % -------------------------------------------
             
             % differenciate between slam and localization
             if navigation_type == 'slam'
                 obj.SWITCH_SLAM= 1;
+                obj.SWITCH_SIM= 0;
             elseif navigation_type == 'localization'
                 obj.SWITCH_SLAM= 0;
+                obj.SWITCH_SIM= 0;
+            elseif navigation_type == 'simulation'
+                obj.SWITCH_SIM= 1;
             else
                 error('navigation_type must be either "slam" or "localization"');
             end
@@ -278,6 +250,9 @@ classdef ParametersClass < handle
             obj.S_cal = blkdiag(obj.Sv_cal, obj.Sn);
 
         end
+        
+        
+        
         % ----------------------------------------------
         % ----------------------------------------------
         function sig_yaw= sig_yaw_fn(~, v)

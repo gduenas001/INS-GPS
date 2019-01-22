@@ -7,7 +7,7 @@ addpath('../utils/classes')
 
 
 % create objects
-params= ParametersClass("localization");
+params= ParametersClass("simulation");
 im= IntegrityMonitoringClass(params);
 gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
