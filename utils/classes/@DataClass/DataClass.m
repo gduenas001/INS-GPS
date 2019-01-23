@@ -15,11 +15,7 @@ classdef DataClass < handle
         function obj= DataClass(imu_num_readings, gps_num_readings, params)
             obj.pred= PredictionDataClass(imu_num_readings, params);
             obj.update= UpdateDataClass(imu_num_readings, params);
-            if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
-                obj.im= IntegrityDataClass_Fixed_num_of_LM_horizon(gps_num_readings * 10);
-            else
-                obj.im= IntegrityDataClass(gps_num_readings * 10);
-            end
+            obj.im= IntegrityDataClass(gps_num_readings * 10);
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -140,25 +136,17 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_number_of_landmarks_in_preceding_horizon(obj,params)
+        function plot_number_of_landmarks_in_preceding_horizon(obj)
             figure; hold on; grid on;
-            if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
-                plot(obj.im.time, obj.im.n_L_M_for_LM, 'b-', 'linewidth', 2)
-            else
-                plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
-            end
+            plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
             xlabel('time [s]')
             ylabel('Number of landmarks in the preceding horizon')
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_number_of_preceding_horizon_epochs_at_each_epoch(obj,params)
+        function plot_number_of_preceding_horizon_epochs_at_each_epoch(obj)
             figure()
-            if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
-                plot(obj.im.time, obj.im.M_for_LM, 'b-', 'linewidth', 2)
-            else
-                plot(obj.im.time, obj.im.M, 'b-', 'linewidth', 2)
-            end
+            plot(obj.im.time, obj.im.M, 'b-', 'linewidth', 2)
             xlabel('time [s]')
             ylabel('Number of preceding horizon epochs')
         end

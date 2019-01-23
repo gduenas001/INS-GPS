@@ -8,11 +8,7 @@ addpath('../utils/classes')
 
 % create objects
 params= ParametersClass("localization");
-if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
-    im= IntegrityMonitoringClass_Fixed_num_of_LM_horizon(params);
-else
-    im= IntegrityMonitoringClass(params);
-end
+im= IntegrityMonitoringClass(params);
 gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
@@ -135,7 +131,7 @@ for epoch= 1:imu.num_readings - 1
                 estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
                 
                 % integrity monitoring
-                im.monitor_integrity(estimator, counters, data_obj, params);
+                 im.monitor_integrity(estimator, counters, data_obj, params);
                 
                 % Store data
                 data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
@@ -169,7 +165,7 @@ data_obj.delete_extra_allocated_memory(counters)
 % ------------- PLOTS -------------
 % data_obj.plot_map(gps, imu.num_readings, params)
 data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
-data_obj.plot_number_of_landmarks_in_preceding_horizon(params);
+data_obj.plot_number_of_landmarks_in_preceding_horizon();
 data_obj.plot_estimates();
 data_obj.plot_integrity_risk();
 % ------------------------------------------------------------

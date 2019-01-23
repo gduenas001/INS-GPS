@@ -32,7 +32,7 @@ classdef ParametersClass < handle
         % ---------------------------------------------------------
         m
         I_MA
-        P_UA
+        p_UA
         min_appearances
         num_epochs_reduce_testing
         num_epochs_static
@@ -172,7 +172,7 @@ classdef ParametersClass < handle
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
-            obj.P_UA= P_UA;
+            obj.p_UA= p_UA;
             obj.min_appearances= min_appearances;
             obj.num_epochs_reduce_testing= num_epochs_reduce_testing;
             obj.num_epochs_static= num_epochs_static;

@@ -1,4 +1,3 @@
-
 function prob_of_MA_temporary(obj, estimator, association, params)
 
 if params.SWITCH_SIM

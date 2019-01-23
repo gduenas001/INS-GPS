@@ -1,7 +1,7 @@
 function compute_B_bar_matrix(obj, estimator)
 
 % Augmented B
-obj.B_bar= inf* ones( obj.n_M_for_LM , obj.n_M_for_LM + obj.m );
+obj.B_bar= inf* ones( obj.n_M , obj.n_M + obj.m );
 A_prev= obj.Lpp_k \ obj.A_M( : , estimator.n_k + 1:end );
 B_ind_row_start= estimator.n_k + 1;
 B_ind_col_end= estimator.n_k;
@@ -15,7 +15,7 @@ else
 end
 
 % Recursive computation of B
-for i= 1:obj.M_for_LM
+for i= 1:obj.M
     A_prev= obj.Lpp_ph{i} \ A_prev(:, obj.n_ph(i)+1:end);
     
     % accounting for the case where there are no landmarks in the FoV at

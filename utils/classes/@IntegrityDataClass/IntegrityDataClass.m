@@ -5,6 +5,7 @@ classdef IntegrityDataClass < handle
         detector_threshold
         p_hmi
         n_L_M
+        M
         sigma_hat
         time
         
@@ -22,6 +23,7 @@ classdef IntegrityDataClass < handle
             obj.sigma_hat= zeros(n,1);
             obj.time= zeros(n,1);
             obj.p_eps= zeros(n,1);
+            obj.M= zeros(n,1);
         end
         
         function store(obj, im, counters, params)
@@ -33,6 +35,7 @@ classdef IntegrityDataClass < handle
             obj.time(counters.k_im)= counters.time_sim;
             
             obj.p_eps(counters.k_im)= 2* normcdf(-params.alert_limit, 0, im.sigma_hat);
+            obj.M(counters.k_im)= im.M;
         end
         
         function delete_extra_allocated_memory(obj, counters)
@@ -43,6 +46,7 @@ classdef IntegrityDataClass < handle
             obj.sigma_hat(counters.k_im:end)= [];
             obj.time(counters.k_im:end)= [];
             obj.p_eps(counters.k_im:end)= [];
+            obj.M(counters.k_im:end)= [];
         end
     end
     
