@@ -1,5 +1,6 @@
 function prob_of_MA_temporary(obj, estimator, association, params)
 
+% TODO: for distinction between test and simulation
 if params.SWITCH_SIM
     ind_yaw= 3;
     ind_pose= 1:3;
@@ -7,6 +8,7 @@ else
     ind_yaw= 9;
     ind_pose= [1:2,3];
 end
+
 
 if isempty(obj.A_M)
     mu_k = 0;

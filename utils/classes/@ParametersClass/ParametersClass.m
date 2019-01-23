@@ -15,7 +15,7 @@ classdef ParametersClass < handle
         SWITCH_CALIBRATION
         SWITCH_SLAM= 0
         SWITCH_SIM= 0
-        SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
+        SWITCH_FIXED_LM_SIZE_PH
         % --------------------------------------------------
     end
     
@@ -70,7 +70,7 @@ classdef ParametersClass < handle
         feature_height
         initial_yaw_angle
         preceding_horizon_size
-        min_num_LMs_to_monitor
+        min_n_L_M
         continuity_requirement
         alert_limit
         VRW
@@ -168,7 +168,7 @@ classdef ParametersClass < handle
             obj.SWITCH_LIDAR_UPDATE= SWITCH_LIDAR_UPDATE;
             obj.SWITCH_REMOVE_FAR_FEATURES= SWITCH_REMOVE_FAR_FEATURES;
             obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
-            obj.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON= SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON;
+            obj.SWITCH_FIXED_LM_SIZE_PH= SWITCH_FIXED_LM_SIZE_PH;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
@@ -210,7 +210,7 @@ classdef ParametersClass < handle
             obj.feature_height= feature_height;
             obj.initial_yaw_angle= initial_yaw_angle;
             obj.preceding_horizon_size= preceding_horizon_size;
-            obj.min_num_LMs_to_monitor= min_num_LMs_to_monitor;
+            obj.min_n_L_M= min_n_L_M;
             obj.continuity_requirement= continuity_requirement;
             obj.alert_limit= alert_limit;
             obj.VRW= VRW;

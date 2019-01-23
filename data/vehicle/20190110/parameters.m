@@ -8,7 +8,7 @@
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
- SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON= 1;
+ SWITCH_FIXED_LM_SIZE_PH= 1;
  % --------------------------------------------------
 
 
@@ -17,7 +17,7 @@ m= 15; % number of states in the state vector
 I_MA= 1e-8;
 p_UA= 1e-4;
 min_appearances= 2; % only update estimate landmarks detected more than this number
-num_epochs_reduce_testing= 5000;
+num_epochs_reduce_testing= 3000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
 lidarRange= 25; % [m]
 m_F= 2; % measurements per feature/landmark
@@ -52,8 +52,8 @@ mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
 mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
 feature_height= 1.5; % height of the features
 initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
-preceding_horizon_size= 2;
-min_num_LMs_to_monitor= 15;
+preceding_horizon_size= 2; % size of the preceding horizon in epochs
+min_n_L_M= 10; % min number of landmarks in the preceding horizon + current time
 continuity_requirement= 1e-5;
 alert_limit= 1;
 VRW= 0.07; % vel random walk

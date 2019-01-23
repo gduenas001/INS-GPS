@@ -2,57 +2,63 @@
 function monitor_integrity(obj, estimator, counters, data, params)
 
 % keep only the elements for the [x-y-theta]
-obj.Phi_k= estimator.Phi_k^12; obj.Phi_k= obj.Phi_k( obj.ind_im, obj.ind_im ); %%%%%%%% CAREFUL
+if params.SWITCH_SIM
+    obj.Phi_k= estimator.Phi_k;
+else
+    % the state evolution matrix from one lidar msmt to the next one
+    obj.Phi_k= estimator.Phi_k^12;  %%%%%%%% CAREFUL
+    obj.Phi_k= obj.Phi_k( obj.ind_im, obj.ind_im ); 
+end
 
-% accounting for the case where there are no landmarks in the FoV at epoch k
-if isempty(estimator.H_k) && isempty(estimator.L_k)
+
+% No landmarks in the FoV at epoch k
+if estimator.n_k == 0
     obj.H_k= [];
     obj.L_k= [];
 else
     obj.H_k= estimator.H_k(:, obj.ind_im);
-    obj.L_k= estimator.L_k(obj.ind_im,:);
+    obj.L_k= estimator.L_k(obj.ind_im, :);
 end
 
-%add an extra epoch (initially) for matrices construction
-if (sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F && obj.Extra_epoch_is_need== -1)
+% add an extra epoch (initially) for matrices construction
+if sum( obj.n_ph ) + estimator.n_k >= params.min_n_L_M*params.m_F &&...
+        obj.Extra_epoch_is_need == -1
     obj.Extra_epoch_is_need= 0;
 end
 
-% monitor integrity if the number of LMs in the preceding horizon is more
-% than a specifc threshold
-if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F ...
-        && obj.Extra_epoch_is_need && params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON) ...
-        || ((counters.k_im > obj.M + 2) && ~params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON)
+% monitor integrity if the number of LMs in the preceding horizon is more than threshold
+if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
+    sum( obj.n_ph ) + estimator.n_k >= params.min_n_L_M*params.m_F &&...
+    obj.Extra_epoch_is_need ) ||...
+    ( ~params.SWITCH_FIXED_LM_SIZE_PH &&...
+    counters.k_im > obj.M + 2 )
     
-    % common parameters
-    alpha= [-sin(estimator.XX(3)); cos(estimator.XX(3)); zeros(obj.m-2,1)];
-    obj.sigma_hat= sqrt(alpha' * estimator.PX(obj.ind_im, obj.ind_im) * alpha);
-    
-    if ~params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
+    % Find the preceding horizon
+    if params.SWITCH_FIXED_LM_SIZE_PH
+        obj.n_M= estimator.n_k;
+        for i= 1:length(obj.n_ph)
+            obj.n_M= obj.n_M + obj.n_ph(i);
+            % if the preceding horizon is long enough --> stop
+            if obj.n_M >= params.min_n_L_M * params.m_F, break, end
+        end
+        % set the variables
+        obj.n_L_M= obj.n_M / params.m_F;
+        obj.M= i;
+    else
         obj.n_M= sum( obj.n_ph ) + estimator.n_k;
         obj.n_L_M= obj.n_M / params.m_F;
-    else
-        % Find the number of epochs needed to maintain a (specific) minimum number of
-        % landmarks in the preceding horizon
-        for i = 0 : size(obj.n_ph,1)
-            if i == 0
-                dummy_var = estimator.n_k;
-            else
-                dummy_var = dummy_var + obj.n_ph(i);
-                if ( dummy_var >= params.min_num_LMs_to_monitor*params.m_F ) || ( i == size(obj.n_ph,1) )
-                    obj.n_M = dummy_var;
-                    obj.n_L_M = dummy_var/params.m_F;
-                    obj.M = i;
-                    break;
-                end
-            end
-        end
     end
     
+    % common parameters
+    alpha= [-sin(estimator.XX(3)); cos(estimator.XX(3)); 0];
+    obj.sigma_hat= sqrt( alpha' * estimator.PX(obj.ind_im, obj.ind_im) * alpha );
+    
+    % detector threshold
     obj.T_d = sqrt( chi2inv( 1 - params.continuity_requirement , obj.n_M ) );
     
-    % accounting for the case where there are no landmarks in the FoV at epoch k
-    if (estimator.n_k == 0)
+    % TODO: what if multiple epochs with no msmts???
+    % If there are no landmarks in the FoV at k 
+    if estimator.n_k == 0
         obj.Lpp_k= obj.Phi_ph{1};
     else
         obj.Lpp_k= obj.Phi_ph{1} - obj.L_k * obj.H_k * obj.Phi_ph{1};
@@ -60,7 +66,7 @@ if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F
     
     % accounting for the case where there are no landmarks in the FoV at
     % epoch k and the whole preceding horizon
-    if (obj.n_M == 0)
+    if obj.n_M == 0
         obj.Y_M=[];
         obj.B_bar=[];
         obj.A_M=[];
@@ -81,7 +87,8 @@ if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F
 
         % set the threshold from the continuity req
         obj.detector_threshold= chi2inv(1 - obj.C_req, obj.n_M);
-
+        
+        % TODO: very inefficient --> do not transform from cell to matrix
         obj.P_MA_M = [ obj.P_MA_k ; cell2mat(obj.P_MA_ph(1:obj.M)') ];
 
         % compute detector
@@ -124,10 +131,11 @@ if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F
                     f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M),...
                     0, 5);
                 
-                if abs(f_M_mag_out) > 4 && p_hmi_H > 1e-40 %  CAREFULLLLL
-                    error('optimization wrong')
-                end
-                p_hmi_H= -p_hmi_H; % make it a positive number
+                % make it a positive number
+                p_hmi_H= -p_hmi_H; 
+                
+                % check that the optimization converged
+                if abs(f_M_mag_out) > 4.99 && p_hmi_H > 1e-40, error('optimization wrong'), end
                 
                 % Add P(HMI | H) to the integrity risk
                 if i == 0
@@ -166,7 +174,7 @@ if ( sum( obj.n_ph ) + estimator.n_k >= params.min_num_LMs_to_monitor*params.m_F
 elseif counters.k_im > 1 % if it's only 1 --> cannot compute Lpp_k
     obj.Lpp_k= obj.Phi_ph{1} - obj.L_k * obj.H_k * obj.Phi_ph{1};
     
-    if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
+    if params.SWITCH_FIXED_LM_SIZE_PH
         obj.M = obj.M +1;
         if obj.Extra_epoch_is_need == 0
             obj.Extra_epoch_is_need= 1;
@@ -175,7 +183,7 @@ elseif counters.k_im > 1 % if it's only 1 --> cannot compute Lpp_k
 else
     obj.Lpp_k= 0;
 
-    if params.SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
+    if params.SWITCH_FIXED_LM_SIZE_PH
         obj.M = obj.M +1;
         if obj.Extra_epoch_is_need == 0
             obj.Extra_epoch_is_need= 1;

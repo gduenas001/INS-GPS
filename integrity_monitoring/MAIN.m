@@ -35,7 +35,7 @@ for epoch= 1:imu.num_readings - 1
         estimator.PX(9,9)= params.sig_yaw0^2;
     end
         
-    % Increase time count000000000000000000000000
+    % Increase time count
     counters.increase_time_sums(params);
     
     % ------------- IMU -------------
@@ -131,7 +131,7 @@ for epoch= 1:imu.num_readings - 1
                 estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
                 
                 % integrity monitoring
-                 im.monitor_integrity(estimator, counters, data_obj, params);
+                im.monitor_integrity(estimator, counters, data_obj, params);
                 
                 % Store data
                 data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
