@@ -31,17 +31,26 @@ obj.P_MA_k= ones(size(association_of_associated_features)) * (-1);
 
 % loop through each associated landmark
 for t= 1:length(association_of_associated_features)
+    % take the landmark ID
+    lm_id_t= association_of_associated_features(t);
+    
+    % initialize the P(MA)
     obj.P_MA_k(t)= length(estimator.FoV_landmarks_at_k) - 1;
-    landmark= estimator.landmark_map( association_of_associated_features(t) ,: );
+    
+    % build the necessary parameters
+    landmark= estimator.landmark_map( lm_id_t ,: );
     dx= landmark(1) - estimator.XX(1);
     dy= landmark(2) - estimator.XX(2);
     h_t(1)=  dx*cpsi + dy*spsi;
     h_t(2)= -dx*spsi + dy*cpsi;
+    
     % loop through every possible landmark in the FoV (potential MA)
     for l= 1:length(estimator.FoV_landmarks_at_k)
-        if l ~= t
+        % take landmark ID
+        lm_id_l= estimator.FoV_landmarks_at_k(l);
+        if lm_id_t ~= lm_id_l
             % extract the landmark
-            landmark= estimator.landmark_map( estimator.FoV_landmarks_at_k(l) ,: );
+            landmark= estimator.landmark_map( lm_id_l ,: );
             
             % compute necessary intermediate parameters
             dx= landmark(1) - estimator.XX(1);
@@ -55,7 +64,15 @@ for t= 1:length(association_of_associated_features)
             
             % individual innovation norm between landmarks l and t
             IIN_l_t= sqrt( y_l_t' / Y_l * y_l_t );
-            obj.P_MA_k(t)= obj.P_MA_k(t) - ncx2cdf( ( IIN_l_t - sqrt(params.T_NN) )^2 , chi_dof, mu_k );
+            
+            % if one of the landmarks is too close to ensure P(MA) --> set to one
+            if IIN_l_t < sqrt(params.T_NN)
+                obj.P_MA_k(t)= 1;
+                break
+            else
+                obj.P_MA_k(t)= obj.P_MA_k(t) -...
+                    ncx2cdf( ( IIN_l_t - sqrt(params.T_NN) )^2 , chi_dof, mu_k );
+            end
         end
     end
 end

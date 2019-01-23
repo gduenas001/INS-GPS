@@ -13,16 +13,16 @@ classdef ParametersClass < handle
         SWITCH_LIDAR_UPDATE
         SWITCH_REMOVE_FAR_FEATURES
         SWITCH_CALIBRATION
-        SWITCH_SLAM
-        SWITCH_SIM
+        SWITCH_SLAM= 0
+        SWITCH_SIM= 0
         SWITCH_FIXED_NUMBER_OF_LMs_PRECEDING_HORIZON
         % --------------------------------------------------
     end
     
     properties (Constant)
-        % path= '../data/cart/20180725/';
-%         path= '../data/vehicle/20190110/';
-        path= '../data/simulation/simple_sim/';
+%         path_test= '../data/cart/20180725/';
+        path_test= '../data/vehicle/20190110/';
+        path_sim= '../data/simulation/simple_sim/';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
@@ -92,6 +92,7 @@ classdef ParametersClass < handle
         % -------------------------------------------
         % -------------------------------------------
         
+        path
         file_name_imu
         file_name_gps
         file_name_lidar_path
@@ -138,19 +139,20 @@ classdef ParametersClass < handle
         function obj = ParametersClass(navigation_type)
             
             % differenciate between slam and localization
-            if navigation_type == 'slam'
-                obj.SWITCH_SLAM= 1;
-                obj.SWITCH_SIM= 0;
-            elseif navigation_type == 'localization'
-                obj.SWITCH_SLAM= 0;
-                obj.SWITCH_SIM= 0;
-            elseif navigation_type == 'simulation'
-                obj.SWITCH_SIM= 1;
-            else
-                error('navigation_type must be either "slam" or "localization"');
+            switch navigation_type 
+                case 'slam'
+                    obj.SWITCH_SLAM= 1;
+                    obj.path= obj.path_test;
+                case 'localization'
+                    obj.SWITCH_SLAM= 0;
+                    obj.path= obj.path_test;
+                case 'simulation'
+                    obj.SWITCH_SIM= 1;
+                    obj.path= obj.path_sim;
+                otherwise
+                    error('navigation_type must be either "slam" or "localization"');
             end
-
-            
+                        
             % ---------------------------------------------------------
             % ------------ paramters specified in file ----------------
             % ---------------------------------------------------------
