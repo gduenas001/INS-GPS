@@ -1,7 +1,7 @@
 
 classdef CountersClass < handle
     properties
-        time_sim
+        time_sim= 0
         time_sum= 0
         time_sum_virt_z= 0
         time_sum_virt_y= 0
@@ -17,10 +17,8 @@ classdef CountersClass < handle
     methods
         function obj= CountersClass(gps, lidar, params)
             
-            if params.SWITCH_SIM
-                obj.time_sim= 0;
-                return
-            end
+            % if it's a simulation --> leave it
+            if params.SWITCH_SIM, return, end
             
             obj.time_gps= gps.time(1); % this is zero, as the GPS time is the reference
             obj.time_lidar= lidar.time(1,2);
@@ -43,6 +41,14 @@ classdef CountersClass < handle
             obj.time_sum= obj.time_sum + params.dt_imu;
             obj.time_sum_virt_z= obj.time_sum_virt_z + params.dt_imu;
             obj.time_sum_virt_y= obj.time_sum_virt_y + params.dt_imu;           
+        end
+        
+        function increase_time_sum_sim(obj, params)
+            obj.time_sum= obj.time_sum + params.dt_sim;
+        end
+        
+        function increase_time_sim(obj, params)
+            obj.time_sim= obj.time_sim + params.dt_sim;
         end
         
         function reset_time_sum(obj)

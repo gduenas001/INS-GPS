@@ -8,7 +8,7 @@ addpath('../utils/classes')
 
 % create objects
 params= ParametersClass("simulation");
-% im= IntegrityMonitoringClass(params);
+im= IntegrityMonitoringClass(params);
 estimator= EstimatorClass([], params);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
 counters= CountersClass([], [], params);
@@ -18,7 +18,7 @@ counters= CountersClass([], [], params);
 for epoch= 1:params.num_epochs_sim
     disp(strcat('Epoch -> ', num2str(epoch)));
      
-    % ------------- IMU -------------
+    % ------------- Odometry -------------
     estimator.odometry_update_sim( params );
     % -------------------------------
     
@@ -26,13 +26,16 @@ for epoch= 1:params.num_epochs_sim
     data_obj.store_prediction_sim(epoch, estimator, counters.time_sim);
     
     % ------------------- GPS -------------------
-    if params.SWITCH_GPS_UPDATE
+    if params.SWITCH_GPS_UPDATE && counters.time_sum >= params.dt_gps
         % GPS update 
         z_gps= estimator.get_gps_msmt_sim(params);
         estimator.gps_update_sim( z_gps, params );
         
         % save GPS measurements
         data_obj.store_gps_msmts(z_gps);
+        
+        % reset counter for GPS
+        counters.reset_time_sum();
     end
     % ----------------------------------------
     
@@ -52,10 +55,7 @@ for epoch= 1:params.num_epochs_sim
             
             % Lidar update
             estimator.lidar_update_localization_sim(z_lidar, association, params);
-            
-            % Lineariza and discretize
-%             estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
-            
+                        
             % integrity monitoring
 %             im.monitor_integrity(estimator, counters, data_obj, params);
             
@@ -69,6 +69,9 @@ for epoch= 1:params.num_epochs_sim
     end
     % ----------------------------------------
     
+    % increase time
+    counters.increase_time_sum_sim(params);
+    counters.increase_time_sim(params);
 end
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------

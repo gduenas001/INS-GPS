@@ -53,18 +53,20 @@ mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
 mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
 feature_height= 1.5; % height of the features
 initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
-preceding_horizon_size= 15;
+preceding_horizon_size= 3;
 continuity_requirement= 1e-5;
 alert_limit= 1;
 VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
+
 % -------------------- simulation -----------------------
-num_epochs_sim= 1000;
+num_epochs_sim= 400;
 dt_sim= 0.1; % time step for the simulation (equal for all updates)
-velocity_sim= 2;
-steering_angle_sim= deg2rad(10);
+dt_gps= 1; % time step for the GPS in simulation
+velocity_sim= 20 / 3.6; % [m/s]
+steering_angle_sim= deg2rad(0);
 sig_gps_sim= 0.02; % standar deviation for GPS in simulation (all z-y-x)
 sig_velocity_sim= 0.1;
 sig_steering_angle_sim= deg2rad(1);

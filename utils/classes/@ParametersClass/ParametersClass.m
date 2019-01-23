@@ -21,8 +21,8 @@ classdef ParametersClass < handle
     
     properties (Constant)
         % path= '../data/cart/20180725/';
-        path= '../data/vehicle/20190110/';
-%         path= '../data/simulation/simple_sim/';
+%         path= '../data/vehicle/20190110/';
+        path= '../data/simulation/simple_sim/';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
@@ -80,6 +80,7 @@ classdef ParametersClass < handle
         % -------------------- simulation -----------------------
         num_epochs_sim
         dt_sim
+        dt_gps
         velocity_sim
         steering_angle_sim
         sig_gps_sim
@@ -218,6 +219,7 @@ classdef ParametersClass < handle
             if obj.SWITCH_SIM
                 obj.num_epochs_sim= num_epochs_sim;
                 obj.dt_sim= dt_sim;
+                obj.dt_gps= dt_gps;
                 obj.velocity_sim= velocity_sim;
                 obj.steering_angle_sim= steering_angle_sim;
                 obj.sig_gps_sim= sig_gps_sim;
