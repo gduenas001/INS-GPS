@@ -11,29 +11,32 @@ else
 end
 
 
-% No landmarks in the FoV at epoch k
-if estimator.n_k == 0
+% build L and H for the current time using only the pose indexes
+if estimator.n_k == 0 % no landmarks in the FoV at epoch k
     obj.H_k= [];
     obj.L_k= [];
-else
+else % extract the indexes from the pose
     obj.H_k= estimator.H_k(:, obj.ind_im);
     obj.L_k= estimator.L_k(obj.ind_im, :);
 end
 
-% add an extra epoch (initially) for matrices construction
-if sum( obj.n_ph ) + estimator.n_k >= params.min_n_L_M*params.m_F &&...
-        obj.Extra_epoch_is_need == -1
-    obj.Extra_epoch_is_need= 0;
+% current horizon measurements
+obj.n_M= sum( obj.n_ph ) + estimator.n_k;
+obj.n_L_M= obj.n_M / params.m_F;
+
+% the first time we have enough preceding horizon
+if obj.n_L_M >= params.min_n_L_M && obj.is_extra_epoch_needed == -1
+    obj.is_extra_epoch_needed= true;
 end
 
 % monitor integrity if the number of LMs in the preceding horizon is more than threshold
 if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
-    sum( obj.n_ph ) + estimator.n_k >= params.min_n_L_M*params.m_F &&...
-    obj.Extra_epoch_is_need ) ||...
+    obj.n_L_M >= params.min_n_L_M &&...
+    obj.is_extra_epoch_needed == false ) ||...
     ( ~params.SWITCH_FIXED_LM_SIZE_PH &&...
     counters.k_im > obj.M + 2 )
     
-    % Find the preceding horizon
+    % Modify preceding horizon to have enough landmarks
     if params.SWITCH_FIXED_LM_SIZE_PH
         obj.n_M= estimator.n_k;
         for i= 1:length(obj.n_ph)
@@ -44,9 +47,6 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         % set the variables
         obj.n_L_M= obj.n_M / params.m_F;
         obj.M= i;
-    else
-        obj.n_M= sum( obj.n_ph ) + estimator.n_k;
-        obj.n_L_M= obj.n_M / params.m_F;
     end
     
     % common parameters
@@ -56,7 +56,6 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     % detector threshold
     obj.T_d = sqrt( chi2inv( 1 - params.continuity_requirement , obj.n_M ) );
     
-    % TODO: what if multiple epochs with no msmts???
     % If there are no landmarks in the FoV at k 
     if estimator.n_k == 0
         obj.Lpp_k= obj.Phi_ph{1};
@@ -67,10 +66,10 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     % accounting for the case where there are no landmarks in the FoV at
     % epoch k and the whole preceding horizon
     if obj.n_M == 0
-        obj.Y_M=[];
-        obj.B_bar=[];
-        obj.A_M=[];
-        obj.q_M=0;
+        obj.Y_M=   [];
+        obj.A_M=   [];
+        obj.B_bar= [];
+        obj.q_M= 0;
         obj.p_hmi= 1;
     else
         % Update the innovation vector covarience matrix for the new PH
@@ -97,11 +96,10 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         % Loop over hypotheses in the PH (only 1 fault)
         n_H= obj.n_M / params.m_F; % one hypothesis per associated landmark in ph
         
-        %initialization of p_hmi
+        % initialization of p_hmi
         obj.p_hmi= 0;
 
-        % (Single) sensor faults can't be monitored if the number of 
-        % landmarks are less than or equal to two
+        % need at least 5 msmts (3 landmarks) to monitor one landmark fault
         if obj.n_M < 5
             obj.p_hmi= 1;
             
@@ -109,7 +107,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             % variable to normalize P_H
             %norm_P_H= 0;
             
-            for i= 0:0%n_H
+            for i= 0:n_H
                 % build extraction matrix
                 obj.compute_E_matrix(i, params.m_F)
                 
@@ -161,7 +159,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                     %                 norm_P_H= norm_P_H + P_H;
                     
                     %                 P_H= obj.P_MA_M(i) + params.p_UA;
-                    P_H= params.p_UA;
+                    P_H= params.P_UA;
                     obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
                 end
             end
@@ -171,22 +169,22 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     % store integrity related data
     data.store_integrity_data(obj, counters, params)
 
-elseif counters.k_im > 1 % if it's only 1 --> cannot compute Lpp_k
+elseif counters.k_im > 1 % if it's the first time --> cannot compute Lpp_k
     obj.Lpp_k= obj.Phi_ph{1} - obj.L_k * obj.H_k * obj.Phi_ph{1};
     
     if params.SWITCH_FIXED_LM_SIZE_PH
-        obj.M = obj.M +1;
-        if obj.Extra_epoch_is_need == 0
-            obj.Extra_epoch_is_need= 1;
+        obj.M = obj.M + 1;
+        if obj.is_extra_epoch_needed == true
+            obj.is_extra_epoch_needed= false;
         end
     end
-else
+else % first time we get lidar msmts
     obj.Lpp_k= 0;
 
     if params.SWITCH_FIXED_LM_SIZE_PH
-        obj.M = obj.M +1;
-        if obj.Extra_epoch_is_need == 0
-            obj.Extra_epoch_is_need= 1;
+        obj.M = obj.M + 1;
+        if obj.is_extra_epoch_needed == true
+            obj.is_extra_epoch_needed= false;
         end
     end
 end

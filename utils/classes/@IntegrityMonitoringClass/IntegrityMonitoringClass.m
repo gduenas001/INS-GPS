@@ -3,7 +3,6 @@ classdef IntegrityMonitoringClass < handle
     properties (Constant)
         m= 3
         calculate_A_M_recursively = 0;
-        ind_im= [1,2,9];
     end
     properties (SetAccess = immutable)
         C_req
@@ -13,8 +12,9 @@ classdef IntegrityMonitoringClass < handle
         p_hmi
         detector_threshold
         
-        Extra_epoch_is_need= -1
-        
+        is_extra_epoch_needed= -1 % initialize as (-1), then a boolean
+        ind_im= [1,2,9];
+
         n_ph
         n_F_ph % number of features associated in the preceding horizon
         
@@ -30,7 +30,7 @@ classdef IntegrityMonitoringClass < handle
         Lpp_k
         
         % augmented (M) 
-        M     % size of the preceding horizon in epochs
+        M= 0  % size of the preceding horizon in epochs
         n_M   % num msmts in the preceding horizon (including k)
         n_L_M % num landmarks in the preceding horizon (including k)
         Phi_M
@@ -62,16 +62,19 @@ classdef IntegrityMonitoringClass < handle
         % ----------------------------------------------
         function obj= IntegrityMonitoringClass(params)
             
-            if params.SWITCH_FIXED_LM_SIZE_PH
-                obj.M= 1; % set to 1 to initialize
-            else
+            % if the preceding horizon is fixed in epochs --> set M
+            if ~params.SWITCH_FIXED_LM_SIZE_PH
                 obj.M= params.preceding_horizon_size;
             end
+            
+            % if it's a simulation --> change the indexes
+            if params.SWITCH_SIM, obj.ind_im= 1:3; end
             
             % continuity requirement
             obj.C_req= params.continuity_requirement;
             
-            obj.n_ph=     ones(params.preceding_horizon_size,1) * (0);
+            % initialize the preceding horizon 
+            obj.n_ph=     zeros(params.preceding_horizon_size,1);
             obj.Phi_ph=   cell(1, params.preceding_horizon_size + 1); % need an extra epoch here
             obj.gamma_ph= cell(1, params.preceding_horizon_size);
             obj.q_ph=     ones(params.preceding_horizon_size, 1) * (-1);

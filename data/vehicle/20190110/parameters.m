@@ -15,7 +15,7 @@
 % --------------- Parameters ---------------
 m= 15; % number of states in the state vector
 I_MA= 1e-8;
-p_UA= 1e-4;
+P_UA= 1e-4;
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 3000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
