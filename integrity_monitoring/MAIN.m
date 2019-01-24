@@ -122,7 +122,7 @@ for epoch= 1:imu.num_readings - 1
                 association= estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
                 
                 % Evaluate the probability of mis-associations
-                im.prob_of_MA_temporary( estimator, association, params);
+                im.prob_of_MA( estimator, association, params);
                 
                 % Lidar update
                 estimator.lidar_update_localization(lidar.msmt(:,1:2), association, params);
