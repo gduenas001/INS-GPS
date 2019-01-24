@@ -7,7 +7,7 @@ if params.SWITCH_SIM
 else
     % the state evolution matrix from one lidar msmt to the next one
     obj.Phi_k= estimator.Phi_k^12;  %%%%%%%% CAREFUL
-    obj.Phi_k= obj.Phi_k( obj.ind_im, obj.ind_im ); 
+    obj.Phi_k= obj.Phi_k( params.ind_pose, params.ind_pose ); 
 end
 
 
@@ -16,8 +16,8 @@ if estimator.n_k == 0 % no landmarks in the FoV at epoch k
     obj.H_k= [];
     obj.L_k= [];
 else % extract the indexes from the pose
-    obj.H_k= estimator.H_k(:, obj.ind_im);
-    obj.L_k= estimator.L_k(obj.ind_im, :);
+    obj.H_k= estimator.H_k(:, params.ind_pose);
+    obj.L_k= estimator.L_k(params.ind_pose, :);
 end
 
 % current horizon measurements
@@ -50,8 +50,8 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     end
     
     % common parameters
-    alpha= [-sin(estimator.XX(3)); cos(estimator.XX(3)); 0];
-    obj.sigma_hat= sqrt( alpha' * estimator.PX(obj.ind_im, obj.ind_im) * alpha );
+    alpha= [-sin(estimator.XX(params.ind_yaw)); cos(estimator.XX(params.ind_yaw)); 0];
+    obj.sigma_hat= sqrt( alpha' * estimator.PX(params.ind_pose, params.ind_pose) * alpha );
     
     % detector threshold
     obj.T_d = sqrt( chi2inv( 1 - params.continuity_requirement , obj.n_M ) );
@@ -107,7 +107,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             % variable to normalize P_H
             %norm_P_H= 0;
             
-            for i= 0:n_H
+            for i= 0:0%n_H
                 % build extraction matrix
                 obj.compute_E_matrix(i, params.m_F)
                 
@@ -124,7 +124,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 f_mag_max= 5;
                 f_mag_inc= 5;
                 p_hmi_H_prev= -1;
-                for j= 1:5
+                for j= 1:10
                     [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
                         f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M),...
                         f_mag_min, f_mag_max);

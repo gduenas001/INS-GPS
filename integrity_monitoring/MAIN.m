@@ -162,12 +162,12 @@ data_obj.store_update(counters.k_update, estimator, counters.time_sim);
 data_obj.delete_extra_allocated_memory(counters)
 
 
-% ------------- PLOTS -------------
-% data_obj.plot_map(gps, imu.num_readings, params)
+% ------------- PLOTS ------------
 data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
 data_obj.plot_number_of_landmarks_in_preceding_horizon();
-data_obj.plot_estimates();
+data_obj.plot_number_epochs_in_preceding_horizon();
+% data_obj.plot_estimates();
 data_obj.plot_integrity_risk();
-% ------------------------------------------------------------
+% --------------------------------
 
 

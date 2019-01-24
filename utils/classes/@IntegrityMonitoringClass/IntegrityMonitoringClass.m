@@ -73,7 +73,8 @@ classdef IntegrityMonitoringClass < handle
             % continuity requirement
             obj.C_req= params.continuity_requirement;
             
-            % initialize the preceding horizon 
+            % initialize the preceding horizon
+            % TODO: should this change for a fixed horizon in landmarks?
             obj.n_ph=     zeros(params.preceding_horizon_size,1);
             obj.Phi_ph=   cell(1, params.preceding_horizon_size + 1); % need an extra epoch here
             obj.gamma_ph= cell(1, params.preceding_horizon_size);
