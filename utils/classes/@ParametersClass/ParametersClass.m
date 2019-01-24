@@ -32,7 +32,7 @@ classdef ParametersClass < handle
         % ---------------------------------------------------------
         m
         I_MA
-        p_UA
+        P_UA
         min_appearances
         num_epochs_reduce_testing
         num_epochs_static
@@ -97,6 +97,9 @@ classdef ParametersClass < handle
         file_name_gps
         file_name_lidar_path
         file_name_calibration
+        
+        ind_pose % indexes that extract x-y-theta
+        ind_yaw % index that extracts theta
 
         g_N % G estimation (sense is same at grav acceleration in nav-frame)
         sig_cal_pos_blkMAtrix
@@ -172,7 +175,7 @@ classdef ParametersClass < handle
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
-            obj.p_UA= p_UA;
+            obj.P_UA= P_UA;
             obj.min_appearances= min_appearances;
             obj.num_epochs_reduce_testing= num_epochs_reduce_testing;
             obj.num_epochs_static= num_epochs_static;
@@ -246,6 +249,13 @@ classdef ParametersClass < handle
             obj.ARW= obj.ARW * obj.mult_factor_gyro_imu; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
             
             % ------------------ build parameters ------------------
+            if obj.SWITCH_SIM
+                obj.ind_pose= 1:3;
+                obj.ind_yaw= 3;
+            else
+                obj.ind_pose= [1,2,9];
+                obj.ind_yaw= 9;
+            end
             obj.g_N= [0; 0; obj.g_val]; % G estimation (sense is same at grav acceleration in nav-frame)
             obj.sig_cal_pos_blkMAtrix= diag([obj.sig_cal_pos, obj.sig_cal_pos, obj.sig_cal_pos]);
             obj.sig_cal_vel_blkMAtrix= diag([obj.sig_cal_vel, obj.sig_cal_vel, obj.sig_cal_vel]);

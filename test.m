@@ -71,6 +71,14 @@ norm = normpdf(x,0,1);
 figure;
 plot(x,norm, 'linewidth', 2)
 
+%%
+
+x_values= 0:0.0001:20;
+figure; hold on; grid on;
+
+plot(x_values, obj.optimization_fn(...
+              x_values, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M))
+
 
 
 

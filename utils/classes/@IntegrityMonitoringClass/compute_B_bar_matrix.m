@@ -7,9 +7,7 @@ B_ind_row_start= estimator.n_k + 1;
 B_ind_col_end= estimator.n_k;
 
 % accounting for the case where there are no landmarks in the FoV at epoch k
-if (estimator.n_k == 0)
-    obj.B_bar(1:estimator.n_k , :)=[];
-else
+if estimator.n_k > 0
     obj.B_bar(1:estimator.n_k , :)=...
     [ eye(estimator.n_k), -obj.H_k * obj.Phi_ph{1} * A_prev ];
 end
@@ -20,7 +18,7 @@ for i= 1:obj.M
     
     % accounting for the case where there are no landmarks in the FoV at
     % one of the epochs in the preceding horizon
-    if (obj.n_ph(i) ~= 0)
+    if obj.n_ph(i) > 0
         B= [eye( obj.n_ph(i) ) , -obj.H_ph{i} * obj.Phi_ph{i+1} * A_prev];
 
         B_ind_row_end= B_ind_row_start + obj.n_ph(i) - 1;

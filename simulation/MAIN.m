@@ -51,7 +51,7 @@ for epoch= 1:params.num_epochs_sim
             association= estimator.nearest_neighbor_localization_sim(z_lidar, params);
             
             % Evaluate the probability of mis-associations
-            im.prob_of_MA_temporary( estimator, association, params);
+%             im.prob_of_MA_temporary( estimator, association, params);
             
             % Lidar update
             estimator.lidar_update_localization_sim(z_lidar, association, params);

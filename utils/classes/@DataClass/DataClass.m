@@ -139,24 +139,18 @@ classdef DataClass < handle
         function plot_number_of_landmarks_in_preceding_horizon(obj)
             figure; hold on; grid on;
             plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
+            plot(obj.update.time, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
+            legend('n_L^M', 'n_L');
             xlabel('time [s]')
             ylabel('Number of landmarks in the preceding horizon')
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_number_of_preceding_horizon_epochs_at_each_epoch(obj)
-            figure()
+        function plot_number_epochs_in_preceding_horizon(obj)
+            figure; hold on; grid on;
             plot(obj.im.time, obj.im.M, 'b-', 'linewidth', 2)
             xlabel('time [s]')
             ylabel('Number of preceding horizon epochs')
-        end
-        % ----------------------------------------------
-        % ----------------------------------------------
-        function plot_number_of_associated_LMs_at_each_epoch(obj)
-            figure()
-            plot(obj.update.time, obj.update.number_of_associated_LMs, 'linewidth', 2)
-            xlabel('time [s]')
-            ylabel('Number of associated LMs')
         end
         % ----------------------------------------------
         % ----------------------------------------------

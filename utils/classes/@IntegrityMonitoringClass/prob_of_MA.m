@@ -1,20 +1,10 @@
 function prob_of_MA(obj, estimator, association, params)
 
-% TODO: for distinction between test and simulation
-if params.SWITCH_SIM
-    ind_yaw= 3;
-    ind_pose= 1:3;
-else
-    ind_yaw= 9;
-    ind_pose= [1:2,3];
-end
-
-
 if isempty(obj.A_M)
     obj.mu_k = 0;
 else
     % compute Q matrix with A_M_(k-1) , Phi_(k-1), P_k, n_M_(k-1)
-    Q= obj.A_M' * obj.Phi_ph{1}' * estimator.PX(ind_pose, ind_pose) * obj.Phi_ph{1} * obj.A_M;
+    Q= obj.A_M' * obj.Phi_ph{1}' * estimator.PX(params.ind_pose, params.ind_pose) * obj.Phi_ph{1} * obj.A_M;
     
     dummy_var= 0;
     for i=1:obj.n_H
@@ -33,8 +23,8 @@ end
 chi_dof= obj.m + params.m_F;
 
 % allocate memory
-spsi= sin(estimator.XX(ind_yaw));
-cpsi= cos(estimator.XX(ind_yaw));
+spsi= sin(estimator.XX(params.ind_yaw));
+cpsi= cos(estimator.XX(params.ind_yaw));
 h_t= zeros(2,1);
 h_l= zeros(2,1);
 association_of_associated_features= association( association ~= 0);
@@ -71,7 +61,7 @@ for t= 1:length(association_of_associated_features)
             H_l= [-cpsi, -spsi, -dx*spsi + dy*cpsi;...
                    spsi, -cpsi, -dx*cpsi - dy*spsi ];
             y_l_t= h_l - h_t;
-            Y_l= H_l * estimator.PX(ind_pose, ind_pose) * H_l' + params.R_lidar;
+            Y_l= H_l * estimator.PX(params.ind_pose, params.ind_pose) * H_l' + params.R_lidar;
             
             % individual innovation norm between landmarks l and t
             IIN_l_t= sqrt( y_l_t' / Y_l * y_l_t );
