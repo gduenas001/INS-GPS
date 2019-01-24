@@ -90,7 +90,7 @@ classdef IntegrityMonitoringClass < handle
         function neg_p_hmi= optimization_fn(obj, f_M_mag, fx_hat_dir, M_dir, sigma_hat, l, dof)
             neg_p_hmi= - ((1 - normcdf(l , f_M_mag * fx_hat_dir, sigma_hat) +...
                 normcdf(-l , f_M_mag * fx_hat_dir, sigma_hat))...
-                * ncx2cdf(obj.detector_threshold, dof, f_M_mag^2 * M_dir ));
+                .* ncx2cdf(obj.detector_threshold, dof, f_M_mag.^2 * M_dir ));
         end
         % ----------------------------------------------
         % ----------------------------------------------
