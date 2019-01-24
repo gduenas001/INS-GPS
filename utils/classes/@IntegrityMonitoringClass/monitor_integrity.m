@@ -95,7 +95,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         obj.q_M= sum(obj.q_ph(1:obj.M)) + estimator.q_k;
 
         % Loop over hypotheses in the PH (only 1 fault)
-        n_H= obj.n_M / params.m_F; % one hypothesis per associated landmark in ph
+        obj.n_H= obj.n_M / params.m_F; % one hypothesis per associated landmark in ph
         
         %initialization of p_hmi
         obj.p_hmi= 0;
@@ -109,7 +109,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             % variable to normalize P_H
             %norm_P_H= 0;
             
-            for i= 0:0%n_H
+            for i= 0:obj.n_H
                 % build extraction matrix
                 obj.compute_E_matrix(i, params.m_F)
                 

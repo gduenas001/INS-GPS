@@ -53,6 +53,9 @@ classdef IntegrityMonitoringClass < handle
         P_MA_k
         P_MA_ph
         T_d
+        n_H
+        mu_k
+        kappa
         
     end
     
