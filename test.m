@@ -73,7 +73,7 @@ plot(x,norm, 'linewidth', 2)
 
 %%
 
-x_values= 0:0.0001:20;
+x_values= 0:0.001:50;
 figure; hold on; grid on;
 
 plot(x_values, obj.optimization_fn(...

@@ -25,7 +25,7 @@ obj.n_M= sum( obj.n_ph ) + estimator.n_k;
 obj.n_L_M= obj.n_M / params.m_F;
 
 % the first time we have enough preceding horizon
-if obj.n_L_M >= params.min_n_L_M && obj.is_extra_epoch_needed == -1
+if obj.is_extra_epoch_needed == -1 && obj.n_L_M >= params.min_n_L_M && counters.k_im > 1
     obj.is_extra_epoch_needed= true;
 end
 
@@ -51,6 +51,8 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     
     % common parameters
     alpha= [-sin(estimator.XX(params.ind_yaw)); cos(estimator.XX(params.ind_yaw)); 0];
+%     alpha= [1;0;0];
+%     alpha= [0;1;0];
     obj.sigma_hat= sqrt( alpha' * estimator.PX(params.ind_pose, params.ind_pose) * alpha );
     
     % detector threshold
@@ -180,7 +182,12 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     data.store_integrity_data(obj, counters, params)
 
 elseif counters.k_im > 1 % if it's the first time --> cannot compute Lpp_k
-    obj.Lpp_k= obj.Phi_ph{1} - obj.L_k * obj.H_k * obj.Phi_ph{1};
+    
+    if estimator.n_k == 0
+        obj.Lpp_k= obj.Phi_ph{1};
+    else
+        obj.Lpp_k= obj.Phi_ph{1} - obj.L_k * obj.H_k * obj.Phi_ph{1};
+    end
     
     if params.SWITCH_FIXED_LM_SIZE_PH
         obj.M = obj.M + 1;
@@ -192,7 +199,6 @@ else % first time we get lidar msmts
     obj.Lpp_k= 0;
 
     if params.SWITCH_FIXED_LM_SIZE_PH
-%         obj.M = obj.M + 1;
         if obj.is_extra_epoch_needed == true
             obj.is_extra_epoch_needed= false;
         end

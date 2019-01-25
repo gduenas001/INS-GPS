@@ -4,6 +4,7 @@ function odometry_update_sim(obj, params)
 vel= params.velocity_sim;
 phi= params.steering_angle_sim;
 
+
 % True State
 obj.x_true= [obj.x_true(1) + vel * params.dt_sim * cos(phi + obj.x_true(3));
             obj.x_true(2) + vel * params.dt_sim * sin(phi + obj.x_true(3));
