@@ -107,7 +107,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             % variable to normalize P_H
             %norm_P_H= 0;
             
-            for i= 0:0%obj.n_H
+            for i= 0:1%obj.n_H
                 % build extraction matrix
                 obj.compute_E_matrix(i, params.m_F)
                 
@@ -192,7 +192,7 @@ else % first time we get lidar msmts
     obj.Lpp_k= 0;
 
     if params.SWITCH_FIXED_LM_SIZE_PH
-        obj.M = obj.M + 1;
+%         obj.M = obj.M + 1;
         if obj.is_extra_epoch_needed == true
             obj.is_extra_epoch_needed= false;
         end

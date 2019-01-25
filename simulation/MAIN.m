@@ -45,27 +45,24 @@ for epoch= 1:params.num_epochs_sim
         % Simulate lidar feature measurements
         z_lidar= estimator.get_lidar_msmt_sim( params );
         
-        if ~isempty(z_lidar)
-            
-            % NN data association
-            association= estimator.nearest_neighbor_localization_sim(z_lidar, params);
-            
-            % Evaluate the probability of mis-associations
-%             im.prob_of_MA_temporary( estimator, association, params);
-            
-            % Lidar update
-            estimator.lidar_update_localization_sim(z_lidar, association, params);
-                        
-            % integrity monitoring
-%             im.monitor_integrity(estimator, counters, data_obj, params);
-            
-            % Store data
-            data_obj.store_msmts( body2nav_2D(z_lidar, estimator.XX, estimator.XX(3)) ); % Add current msmts in Nav-frame
-            counters.k_update= data_obj.store_update_sim(counters.k_update, estimator, counters.time_sim);
-            
-            % increase integrity counter
-            counters.increase_integrity_monitoring_counter();
-        end
+        % NN data association
+        association= estimator.nearest_neighbor_localization_sim(z_lidar, params);
+        
+        % Evaluate the probability of mis-associations
+        im.prob_of_MA( estimator, association, params);
+        
+        % Lidar update
+        estimator.lidar_update_localization_sim(z_lidar, association, params);
+        
+        % integrity monitoring
+        im.monitor_integrity(estimator, counters, data_obj, params);
+        
+        % Store data
+        data_obj.store_msmts( body2nav_2D(z_lidar, estimator.XX, estimator.XX(3)) ); % Add current msmts in Nav-frame
+        counters.k_update= data_obj.store_update_sim(counters.k_update, estimator, counters.time_sim);
+        
+        % increase integrity counter
+        counters.increase_integrity_monitoring_counter();
     end
     % ----------------------------------------
     
@@ -85,9 +82,11 @@ data_obj.delete_extra_allocated_memory(counters)
 
 % ------------- PLOTS -------------
 data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
-% data_obj.plot_number_of_landmarks_in_preceding_horizon();
+data_obj.plot_number_of_landmarks_in_preceding_horizon();
+data_obj.plot_number_epochs_in_preceding_horizon();
 % data_obj.plot_estimates();
-% data_obj.plot_integrity_risk();
+data_obj.plot_integrity_risk();
 % ------------------------------------------------------------
+
 
 

@@ -62,7 +62,7 @@ sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
 
 % -------------------- simulation -----------------------
-num_epochs_sim= 400;
+num_epochs_sim= 100;
 dt_sim= 0.1; % time step for the simulation (equal for all updates)
 dt_gps= 1; % time step for the GPS in simulation
 velocity_sim= 20 / 3.6; % [m/s]
