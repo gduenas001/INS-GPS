@@ -118,13 +118,13 @@ for epoch= 1:imu.num_readings - 1
             lidar.remove_features_in_areas(estimator.XX(1:9));
             
             % NN data association
-            association= estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
+            estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
             
             % Evaluate the probability of mis-associations
-            im.prob_of_MA( estimator, association, params);
+            im.prob_of_MA( estimator, params);
             
             % Lidar update
-            estimator.lidar_update_localization(lidar.msmt(:,1:2), association, params);
+            estimator.lidar_update_localization(lidar.msmt(:,1:2), params);
             
             % Lineariza and discretize
             estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
@@ -164,7 +164,7 @@ data_obj.delete_extra_allocated_memory(counters)
 data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
 data_obj.plot_number_of_landmarks_in_preceding_horizon();
 data_obj.plot_number_epochs_in_preceding_horizon();
-% data_obj.plot_estimates();
+data_obj.plot_estimates();
 data_obj.plot_integrity_risk();
 % --------------------------------
 

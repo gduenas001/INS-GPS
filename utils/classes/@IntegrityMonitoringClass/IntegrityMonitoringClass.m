@@ -22,6 +22,10 @@ classdef IntegrityMonitoringClass < handle
         E
         B_bar
         
+        % hypotheses probabilities
+        P_H_0
+        P_H
+        
         % current-time (k) only used when needed to extract elements
         sigma_hat
         Phi_k
@@ -114,6 +118,9 @@ classdef IntegrityMonitoringClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         prob_of_MA(obj, estimator, association, params);
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_hypotheses_probabilities(obj, params);
         % ----------------------------------------------
         % ----------------------------------------------
         compute_Y_M_matrix(obj,estimator)

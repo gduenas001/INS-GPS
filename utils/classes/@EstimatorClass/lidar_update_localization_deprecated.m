@@ -1,6 +1,6 @@
-function lidar_update_localization_sim(obj, z, association, params)
+function lidar_update_localization(obj, z, params)
 
-obj.XX(3)= pi_to_pi( obj.XX(3) );
+obj.XX(params.ind_yaw)= pi_to_pi( obj.XX(params.ind_yaw) );
 
 if all(association == 0)
     obj.n_k= 0;
@@ -24,8 +24,8 @@ R= kron( params.R_lidar, eye( obj.n_k / params.m_F ) );
 obj.H_k= zeros(obj.n_k, lenx);
 
 %Build Jacobian H
-spsi= sin(obj.XX(3));
-cpsi= cos(obj.XX(3));
+spsi= sin(obj.XX(params.ind_yaw));
+cpsi= cos(obj.XX(params.ind_yaw));
 zHat= zeros(obj.n_k,1);
 for i= 1:length(association)
     % Indexes
@@ -36,13 +36,13 @@ for i= 1:length(association)
     
     % Predicted measurement
     zHat(indz)= [dx*cpsi + dy*spsi;
-                -dx*spsi + dy*cpsi];
+        -dx*spsi + dy*cpsi];
     
     % Jacobian -- H
     obj.H_k(indz,1)= [-cpsi; spsi];
     obj.H_k(indz,2)= [-spsi; -cpsi];
-    obj.H_k(indz,3)= [-dx * spsi + dy * cpsi;
-                      -dx * cpsi - dy * spsi];
+    obj.H_k(indz,params.ind_yaw)= [-dx * spsi + dy * cpsi;
+                                   -dx * cpsi - dy * spsi];
 end
 
 % Update

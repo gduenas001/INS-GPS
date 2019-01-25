@@ -8,7 +8,7 @@
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
- SWITCH_FIXED_LM_SIZE_PH= 1;
+ SWITCH_FIXED_LM_SIZE_PH= 0;
  % --------------------------------------------------
 
 
@@ -16,12 +16,12 @@
 m= 3; % number of states in the state vector
 I_MA= 1e-8; % risk allocated to unmonitored modes
 P_UA= 1e-4;
-min_n_L_M= 15;
+min_n_L_M= 8;
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 5000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
-lidarRange= 20; % [m]
-initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
+lidarRange= 25; % [m]
+initial_yaw_angle= 0; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
 m_F= 2; % measurements per feature/landmark
 dt_imu= 1/125; % IMU sampling time
 dt_cal= 1/10; % KF Update period during initial calibration
@@ -53,7 +53,7 @@ mult_factor_gyro_imu= 10; % multiplicative factor for the gyros SD
 mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
 mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
 feature_height= 1.5; % height of the features
-preceding_horizon_size= 3;
+preceding_horizon_size= 1;
 continuity_requirement= 1e-5;
 alert_limit= 1;
 VRW= 0.07; % vel random walk
@@ -68,7 +68,7 @@ dt_gps= 1; % time step for the GPS in simulation
 velocity_sim= 20 / 3.6; % [m/s]
 steering_angle_sim= deg2rad(0);
 sig_gps_sim= 0.2; % standar deviation for GPS in simulation (all z-y-x)
-sig_velocity_sim= 0.5;
-sig_steering_angle_sim= deg2rad(10);
+sig_velocity_sim= 1;
+sig_steering_angle_sim= deg2rad(2);
 wheelbase_sim= 1.7; % for the simulated car
 % -------------------------------------------

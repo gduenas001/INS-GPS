@@ -10,6 +10,8 @@ classdef EstimatorClass < handle
         
         PX= zeros(15)
         
+        association % association of current features
+        association_no_zeros % association of associated features
         number_of_associated_LMs= 0
         
         n_k

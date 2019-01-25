@@ -55,8 +55,8 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function store_integrity_data(obj, im, counters, params)
-            obj.im.store(im, counters, params);
+        function store_integrity_data(obj, im, estimator, counters, params)
+            obj.im.store(im, estimator, counters, params);
         end
         % ----------------------------------------------
         % ----------------------------------------------

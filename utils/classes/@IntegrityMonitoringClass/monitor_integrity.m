@@ -51,8 +51,6 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     
     % common parameters
     alpha= [-sin(estimator.XX(params.ind_yaw)); cos(estimator.XX(params.ind_yaw)); 0];
-%     alpha= [1;0;0];
-%     alpha= [0;1;0];
     obj.sigma_hat= sqrt( alpha' * estimator.PX(params.ind_pose, params.ind_pose) * alpha );
     
     % detector threshold
@@ -72,6 +70,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         obj.A_M=   [];
         obj.B_bar= [];
         obj.q_M= 0;
+        obj.detector_threshold= 0;
         obj.p_hmi= 1;
     else
         % Update the innovation vector covarience matrix for the new PH
@@ -98,6 +97,9 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         % Loop over hypotheses in the PH (only 1 fault)
         obj.n_H= obj.n_M / params.m_F; % one hypothesis per associated landmark in ph
         
+        % compute hypotheses probabilities
+        obj.compute_hypotheses_probabilities(params);
+        
         % initialization of p_hmi
         obj.p_hmi= 0;
 
@@ -105,10 +107,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         if obj.n_M < 5
             obj.p_hmi= 1;
             
-        else % if we don't have enough landmarks --> P(HMI)= 1
-            % variable to normalize P_H
-            %norm_P_H= 0;
-            
+        else % if we don't have enough landmarks --> P(HMI)= 1            
             for i= 0:0%obj.n_H
                 % build extraction matrix
                 obj.compute_E_matrix(i, params.m_F)
@@ -145,41 +144,17 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                     end
                 end
                 
-                
-                
                 % Add P(HMI | H) to the integrity risk
                 if i == 0
-                    % previous-estimate fault hypothesis probability
-                    % scaled to make sure that the sum of all hypotheses' probabilities
-                    % equals to one (Total probability theorm)
-                    %                 P_H = prod( 1-(obj.P_MA_M + params.p_UA) );
-                    P_H= 1;
-                    %                 norm_P_H= norm_P_H + P_H;
-                    obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
+                    obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
                 else
-                    % UA & MA fault hypothesis probability (for one landmark)
-                    % scaled to make sure that the sum of all hypotheses' probabilities
-                    %                 % equals to one (Total probability theorm)
-                    %                 P_H = 1; % initialization
-                    %                 for j = 1 : size(obj.n_L_M)
-                    %                     if i == j
-                    %                         P_H = P_H * (obj.P_MA_M(j) + params.p_UA);
-                    %                         elsec
-                    %                         P_H = P_H * (1 -(obj.P_MA_M(j) + params.p_UA));
-                    %                     end
-                    %                 end
-                    %                 norm_P_H= norm_P_H + P_H;
-                    
-                    %                 P_H= obj.P_MA_M(i) + params.p_UA;
-                    P_H= params.P_UA;
-                    obj.p_hmi= obj.p_hmi + p_hmi_H * P_H;
+                    obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
                 end
             end
-            %         obj.p_hmi = ( (obj.p_hmi / norm_P_H));%*(1-params.p_UA*n_H)) + params.p_UA*n_H )*(1-params.I_MA) + params.I_MA;
         end
     end
     % store integrity related data
-    data.store_integrity_data(obj, counters, params)
+    data.store_integrity_data(obj, estimator, counters, params)
 
 elseif counters.k_im > 1 % if it's the first time --> cannot compute Lpp_k
     

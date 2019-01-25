@@ -1,11 +1,11 @@
 
-function association= nearest_neighbor_localization(obj, z, params)
+function nearest_neighbor_localization(obj, z, params)
 
 % number of features
 n_F= size(z,1);
 
 % initialize with zero, if SLAM --> initialize with (-1)
-association= zeros(n_F,1);
+obj.association= zeros(n_F,1);
 
 if n_F == 0, return, end
 
@@ -65,13 +65,13 @@ for i= 1:n_F
         
         if y2 < min_y2
             min_y2= y2;
-            association(i)= lm_ind;
+            obj.association(i)= lm_ind;
         end
     end
     
     % Increase appearances counter
-    if association(i) ~= 0  
-        obj.appearances(association(i))= obj.appearances(association(i)) + 1;        
+    if obj.association(i) ~= 0  
+        obj.appearances(obj.association(i))= obj.appearances(obj.association(i)) + 1;        
     end
 end
 end

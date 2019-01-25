@@ -46,13 +46,13 @@ for epoch= 1:params.num_epochs_sim
         z_lidar= estimator.get_lidar_msmt_sim( params );
         
         % NN data association
-        association= estimator.nearest_neighbor_localization_sim(z_lidar, params);
+        estimator.nearest_neighbor_localization_sim(z_lidar, params);
         
         % Evaluate the probability of mis-associations
-        im.prob_of_MA( estimator, association, params);
+        im.prob_of_MA( estimator, params);
         
         % Lidar update
-        estimator.lidar_update_localization_sim(z_lidar, association, params);
+        estimator.lidar_update_localization(z_lidar, params);
         
         % integrity monitoring
         im.monitor_integrity(estimator, counters, data_obj, params);

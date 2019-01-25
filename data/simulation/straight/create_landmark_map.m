@@ -1,7 +1,7 @@
 
 clear; clc;
 
-%%
+%% decreasing separation on landmarks in y-coordinate
 s_0= 30; % x-coordinate of the first pair of landmarks
 s_step= 15; % x-coordinate separation
 t_0= 20; % y-coordinate of the first pair of landmarks
@@ -19,6 +19,29 @@ while t > t_threshold
     t= t - t_step;
     
     landmarks= [s, t; s, -t];
+    landmark_map= [landmark_map; landmarks];
+end
+
+%% decreasing separation on landmarks in x-coordinate
+
+s_0= 30; % x-coordinate of the first pair of landmarks
+s_step= 15; % x-coordinate separation
+s_step_decrement= 1; % x-coordinate separation difference
+t_0= 20; % y-coordinate of the first pair of landmarks
+s_threshold= 1; % x-coordinate minimum distance
+
+% place first pair of landmarks
+landmark_map= [s_0, t_0; s_0, -t_0];
+
+s= s_0;
+t= t_0;
+while s_step > s_threshold
+    
+    
+    s= s + s_step;
+    s_step= s_step - s_step_decrement;
+        
+    landmarks= [s, t_0; s, -t_0];
     landmark_map= [landmark_map; landmarks];
 end
 
