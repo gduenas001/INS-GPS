@@ -25,7 +25,7 @@ obj.n_M= sum( obj.n_ph ) + estimator.n_k;
 obj.n_L_M= obj.n_M / params.m_F;
 
 % the first time we have enough preceding horizon
-if obj.is_extra_epoch_needed == -1 && obj.n_L_M >= params.min_n_L_M && counters.k_im > 1
+if obj.is_extra_epoch_needed == -1 && obj.n_L_M >= params.min_n_L_M && counters.k_im > 2
     obj.is_extra_epoch_needed= true;
 end
 
@@ -109,7 +109,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             % variable to normalize P_H
             %norm_P_H= 0;
             
-            for i= 0:1%obj.n_H
+            for i= 0:0%obj.n_H
                 % build extraction matrix
                 obj.compute_E_matrix(i, params.m_F)
                 

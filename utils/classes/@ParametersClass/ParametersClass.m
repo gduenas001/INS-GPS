@@ -22,7 +22,8 @@ classdef ParametersClass < handle
     properties (Constant)
 %         path_test= '../data/cart/20180725/';
         path_test= '../data/vehicle/20190110/';
-        path_sim= '../data/simulation/simple_sim/';
+        path_sim= '../data/simulation/straight/';
+%         path_sim= '../data/simulation/square/';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor

@@ -14,7 +14,9 @@ lm_map= [estimator.landmark_map(:,1),...
     estimator.landmark_map(:,2),...
     zeros(estimator.num_landmarks,1)];
 plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'g+', 'markersize',20);
-plot3(obj.msmts(:,1), obj.msmts(:,2), zeros(size(obj.msmts,1),1), 'k.');
+if params.SWITCH_LIDAR_UPDATE
+    plot3(obj.msmts(:,1), obj.msmts(:,2), zeros(size(obj.msmts,1),1), 'k.');
+end
 
 % plot attitude every 100 IMU readings
 for i= 1:num_readings

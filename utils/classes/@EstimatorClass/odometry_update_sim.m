@@ -1,8 +1,8 @@
 function odometry_update_sim(obj, params)
 
 
-vel= params.velocity_sim;
-phi= params.steering_angle_sim;
+vel= params.velocity_sim; % linear velocity of the car
+phi= params.steering_angle_sim; % steering angle
 
 
 % True State

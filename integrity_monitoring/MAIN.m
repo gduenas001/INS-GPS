@@ -1,5 +1,5 @@
 
-clear; format short; clc; close all;
+clear; format short; clc;% close all;
 dbstop if error
 
 addpath('../utils/functions')
@@ -13,7 +13,7 @@ gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
 estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_static), params);
-data_obj= DataClass(imu.num_readings, gps.num_readings, params);
+data_obj= DataClass(imu.num_readings, lidar.num_readings, params);
 counters= CountersClass(gps, lidar, params);
 
 % Initial discretization for cov. propagation

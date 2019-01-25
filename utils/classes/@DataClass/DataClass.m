@@ -12,10 +12,10 @@ classdef DataClass < handle
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj= DataClass(imu_num_readings, gps_num_readings, params)
+        function obj= DataClass(imu_num_readings, lidar_num_readings, params)
             obj.pred= PredictionDataClass(imu_num_readings, params);
             obj.update= UpdateDataClass(imu_num_readings, params);
-            obj.im= IntegrityDataClass(gps_num_readings * 10);
+            obj.im= IntegrityDataClass(lidar_num_readings);
         end
         % ----------------------------------------------
         % ----------------------------------------------

@@ -13,13 +13,15 @@
 
 
 % --------------- Parameters ---------------
-m= 15; % number of states in the state vector
-I_MA= 1e-8;
+m= 3; % number of states in the state vector
+I_MA= 1e-8; % risk allocated to unmonitored modes
 P_UA= 1e-4;
+min_n_L_M= 15;
 min_appearances= 2; % only update estimate landmarks detected more than this number
-num_epochs_reduce_testing= 3000;
+num_epochs_reduce_testing= 5000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
-lidarRange= 25; % [m]
+lidarRange= 20; % [m]
+initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
 m_F= 2; % measurements per feature/landmark
 dt_imu= 1/125; % IMU sampling time
 dt_cal= 1/10; % KF Update period during initial calibration
@@ -51,13 +53,22 @@ mult_factor_gyro_imu= 10; % multiplicative factor for the gyros SD
 mult_factor_pose_gps= 1; % multiplicative factor for the GPS pose SD
 mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
 feature_height= 1.5; % height of the features
-initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
-preceding_horizon_size= 5; % size of the preceding horizon in epochs
-min_n_L_M= 15; % min number of landmarks in the preceding horizon + current time
+preceding_horizon_size= 3;
 continuity_requirement= 1e-5;
 alert_limit= 1;
 VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
+
+% -------------------- simulation -----------------------
+num_epochs_sim= 100;
+dt_sim= 0.1; % time step for the simulation (equal for all updates)
+dt_gps= 1; % time step for the GPS in simulation
+velocity_sim= 20 / 3.6; % [m/s]
+steering_angle_sim= deg2rad(0);
+sig_gps_sim= 0.2; % standar deviation for GPS in simulation (all z-y-x)
+sig_velocity_sim= 0.5;
+sig_steering_angle_sim= deg2rad(10);
+wheelbase_sim= 1.7; % for the simulated car
 % -------------------------------------------

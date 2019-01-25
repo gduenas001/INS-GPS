@@ -40,12 +40,15 @@ classdef EstimatorClass < handle
             if params.SWITCH_SIM
                 % initialize sizes differently for simulation
                 obj.XX= zeros(3,1);
+                obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
                 obj.x_true(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
                 obj.PX= ones(3,3) * eps;
             else                
                 % Initial attitude
                 obj.initialize_pitch_and_roll(imu_calibration_msmts)
-                
+                % initialize the yaw angle
+                obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
+
                 % save initial attitude for calibration
                 obj.initial_attitude= obj.XX(7:9);
                 
@@ -54,9 +57,6 @@ classdef EstimatorClass < handle
                 obj.PX(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
             end
             
-            % initialize the yaw angle
-            obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
-
             
             % load map if exists
             if params.SWITCH_SLAM 
