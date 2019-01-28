@@ -58,6 +58,7 @@ classdef IntegrityMonitoringClass < handle
         P_MA_ph
         T_d
         n_H
+        n_max
         mu_k
         kappa
         
@@ -103,18 +104,23 @@ classdef IntegrityMonitoringClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function compute_E_matrix(obj, i, m_F)
-            if i == 0 % E matrix for only previous state faults
+            if sum(i) == 0 % E matrix for only previous state faults
                 obj.E= zeros( obj.m, obj.n_M + obj.m );
                 obj.E(:, end-obj.m + 1:end)= eye(obj.m);
             else % E matrix with faults in the PH
-                obj.E= zeros( obj.m + m_F , obj.n_M + obj.m );
+                obj.E= zeros( obj.m + m_F*length(i) , obj.n_M + obj.m );
                 obj.E( end-obj.m+1 : end , end-obj.m+1:end )= eye(obj.m); % previous bias
-                obj.E( 1:m_F , (i-1)*m_F + 1 : i*m_F )= eye(m_F); % landmark i faulted
+                for j= 1:length(i)
+                    obj.E( m_F*(j-1)+1 : m_F*j , (i(j)-1)*m_F + 1 : i(j)*m_F )= eye(m_F); % landmark i(j) faulted
+                end
             end
         end
         % ----------------------------------------------
         % ----------------------------------------------
         monitor_integrity(obj, estimator, counters, data, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_r_max(obj, params)
         % ----------------------------------------------
         % ----------------------------------------------
         prob_of_MA(obj, estimator, association, params);

@@ -21,9 +21,10 @@ else
     Q= obj.A_M' * obj.Phi_ph{1}' * estimator.PX(params.ind_pose, params.ind_pose) * obj.Phi_ph{1} * obj.A_M;
     
     obj.kappa= 0;
-    for i=1:obj.n_H
+    C = nchoosek(1:obj.n_L_M,obj.n_max);%set of possible fault indices for j simultanous faults
+    for i= 1:size(C,1)
         % build extraction matrix
-        obj.compute_E_matrix(i, params.m_F)
+        obj.compute_E_matrix(C(i,:), params.m_F);
         kappa_H= eigs( obj.E*Q*obj.E', 1) * eigs( obj.E*obj.M_M*obj.E', 1, 'smallestabs');
         % take the largest kappa
         if kappa_H > obj.kappa, obj.kappa= kappa_H; end
