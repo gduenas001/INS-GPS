@@ -16,6 +16,7 @@ classdef ParametersClass < handle
         SWITCH_SLAM= 0
         SWITCH_SIM= 0
         SWITCH_FIXED_LM_SIZE_PH
+        SWITCH_ONE_LANDMARK_FAULT
         % --------------------------------------------------
     end
     
@@ -173,6 +174,7 @@ classdef ParametersClass < handle
             obj.SWITCH_REMOVE_FAR_FEATURES= SWITCH_REMOVE_FAR_FEATURES;
             obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
             obj.SWITCH_FIXED_LM_SIZE_PH= SWITCH_FIXED_LM_SIZE_PH;
+            obj.SWITCH_ONE_LANDMARK_FAULT= SWITCH_ONE_LANDMARK_FAULT;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
@@ -267,7 +269,7 @@ classdef ParametersClass < handle
             obj.R_virt_Z= obj.sig_virt_vz.^2;
             obj.R_virt_Y= obj.sig_virt_vy.^2;
             obj.R_lidar= diag( [obj.sig_lidar, obj.sig_lidar] ).^2;
-            obj.T_NN= 4.5; %chi2inv(1-obj.alpha_NN,2);
+            obj.T_NN= chi2inv(1-obj.alpha_NN,2);
             xPlot= [-0.3; 0; -0.3];
             yPlot= [0.1; 0; -0.1];
             zPlot= [0; 0; 0];

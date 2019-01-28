@@ -166,6 +166,8 @@ data_obj.plot_number_of_landmarks_in_preceding_horizon();
 data_obj.plot_number_epochs_in_preceding_horizon();
 data_obj.plot_estimates();
 data_obj.plot_integrity_risk();
+data_obj.plot_MA_probabilities();
+data_obj.plot_P_H();
 % --------------------------------
 
 

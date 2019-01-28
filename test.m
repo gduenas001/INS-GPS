@@ -47,10 +47,11 @@ P= 1e-4;
 
 for r= 1:n
     if  (P*n)^r  / factorial(r)  < I
-        n_max= r - 1;
         break
     end
 end
+n_max= r - 1;
+
 
 n_max
 

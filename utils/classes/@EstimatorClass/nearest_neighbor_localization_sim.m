@@ -15,7 +15,7 @@ cpsi= cos(obj.XX(3));
 zHat= zeros(2,1);
 
 % select landmarks in the field of view
-obj.FoV_landmarks_at_k= zeros(n_F,1);
+obj.FoV_landmarks_at_k= zeros(obj.num_landmarks,1);
 for i= 1:obj.num_landmarks
     
     dx= obj.landmark_map(i,1) - obj.XX(1);
@@ -23,7 +23,8 @@ for i= 1:obj.num_landmarks
     dy= obj.landmark_map(i,2) - obj.XX(2);
     if abs(dy) > params.lidarRange, continue, end
     
-    if sqrt( dx^2 + dy^2 ) <= params.lidarRange
+    % add 3 sigma to the extended field of view
+    if sqrt( dx^2 + dy^2 ) <= params.lidarRange + 3*params.sig_lidar
         obj.FoV_landmarks_at_k(i)= i;
     end
 end

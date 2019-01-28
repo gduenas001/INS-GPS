@@ -9,6 +9,7 @@
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
+ SWITCH_ONE_LANDMARK_FAULT= 1;
  % --------------------------------------------------
 
 

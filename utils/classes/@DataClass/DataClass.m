@@ -78,6 +78,38 @@ classdef DataClass < handle
         plot_map_localization_sim(obj, estimator, num_readings, params)
         % ----------------------------------------------
         % ----------------------------------------------
+        function plot_MA_probabilities(obj)
+            figure; hold on; grid on;
+            for i= 1:length(obj.im.time)
+                % if it's empty --> continue
+                if isempty(obj.im.association), continue, end
+                
+                % take the landmark indexes
+                lm_inds= obj.im.association{i};
+                P_MA= obj.im.P_MA_k{i};
+                
+                % plot
+                for j= 1:length(lm_inds)
+                    plot( lm_inds(j), P_MA(j), 'bo' )
+                end
+            end
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_P_H(obj)
+            figure; hold on; grid on;
+            for i= 1:length(obj.im.time)
+                time= obj.im.time(i);
+                P_H= obj.im.P_H{i};
+                if isempty(P_H), continue, end
+                
+                for j= 1:length(P_H)
+                    plot(time, P_H(j), '.')
+                end
+            end
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function plot_estimates(obj)
             
             % Plot variance estimates

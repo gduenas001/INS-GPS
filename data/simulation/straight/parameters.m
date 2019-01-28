@@ -8,7 +8,8 @@
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
- SWITCH_FIXED_LM_SIZE_PH= 0;
+ SWITCH_FIXED_LM_SIZE_PH= 1;
+ SWITCH_ONE_LANDMARK_FAULT= 1; % if one --> only monitor n_max = 1
  % --------------------------------------------------
 
 
@@ -45,7 +46,7 @@ taua_calibration= 100; % 200 acc tau value during initial calibration
 tauw_calibration= 100; % 200 gyro tau value during initial calibration
 g_val= 9.80279; % value of g [m/s2] at the IIT
 r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
-alpha_NN= 0.05; % prob of discard good features in NN
+alpha_NN= 0.05; % prob of discard good features in NN (inv-proportional to size of gate)
 threshold_new_landmark= 15; % Threshold in NIS to create a new landmark
 sig_minLM= 0.1; % minimum SD for the landmarks
 mult_factor_acc_imu= 10; % multiplicative factor for the accel SD
@@ -62,13 +63,13 @@ sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
 
 % -------------------- simulation -----------------------
-num_epochs_sim= 100;
+num_epochs_sim= 150;
 dt_sim= 0.1; % time step for the simulation (equal for all updates)
 dt_gps= 1; % time step for the GPS in simulation
-velocity_sim= 20 / 3.6; % [m/s]
+velocity_sim= 40 / 3.6; % [m/s]
 steering_angle_sim= deg2rad(0);
 sig_gps_sim= 0.2; % standar deviation for GPS in simulation (all z-y-x)
-sig_velocity_sim= 1;
+sig_velocity_sim= 0.5;
 sig_steering_angle_sim= deg2rad(2);
 wheelbase_sim= 1.7; % for the simulated car
 % -------------------------------------------
