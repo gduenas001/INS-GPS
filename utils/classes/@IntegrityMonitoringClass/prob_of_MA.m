@@ -21,7 +21,7 @@ else
     Q= obj.A_M' * obj.Phi_ph{1}' * estimator.PX(params.ind_pose, params.ind_pose) * obj.Phi_ph{1} * obj.A_M;
     
     obj.kappa= 0;
-    C = nchoosek(1:obj.n_L_M,obj.n_max);%set of possible fault indices for j simultanous faults
+    C = nchoosek(1:obj.n_L_M,obj.n_max);%set of possible fault indices for n_max simultanous faults
     for i= 1:size(C,1)
         % build extraction matrix
         obj.compute_E_matrix(C(i,:), params.m_F);
@@ -76,12 +76,27 @@ for t= 1:length(estimator.association_no_zeros)
             else
                 obj.P_MA_k(t)= obj.P_MA_k(t) -...
                     ncx2cdf( ( IIN_l_t - sqrt(params.T_NN) )^2 , chi_dof, obj.mu_k );
-            end
+            end            
+        end
+    end
+    
+    % landmark selection
+    if params.SWITCH_LM_SELECTION
+        if obj.P_MA_k(t) > params.P_MA_max
+            obj.P_MA_k(t)= -1;
+            estimator.association_no_zeros(t)= -1;
+            estimator.association( estimator.association == lm_id_t )= 0;
         end
     end
     
     % not more than probability one
     if obj.P_MA_k(t) > 1, obj.P_MA_k(t)= 1; end
+end
+
+% remove non-associated ones
+if params.SWITCH_LM_SELECTION
+    obj.P_MA_k( obj.P_MA_k == -1 )= [];
+    estimator.association_no_zeros( estimator.association_no_zeros == -1 )= [];
 end
 
 end

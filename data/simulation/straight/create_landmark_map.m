@@ -26,7 +26,7 @@ end
 
 s_0= 30; % x-coordinate of the first pair of landmarks
 s_step= 15; % x-coordinate separation
-s_step_decrement= 1; % x-coordinate separation difference
+s_step_decrement= 0.8; % x-coordinate separation difference
 t_0= 20; % y-coordinate of the first pair of landmarks
 s_threshold= 1; % x-coordinate minimum distance
 

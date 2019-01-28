@@ -23,6 +23,7 @@ classdef IntegrityMonitoringClass < handle
         B_bar
         
         % hypotheses probabilities
+        inds_H % faulted indexes under H hypotheses
         P_H_0
         P_H
         
@@ -32,6 +33,7 @@ classdef IntegrityMonitoringClass < handle
         H_k
         L_k
         Lpp_k
+        P_MA_k
         
         % augmented (M) 
         M= 0  % size of the preceding horizon in epochs
@@ -43,6 +45,8 @@ classdef IntegrityMonitoringClass < handle
         Y_M
         A_M
         M_M
+        P_MA_M
+        P_F_M
         
         % preceding horizon saved (ph)
         Phi_ph
@@ -53,8 +57,6 @@ classdef IntegrityMonitoringClass < handle
         Lpp_ph
         H_ph
         Y_ph
-        P_MA_M
-        P_MA_k
         P_MA_ph
         T_d
         n_H
@@ -120,7 +122,7 @@ classdef IntegrityMonitoringClass < handle
         monitor_integrity(obj, estimator, counters, data, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_r_max(obj, params)
+        compute_hypotheses(obj, params)
         % ----------------------------------------------
         % ----------------------------------------------
         prob_of_MA(obj, estimator, association, params);

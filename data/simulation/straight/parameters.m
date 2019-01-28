@@ -10,12 +10,15 @@
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_ONE_LANDMARK_FAULT= 1; % if one --> only monitor n_max = 1
+ SWITCH_LM_SELECTION= 1; % activate landmarks selection
  % --------------------------------------------------
 
 
 % --------------- Parameters ---------------
 m= 3; % number of states in the state vector
 I_MA= 1e-8; % risk allocated to unmonitored modes
+P_MA_max= 1e-4; % maximum allowable miss-association probability for one association
+I_H= 1e-5; % risk allocated to unmonitored fault modes
 P_UA= 1e-4;
 min_n_L_M= 8;
 min_appearances= 2; % only update estimate landmarks detected more than this number

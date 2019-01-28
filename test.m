@@ -82,8 +82,15 @@ plot(x_values, obj.optimization_fn(...
 
 
 
+%%
 
+clear; clc;
 
+a= cell(1,9);
+
+b= [1,2,3; 1,2,3];
+a(1,1:size(b,2))= num2cell(b,1) 
+a(1, size(b,2) + 1:size(b,2) + size(b,2))= num2cell(b,1) 
 
 
 

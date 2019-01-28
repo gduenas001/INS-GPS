@@ -88,87 +88,74 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         % set the threshold from the continuity req
         obj.detector_threshold= chi2inv(1 - obj.C_req, obj.n_M);
         
-        % TODO: very inefficient --> do not transform from cell to matrix
-        obj.P_MA_M = [ obj.P_MA_k ; cell2mat(obj.P_MA_ph(1:obj.M)') ];
-
         % compute detector
         obj.q_M= sum(obj.q_ph(1:obj.M)) + estimator.q_k;
+        
+        % TODO: very inefficient --> do not transform from cell to matrix
+        obj.P_MA_M = [ obj.P_MA_k ; cell2mat(obj.P_MA_ph(1:obj.M)') ];
+        
+        % fault probability of each association in the preceding horizon
+        obj.P_F_M= obj.P_MA_M + params.P_UA;
 
-        % compute the maximum number of simultanous faults need to be montitored
-        obj.compute_r_max(params)
-        
-        % Loop over hypotheses in the PH
-        obj.n_H= 0;
-        for i= 1:obj.n_max
-            obj.n_H= obj.n_H + nchoosek(obj.n_L_M, i);
-        end
-        
-        % compute hypotheses probabilities
-        % obj.compute_hypotheses_probabilities(params);
+        % compute the hypotheses (n_H, n_max, inds_H)
+        obj.compute_hypotheses(params)
         
         % initialization of p_hmi
         obj.p_hmi= 0;
-
-        % need at least 5 msmts (3 landmarks) to monitor one landmark fault
-        if obj.n_M < 5
+        if obj.n_M < 5 % need at least 5 msmts (3 landmarks) to monitor one landmark fault
             obj.p_hmi= 1;
             
         else % if we don't have enough landmarks --> P(HMI)= 1   
             obj.P_H= ones(obj.n_H, 1) * inf; %initializing P_H vector
-            w= 1; %index for P_H calculations
-            for j= 0:obj.n_max
-                if j==0
-                    C = 0;
+            for i= 0:length(obj.inds_H)
+                % build extraction matrix
+                if i == 0
+                    obj.compute_E_matrix(0, params.m_F);
                 else
-                    C = nchoosek(1:obj.n_L_M,j);%set of possible fault indices for j simultanous faults
+                    obj.compute_E_matrix(obj.inds_H{i}, params.m_F);
                 end
-                for i= 1:size(C,1)
-                    % build extraction matrix
-                    obj.compute_E_matrix(C(i,:), params.m_F);
-
-                    % Worst-case fault direction
-                    f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A_M' * alpha;
-                    f_M_dir= f_M_dir / norm(f_M_dir); % normalize
-
-                    % worst-case fault magnitude
-                    fx_hat_dir= alpha' * obj.A_M * f_M_dir;
-                    M_dir= f_M_dir' * obj.M_M * f_M_dir;
-
-                    % worst-case fault magnitude
-                    f_mag_min= 0;
-                    f_mag_max= 5;
-                    f_mag_inc= 5;
-                    p_hmi_H_prev= -1;
-                    for k= 1:10
-                        [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-                            f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M),...
-                            f_mag_min, f_mag_max);
-
-                        % make it a positive number
-                        p_hmi_H= -p_hmi_H;    
-
-                        % check if the new P(HMI|H) is smaller
-                        if k == 1 || p_hmi_H_prev < p_hmi_H 
-                            p_hmi_H_prev= p_hmi_H;
-                            f_mag_min= f_mag_min + f_mag_inc;
-                            f_mag_max= f_mag_max + f_mag_inc;
-                        else
-                            p_hmi_H= p_hmi_H_prev;
-                            break
-                        end
-                    end
-
-                    % Add P(HMI | H) to the integrity risk
-                    if j == 0
-                        obj.P_H_0= prod( 1 - (obj.P_MA_M + params.P_UA) );
-                        obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
+                
+                % Worst-case fault direction
+                f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A_M' * alpha;
+                f_M_dir= f_M_dir / norm(f_M_dir); % normalize
+                
+                % worst-case fault magnitude
+                fx_hat_dir= alpha' * obj.A_M * f_M_dir;
+                M_dir= f_M_dir' * obj.M_M * f_M_dir;
+                
+                % worst-case fault magnitude
+                f_mag_min= 0;
+                f_mag_max= 5;
+                f_mag_inc= 5;
+                p_hmi_H_prev= -1;
+                for k= 1:10
+                    [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+                        f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M),...
+                        f_mag_min, f_mag_max);
+                    
+                    % make it a positive number
+                    p_hmi_H= -p_hmi_H;
+                    
+                    % check if the new P(HMI|H) is smaller
+                    if k == 1 || p_hmi_H_prev < p_hmi_H
+                        p_hmi_H_prev= p_hmi_H;
+                        f_mag_min= f_mag_min + f_mag_inc;
+                        f_mag_max= f_mag_max + f_mag_inc;
                     else
-                        unfaulted_inds= prod( (1:obj.n_L_M) ~= C(i,:)', 1);
-                        faulted_inds= prod( (1:obj.n_L_M) == C(i,:)', 1 );
-                        obj.P_H(w)= prod( obj.P_MA_M(faulted_inds==1) + params.P_UA ) * prod(1 - obj.P_MA_M(unfaulted_inds==1) + params.P_UA);
-                        obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(w);
-                        w= w+1;
+                        p_hmi_H= p_hmi_H_prev;
+                        break
                     end
+                end
+                
+                % Add P(HMI | H) to the integrity risk
+                if i == 0
+                    obj.P_H_0= prod( 1 - obj.P_F_M );
+                    obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
+                else
+                    %                         unfaulted_inds= all( 1:obj.n_L_M ~= fault_inds(i,:)', 1 );
+                    obj.P_H(i)= prod( obj.P_F_M( obj.inds_H{i} ) ); %...
+                    %                                   * prod( 1 - P_F_M(unfaulted_inds)  );
+                    obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
                 end
             end
         end

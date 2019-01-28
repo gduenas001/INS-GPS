@@ -17,6 +17,7 @@ classdef ParametersClass < handle
         SWITCH_SIM= 0
         SWITCH_FIXED_LM_SIZE_PH
         SWITCH_ONE_LANDMARK_FAULT
+        SWITCH_LM_SELECTION
         % --------------------------------------------------
     end
     
@@ -34,6 +35,7 @@ classdef ParametersClass < handle
         % ---------------------------------------------------------
         m
         I_MA
+        P_MA_max
         P_UA
         I_H
         min_appearances
@@ -176,9 +178,11 @@ classdef ParametersClass < handle
             obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
             obj.SWITCH_FIXED_LM_SIZE_PH= SWITCH_FIXED_LM_SIZE_PH;
             obj.SWITCH_ONE_LANDMARK_FAULT= SWITCH_ONE_LANDMARK_FAULT;
+            obj.SWITCH_LM_SELECTION= SWITCH_LM_SELECTION;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
+            obj.P_MA_max= P_MA_max;
             obj.P_UA= P_UA;
             obj.I_H= I_H;
             obj.min_appearances= min_appearances;

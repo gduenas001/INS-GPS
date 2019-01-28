@@ -1,5 +1,5 @@
 
-clear; format short; clc;% close all;
+clear; format short; clc; close all;
 dbstop if error
 
 addpath('../utils/functions')
