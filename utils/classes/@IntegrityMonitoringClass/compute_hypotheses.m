@@ -2,16 +2,21 @@
 function compute_hypotheses(obj, params)
 
 % probability of "r" or more simultaneous faults
+flag_out= false;
 for r= 1:length(obj.P_F_M)
     if  sum(obj.P_F_M)^r  / factorial(r)  < params.I_H
         obj.n_max= r-1;
+        flag_out= true;
         break
     end
 end
 
-if obj.n_max > 2
+% if no "r" holds --> all landmarks failing simultaneously must be monitored
+if ~flag_out, obj.n_max= r; end
+
+if obj.n_max > 1
     fprintf('n_max: %d\n', obj.n_max);
-    obj.n_max= 2;
+%     obj.n_max= 2;
 end
 
 % compute number of hypotheses

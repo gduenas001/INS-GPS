@@ -45,6 +45,54 @@ while s_step > s_threshold
     landmark_map= [landmark_map; landmarks];
 end
 
+%% different sections with different separation
+
+n_lm= 2; % number of landmarks for this section
+s_0= 10; % x-coordinate of the first pair of landmarks
+s_step= 15; % x-coordinate separation
+t_0= 20; % y-coordinate of the first pair of landmarks
+
+% place first pair of landmarks
+% landmark_map= [s_0, t_0; s_0, -t_0];
+landmark_map= [s_0, t_0];
+
+% first section (well spaced)
+s= s_0;
+t= t_0;
+for i= 1:n_lm
+    
+    s= s + s_step;
+            
+%     landmarks= [s, t_0; s, -t_0];
+    landmarks= [s, t_0*(-1)^i];
+    landmark_map= [landmark_map; landmarks];
+end
+
+
+n_lm= 1;
+s_0= s + 45; % x-coordinate of the first pair of landmarks
+s_step= 30; % x-coordinate separation
+t_0= 20; % y-coordinate of the first pair of landmarks
+t_step= 1;
+
+% place first pair of landmarks
+landmark_map= [landmark_map; s_0, t_0; s_0, -t_0];
+landmark_map= [landmark_map; s_0, t_0+t_step; s_0, -t_0-t_step];
+
+
+s= s_0;
+for i= 1:n_lm
+    
+    s= s + s_step;
+    
+    landmark_map= [landmark_map; s, t_0; s, -t_0];
+    landmark_map= [landmark_map; s, t_0 + t_step; s, -t_0 - t_step];
+end
+
+
+
+
+
 %%
 
 landmark_map=...

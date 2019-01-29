@@ -11,8 +11,10 @@ classdef EstimatorClass < handle
         PX= zeros(15)
         
         association % association of current features
+        association_true % only for simulation
         association_no_zeros % association of associated features
         number_of_associated_LMs= 0
+        num_of_extracted_features
         
         n_k
         

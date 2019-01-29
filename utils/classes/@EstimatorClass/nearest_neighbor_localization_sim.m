@@ -2,12 +2,12 @@
 function nearest_neighbor_localization_sim(obj, z, params)
 
 % number of features
-n_F= size(z,1);
+obj.num_of_extracted_features= size(z,1);
 
 % initialize with zero, if SLAM --> initialize with (-1)
-obj.association= zeros(n_F,1);
+obj.association= zeros(obj.num_of_extracted_features, 1);
 
-if n_F == 0, return, end
+if obj.num_of_extracted_features == 0, return, end
 
 % initialize variables
 spsi= sin(obj.XX(3));
@@ -15,16 +15,17 @@ cpsi= cos(obj.XX(3));
 zHat= zeros(2,1);
 
 % select landmarks in the field of view
+FoV_extension= max(5, 7*params.sig_lidar); % add this to the FoV
 obj.FoV_landmarks_at_k= zeros(obj.num_landmarks,1);
 for i= 1:obj.num_landmarks
     
     dx= obj.landmark_map(i,1) - obj.XX(1);
-    if abs(dx) > params.lidarRange, continue, end
+    if abs(dx) > params.lidarRange + FoV_extension, continue, end
     dy= obj.landmark_map(i,2) - obj.XX(2);
-    if abs(dy) > params.lidarRange, continue, end
+    if abs(dy) > params.lidarRange +  + FoV_extension, continue, end
     
     % add 3 sigma to the extended field of view
-    if sqrt( dx^2 + dy^2 ) <= params.lidarRange + 3*params.sig_lidar
+    if sqrt( dx^2 + dy^2 ) <= params.lidarRange + FoV_extension
         obj.FoV_landmarks_at_k(i)= i;
     end
 end
@@ -32,7 +33,7 @@ end
 obj.FoV_landmarks_at_k( obj.FoV_landmarks_at_k == 0 )= [];
 
 % Loop over extracted features
-for i= 1:n_F
+for i= 1:obj.num_of_extracted_features
     min_y2= params.T_NN;
     
     % loop through landmarks

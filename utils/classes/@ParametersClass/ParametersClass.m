@@ -16,8 +16,8 @@ classdef ParametersClass < handle
         SWITCH_SLAM= 0
         SWITCH_SIM= 0
         SWITCH_FIXED_LM_SIZE_PH
-        SWITCH_ONE_LANDMARK_FAULT
         SWITCH_LM_SELECTION
+        SWITCH_SEED
         % --------------------------------------------------
     end
     
@@ -177,8 +177,8 @@ classdef ParametersClass < handle
             obj.SWITCH_REMOVE_FAR_FEATURES= SWITCH_REMOVE_FAR_FEATURES;
             obj.SWITCH_CALIBRATION= SWITCH_CALIBRATION;
             obj.SWITCH_FIXED_LM_SIZE_PH= SWITCH_FIXED_LM_SIZE_PH;
-            obj.SWITCH_ONE_LANDMARK_FAULT= SWITCH_ONE_LANDMARK_FAULT;
             obj.SWITCH_LM_SELECTION= SWITCH_LM_SELECTION;
+            obj.SWITCH_SEED= SWITCH_SEED;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
@@ -258,6 +258,8 @@ classdef ParametersClass < handle
             obj.ARW= obj.ARW * obj.mult_factor_gyro_imu; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
             
             % ------------------ build parameters ------------------
+            if obj.SWITCH_SEED, rng(SWITCH_SEED); end
+            
             if obj.SWITCH_SIM
                 obj.ind_pose= 1:3;
                 obj.ind_yaw= 3;

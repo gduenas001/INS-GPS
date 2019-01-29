@@ -5,6 +5,7 @@ classdef DataClass < handle
         update
         im
         
+        num_extracted_features
         msmts        
         gps_msmts
     end
@@ -37,8 +38,8 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function epoch= store_update_sim(obj, epoch, estimator, time)
-            obj.update.store_sim(epoch, estimator, time);
+        function epoch= store_update_sim(obj, epoch, estimator, time, params)
+            obj.update.store_sim(epoch, estimator, time, params);
             
             % increase counter
             epoch= epoch + 1;
@@ -46,6 +47,7 @@ classdef DataClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function store_msmts(obj, msmts) % TODO: optimize this mess!!
+            obj.num_extracted_features= [obj.num_extracted_features; size(msmts,1)];
             obj.msmts= [obj.msmts; msmts];
         end
         % ----------------------------------------------
@@ -93,6 +95,8 @@ classdef DataClass < handle
                     plot( lm_inds(j), P_MA(j), 'bo' )
                 end
             end
+            xlabel('landmark ID')
+            ylabel('P(MA)')
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -107,6 +111,25 @@ classdef DataClass < handle
                     plot(time, P_H(j), '.')
                 end
             end
+            xlabel('time [s]')
+            ylabel('P(H)')
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_error(obj, params)
+%             standard_dev_x= sqrt( obj.update.PX(1,:) );
+            standard_dev_y= sqrt( obj.update.PX(2,:) );
+            
+            figure; hold on; grid on;
+%             plot(obj.update.time * params.velocity_sim, obj.update.error(1,:), 'b-', 'linewidth', 2)
+            plot(obj.update.time * params.velocity_sim, obj.update.error(2,:), 'r-', 'linewidth', 2)
+%             plot(obj.update.time * params.velocity_sim, standard_dev_x,'b--','linewidth',2);
+%             plot(obj.update.time * params.velocity_sim, -standard_dev_x,'b--','linewidth',2);
+            plot(obj.update.time * params.velocity_sim, standard_dev_y,'r--','linewidth',2);
+            plot(obj.update.time * params.velocity_sim, -standard_dev_y,'r--','linewidth',2);
+            
+            xlabel('x [m]')
+            ylabel('error [m]')
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -156,33 +179,55 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_integrity_risk(obj)
+        function plot_integrity_risk(obj, params)
             figure; hold on; grid on;
-            plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
+            if params.SWITCH_SIM
+                plot(obj.im.time * params.velocity_sim, obj.im.p_hmi, 'b-', 'linewidth', 2)
+                xlabel('x [m]')
+                xlim([obj.im.time(1), obj.im.time(end)] * params.velocity_sim) % reset the x-axis (otherwise it moves)
+            else
+                plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
+                xlabel('Time [s]')
+                xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+            end
 %             plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
             set(gca, 'YScale', 'log')
             ylim([1e-15,1]);
-            xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
-            xlabel('Time [s]')
+            
+            
             ylabel('P(HMI)')
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_number_of_landmarks_in_preceding_horizon(obj)
+        function plot_number_of_landmarks(obj, params)
             figure; hold on; grid on;
-            plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
-            plot(obj.update.time, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
+            if params.SWITCH_SIM
+                plot(obj.im.time * params.velocity_sim, obj.im.n_L_M, 'b-', 'linewidth', 2)
+                plot(obj.im.time * params.velocity_sim, obj.update.miss_associations, 'r*')
+                plot(obj.update.time * params.velocity_sim, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
+                plot(obj.update.time * params.velocity_sim, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
+                xlabel('x [m]')
+            else
+                plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
+                plot(obj.update.time, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
+%                 plot(obj.update.time, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
+                xlabel('time [s]')
+            end
             legend('n_L^M', 'n_L');
-            xlabel('time [s]')
-            ylabel('Number of landmarks in the preceding horizon')
+            ylabel('Number of landmarks')
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_number_epochs_in_preceding_horizon(obj)
+        function plot_number_epochs_in_preceding_horizon(obj, params)
             figure; hold on; grid on;
-            plot(obj.im.time, obj.im.M, 'b-', 'linewidth', 2)
-            xlabel('time [s]')
-            ylabel('Number of preceding horizon epochs')
+            if params.SWITCH_SIM
+                plot(obj.im.time * params.velocity_sim, obj.im.M, 'b-', 'linewidth', 2)
+                xlabel('x [m]')
+            else
+                plot(obj.im.time, obj.im.M, 'b-', 'linewidth', 2)
+                xlabel('time [s]')
+            end
+            ylabel('Number of epochs included in preceding horizon')
         end
         % ----------------------------------------------
         % ----------------------------------------------

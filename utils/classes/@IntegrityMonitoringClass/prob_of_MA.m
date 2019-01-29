@@ -16,6 +16,9 @@ obj.P_MA_k= ones(size(estimator.association_no_zeros)) * (-1);
 % compute kappa
 if isempty(obj.A_M)
     obj.mu_k = 0;
+elseif obj.n_L_M - obj.n_max < 2
+    obj.kappa= 1;
+    obj.mu_k= obj.kappa * ( sqrt(obj.T_d) - sqrt( chi2inv(1 - params.I_MA , obj.n_M) ) )^2;
 else
     % compute Q matrix with A_M_(k-1) , Phi_(k-1), P_k, n_M_(k-1)
     Q= obj.A_M' * obj.Phi_ph{1}' * estimator.PX(params.ind_pose, params.ind_pose) * obj.Phi_ph{1} * obj.A_M;

@@ -2,12 +2,12 @@
 function nearest_neighbor_localization(obj, z, params)
 
 % number of features
-n_F= size(z,1);
+obj.num_of_extracted_features= size(z,1);
 
 % initialize with zero, if SLAM --> initialize with (-1)
-obj.association= zeros(n_F,1);
+obj.association= zeros(obj.num_of_extracted_features, 1);
 
-if n_F == 0, return, end
+if obj.num_of_extracted_features == 0, return, end
 
 % initialize variables
 spsi= sin(obj.XX(9));
@@ -15,7 +15,7 @@ cpsi= cos(obj.XX(9));
 zHat= zeros(2,1);
 
 % select landmarks in the field of view
-obj.FoV_landmarks_at_k= zeros(n_F,1);
+obj.FoV_landmarks_at_k= zeros(obj.num_of_extracted_features, 1);
 for i= 1:obj.num_landmarks
     
     dx= obj.landmark_map(i,1) - obj.XX(1);
@@ -31,7 +31,7 @@ end
 obj.FoV_landmarks_at_k( obj.FoV_landmarks_at_k == 0 )= [];
 
 % Loop over extracted features
-for i= 1:n_F
+for i= 1:obj.num_of_extracted_features
     min_y2= params.T_NN;
     
     % loop through landmarks

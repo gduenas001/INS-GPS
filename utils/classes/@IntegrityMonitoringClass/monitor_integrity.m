@@ -102,12 +102,13 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         
         % initialization of p_hmi
         obj.p_hmi= 0;
-        if obj.n_M < 5 % need at least 5 msmts (3 landmarks) to monitor one landmark fault
+        if obj.n_L_M - obj.n_max < 2 % need at least 5 msmts (3 landmarks) to monitor one landmark fault
+            fprintf('Not enough redundancy: n_L_M = %d, n_max = %d\n', obj.n_L_M, obj.n_max)
             obj.p_hmi= 1;
             
         else % if we don't have enough landmarks --> P(HMI)= 1   
-            obj.P_H= ones(obj.n_H, 1) * inf; %initializing P_H vector
-            for i= 0:length(obj.inds_H)
+            obj.P_H= ones(obj.n_H, 1) * inf; % initializing P_H vector
+            for i= 0:length(obj.n_H)
                 % build extraction matrix
                 if i == 0
                     obj.compute_E_matrix(0, params.m_F);
@@ -152,9 +153,9 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                     obj.P_H_0= prod( 1 - obj.P_F_M );
                     obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
                 else
-                    %                         unfaulted_inds= all( 1:obj.n_L_M ~= fault_inds(i,:)', 1 );
+                    % unfaulted_inds= all( 1:obj.n_L_M ~= fault_inds(i,:)', 1 );
                     obj.P_H(i)= prod( obj.P_F_M( obj.inds_H{i} ) ); %...
-                    %                                   * prod( 1 - P_F_M(unfaulted_inds)  );
+                    % * prod( 1 - P_F_M(unfaulted_inds)  );
                     obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
                 end
             end
