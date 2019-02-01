@@ -18,6 +18,7 @@ classdef ParametersClass < handle
         SWITCH_FIXED_LM_SIZE_PH
         SWITCH_LM_SELECTION
         SWITCH_SEED
+        SWITCH_ONLY_ONE_LM_FAULT
         % --------------------------------------------------
     end
     
@@ -179,6 +180,7 @@ classdef ParametersClass < handle
             obj.SWITCH_FIXED_LM_SIZE_PH= SWITCH_FIXED_LM_SIZE_PH;
             obj.SWITCH_LM_SELECTION= SWITCH_LM_SELECTION;
             obj.SWITCH_SEED= SWITCH_SEED;
+            obj.SWITCH_ONLY_ONE_LM_FAULT= SWITCH_ONLY_ONE_LM_FAULT;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;

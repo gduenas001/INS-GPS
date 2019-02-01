@@ -41,9 +41,9 @@
 
 %%
 
-I= 1e-6;
+I= 1e-8;
 n= 14;
-P= 1e-4;
+P= 1e-5;
 
 for r= 1:n
     if  (P*n)^r  / factorial(r)  < I

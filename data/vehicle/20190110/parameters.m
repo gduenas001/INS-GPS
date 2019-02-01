@@ -1,5 +1,5 @@
  % --------------- Switches (options) ---------------
- SWITCH_REDUCE_TESTING= 1; % to test only a few frames
+ SWITCH_REDUCE_TESTING= 0; % to test only a few frames
  SWITCH_VIRT_UPDATE_Z= 0; % virtual update for the z-vel in the body frame
  SWITCH_VIRT_UPDATE_Y= 0; % virtual update for the y-vel in the body frame
  SWITCH_YAW_UPDATE= 1;
@@ -9,21 +9,20 @@
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
- SWITCH_ONE_LANDMARK_FAULT= 1;
  SWITCH_LM_SELECTION= 1; % landmark selection activation
  SWITCH_SEED= 0; 
+ SWITCH_ONLY_ONE_LM_FAULT= 1; % only monitor one simultaneous landmark failing
  % --------------------------------------------------
 
 
 % --------------- Parameters ---------------
 m= 15; % number of states in the state vector
-I_MA= 1e-8;
-P_MA_max= 1e-5; % maximum alloable miss-association probability
+P_MA_max= 1e-3; % maximum alloable miss-association probability
 P_UA= 1e-4;
-I_H= 1e-6;
+I_H= 1e-7;
 min_n_L_M= 10; % min number of landmarks in the preceding horizon + current time
 min_appearances= 2; % only update estimate landmarks detected more than this number
-num_epochs_reduce_testing= 3000;
+num_epochs_reduce_testing= 6000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
 lidarRange= 25; % [m]
 m_F= 2; % measurements per feature/landmark
@@ -65,4 +64,5 @@ VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
+I_MA= 1e-8;
 % -------------------------------------------

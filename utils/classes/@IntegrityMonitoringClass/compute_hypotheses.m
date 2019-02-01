@@ -16,6 +16,9 @@ if ~flag_out, obj.n_max= r; end
 
 if obj.n_max > 1
     fprintf('n_max: %d\n', obj.n_max);
+    if params.SWITCH_ONLY_ONE_LM_FAULT
+        obj.n_max= 1;
+    end
 end
 
 % compute number of hypotheses
