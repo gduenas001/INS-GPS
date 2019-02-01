@@ -1,5 +1,5 @@
 
-clear; format short; clc; close all;
+clear; format short; clc; %close all;
 dbstop if error
 
 addpath('../utils/functions')
@@ -48,24 +48,24 @@ for epoch= 1:params.num_epochs_sim
         % NN data association
         estimator.nearest_neighbor_localization_sim(z_lidar, params);
         
-        % introduce miss-association
-        if estimator.x_true(1) < 70.5
-            for i= 1:length(estimator.association_true)
-                if estimator.association_true(i) == 4
-                    estimator.association(i)= 6;
-                elseif estimator.association_true(i) == 6
-                    estimator.association(i)= 0;
-                elseif estimator.association_true(i) == 5
-                    estimator.association(i)= 0;
-                elseif estimator.association_true(i) == 7
-                    estimator.association(i)= 5;
-                end
-            end
-        end
+%         % introduce miss-association
+%         if estimator.x_true(1) < 70.5
+%             for i= 1:length(estimator.association_true)
+%                 if estimator.association_true(i) == 4
+%                     estimator.association(i)= 6;
+%                 elseif estimator.association_true(i) == 6
+%                     estimator.association(i)= 0;
+%                 elseif estimator.association_true(i) == 5
+%                     estimator.association(i)= 0;
+%                 elseif estimator.association_true(i) == 7
+%                     estimator.association(i)= 5;
+%                 end
+%             end
+%         end
 
         % Evaluate the probability of mis-associations
         im.prob_of_MA( estimator, params);
-        im.P_MA_k(:)= 0;
+%         im.P_MA_k(:)= 0;
         
         % Lidar update
         estimator.lidar_update_localization(z_lidar, params);
@@ -108,6 +108,7 @@ data_obj.plot_integrity_risk(params);
 % data_obj.plot_MA_probabilities();
 data_obj.plot_error(params);
 % data_obj.plot_P_H();
+data_obj.plot_detector();
 % ------------------------------------------------------------
 
 

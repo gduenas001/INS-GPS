@@ -80,6 +80,13 @@ classdef DataClass < handle
         plot_map_localization_sim(obj, estimator, num_readings, params)
         % ----------------------------------------------
         % ----------------------------------------------
+        function plot_detector(obj)
+            figure; hold on; grid on;
+            plot(1:length(obj.im.detector), obj.im.detector)
+            plot(1:length(obj.im.detector), obj.im.detector_threshold)
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function plot_MA_probabilities(obj)
             figure; hold on; grid on;
             for i= 1:length(obj.im.time)
@@ -128,8 +135,9 @@ classdef DataClass < handle
             plot(obj.update.time * params.velocity_sim, standard_dev_y,'r--','linewidth',2);
             plot(obj.update.time * params.velocity_sim, -standard_dev_y,'r--','linewidth',2);
             
-            xlabel('x [m]')
-            ylabel('error [m]')
+            legend({'$\delta \hat{x}$', '$\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
+            xlabel('x [m]','interpreter', 'latex','fontsize', 15)
+            ylabel('error [m]','interpreter', 'latex','fontsize', 15)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -183,19 +191,17 @@ classdef DataClass < handle
             figure; hold on; grid on;
             if params.SWITCH_SIM
                 plot(obj.im.time * params.velocity_sim, obj.im.p_hmi, 'b-', 'linewidth', 2)
-                xlabel('x [m]')
+                xlabel('x [m]','interpreter', 'latex','fontsize', 15)
                 xlim([obj.im.time(1), obj.im.time(end)] * params.velocity_sim) % reset the x-axis (otherwise it moves)
             else
                 plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
-                xlabel('Time [s]')
+                xlabel('Time [s]','interpreter', 'latex','fontsize', 15)
                 xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
             end
-%             plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
+            % plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
+            ylabel('P(HMI)','interpreter', 'latex','fontsize', 15)
             set(gca, 'YScale', 'log')
             ylim([1e-15,1]);
-            
-            
-            ylabel('P(HMI)')
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -203,18 +209,20 @@ classdef DataClass < handle
             figure; hold on; grid on;
             if params.SWITCH_SIM
                 plot(obj.im.time * params.velocity_sim, obj.im.n_L_M, 'b-', 'linewidth', 2)
-                plot(obj.im.time * params.velocity_sim, obj.update.miss_associations, 'r*')
                 plot(obj.update.time * params.velocity_sim, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
-                plot(obj.update.time * params.velocity_sim, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
-                xlabel('x [m]')
+%                 plot(obj.im.time * params.velocity_sim, obj.update.miss_associations, 'r*')
+%                 plot(obj.update.time * params.velocity_sim, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
+                xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
+                legend({'$n^{F^(M)}$', '$n^F$'},...
+                    'interpreter', 'latex','fontsize', 15);
             else
                 plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
                 plot(obj.update.time, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
 %                 plot(obj.update.time, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
-                xlabel('time [s]')
+                xlabel('time [s]','interpreter', 'latex')
+                legend({'$n^{L^(M)}$', '$n^L$'},'interpreter', 'latex','fontsize', 15);
             end
-            legend('n_L^M', 'n_L');
-            ylabel('Number of landmarks')
+%             ylabel('Number of landmarks','interpreter', 'latex','fontsize', 15)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -222,23 +230,23 @@ classdef DataClass < handle
             figure; hold on; grid on;
             if params.SWITCH_SIM
                 plot(obj.im.time * params.velocity_sim, obj.im.M, 'b-', 'linewidth', 2)
-                xlabel('x [m]')
+                xlabel('x [m]','interpreter', 'latex','fontsize', 15)
             else
                 plot(obj.im.time, obj.im.M, 'b-', 'linewidth', 2)
-                xlabel('time [s]')
+                xlabel('time [s]','interpreter', 'latex','fontsize', 15)
             end
-            ylabel('Number of epochs included in preceding horizon')
+            ylabel('M', 'interpreter', 'latex','fontsize', 15)
         end
         % ----------------------------------------------
         % ----------------------------------------------
         function plot_bias_calibration(obj)
             figure; hold on; grid on;
             plot(obj.update.time, obj.update.XX(10:12,:), 'linewidth',2)
-            legend('acc_x','acc_y','acc_z')
+            legend({'$acc_x$','$acc_y$','$acc_z$'},'interpreter', 'latex','fontsize', 15)
             
             figure; hold on; grid on;
             plot(obj.update.time, obj.update.XX(13:15,:), 'linewidth',2)
-            legend('w_x','w_y','w_z')
+            legend({'$w_x$','$w_y$','$w_z$'},'interpreter', 'latex','fontsize', 15)
         end
         % ----------------------------------------------
         % ----------------------------------------------
