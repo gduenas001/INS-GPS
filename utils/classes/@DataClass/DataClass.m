@@ -231,7 +231,7 @@ classdef DataClass < handle
                 plot(obj.update.time, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
 %                 plot(obj.update.time, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
                 xlabel('time [s]','interpreter', 'latex')
-                legend({'$n^{L^(M)}$', '$n^L$'},'interpreter', 'latex','fontsize', 15);
+                legend({'$n^{F^(M)}$', '$n^F$'},'interpreter', 'latex','fontsize', 15);
             end
 %             ylabel('Number of landmarks','interpreter', 'latex','fontsize', 15)
         end

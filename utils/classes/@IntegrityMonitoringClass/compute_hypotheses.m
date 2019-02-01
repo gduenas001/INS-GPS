@@ -16,7 +16,6 @@ if ~flag_out, obj.n_max= r; end
 
 if obj.n_max > 1
     fprintf('n_max: %d\n', obj.n_max);
-%     obj.n_max= 2;
 end
 
 % compute number of hypotheses

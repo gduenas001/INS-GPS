@@ -108,7 +108,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             
         else % if we don't have enough landmarks --> P(HMI)= 1   
             obj.P_H= ones(obj.n_H, 1) * inf; % initializing P_H vector
-            for i= 0:length(obj.n_H)
+            for i= 0:obj.n_H
                 % build extraction matrix
                 if i == 0
                     obj.compute_E_matrix(0, params.m_F);

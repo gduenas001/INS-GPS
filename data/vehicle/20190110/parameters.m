@@ -11,15 +11,17 @@
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_ONE_LANDMARK_FAULT= 1;
  SWITCH_LM_SELECTION= 1; % landmark selection activation
+ SWITCH_SEED= 0; 
  % --------------------------------------------------
 
 
 % --------------- Parameters ---------------
 m= 15; % number of states in the state vector
 I_MA= 1e-8;
-P_MA_max= 1e-4; % maximum alloable miss-association probability
+P_MA_max= 1e-5; % maximum alloable miss-association probability
 P_UA= 1e-4;
 I_H= 1e-6;
+min_n_L_M= 10; % min number of landmarks in the preceding horizon + current time
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 3000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
@@ -57,7 +59,6 @@ mult_factor_vel_gps= 1;  % multiplicative factor for the GPS velocity SD
 feature_height= 1.5; % height of the features
 initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
 preceding_horizon_size= 5; % size of the preceding horizon in epochs
-min_n_L_M= 10; % min number of landmarks in the preceding horizon + current time
 continuity_requirement= 1e-5;
 alert_limit= 1;
 VRW= 0.07; % vel random walk

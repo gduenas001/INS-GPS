@@ -2,27 +2,29 @@
 clear; close all; clc;
 
 
-pma0= load('P_MA_zero');
+pma0= load('P_MA_zero_no_MA');
 pma1= load('P_MA_real');
 ma0= load('no_MA');
 
 %% plot integrity risk
 figure; hold on; grid on;
 plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.p_hmi, 'b-', 'linewidth', 2)
-plot(pma1.data_obj.im.time * pma1.params.velocity_sim, pma1.data_obj.im.p_hmi, 'r-', 'linewidth', 2)
+plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ma0.data_obj.im.p_hmi, 'r-', 'linewidth', 2)
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
-legend({'with P(MA) = 0','Actual integrity risk'}, 'interpreter', 'latex','fontsize', 10)
+
+legend({'Assuming no MA','Actual integrity risk'}, 'interpreter', 'latex','fontsize', 10)
 xlabel('x [m]','interpreter', 'latex','fontsize', 10)
-xlim([pma0.data_obj.im.time(1), pma0.data_obj.im.time(end)] * pma0.params.velocity_sim) % reset the x-axis (otherwise it moves)
+xlim([0,116])
 ylabel('P(HMI)','interpreter', 'latex','fontsize', 10)
 set(gca, 'YScale', 'log')
+xlim([0,116])
 ylim([1e-20,1]);
 
 % fig= gcf;
 % fig.PaperUnits = 'inches';
 % fig.PaperPosition = [0 0 3.5 2.5];
 % print('P_HMI','-dpdf','-r0')
-% 
+
 %% plot map and path
 
 % set predictin and update in the same vector
