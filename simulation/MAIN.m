@@ -108,7 +108,7 @@ data_obj.plot_integrity_risk(params);
 % data_obj.plot_MA_probabilities();
 data_obj.plot_error(params);
 % data_obj.plot_P_H();
-data_obj.plot_detector();
+data_obj.plot_detector(params);
 % ------------------------------------------------------------
 
 

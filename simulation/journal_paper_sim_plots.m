@@ -101,7 +101,20 @@ ylim([-1.1, 1.2])
 
 %% plot detector and detector threshold
 
+figure; hold on; grid on;
+plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.detector, 'linewidth', 2)
+plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.detector_threshold, 'linewidth', 2)
+set(gca,'TickLabelInterpreter','latex','fontsize', 10)
+xlabel('x [m]','interpreter', 'latex','fontsize', 10)
+xlim([0,116])
+ylim([0, 70])
 
+legend({'$q_{D}$', '$T_D$'},'interpreter', 'latex','fontsize', 10)
+
+fig= gcf;
+fig.PaperUnits = 'inches';
+fig.PaperPosition = [0 0 3.7 2.5];
+print('detector','-dpdf','-r0')
 
 
 

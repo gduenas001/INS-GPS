@@ -80,10 +80,21 @@ classdef DataClass < handle
         plot_map_localization_sim(obj, estimator, num_readings, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_detector(obj)
+        function plot_detector(obj, params)
+            % plot the detector value Vs. the detector threshold to see if 
+            % an alarm has been triggered
+            
             figure; hold on; grid on;
-            plot(1:length(obj.im.detector), obj.im.detector)
-            plot(1:length(obj.im.detector), obj.im.detector_threshold)
+            if params.SWITCH_SIM
+                plot(obj.im.time * params.velocity_sim, obj.im.detector, 'linewidth', 2)
+                plot(obj.im.time * params.velocity_sim, obj.im.detector_threshold, 'linewidth', 2)
+                xlabel('x [m]')
+            else
+                plot(obj.im.time, obj.im.detector, 'linewidth', 2)
+                plot(obj.im.time, obj.im.detector_threshold, 'linewidth', 2)
+                xlabel('time [s]')
+            end
+            legend('detector', 'threshold')
         end
         % ----------------------------------------------
         % ----------------------------------------------

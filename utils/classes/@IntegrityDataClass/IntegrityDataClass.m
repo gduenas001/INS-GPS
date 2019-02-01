@@ -2,6 +2,7 @@
 classdef IntegrityDataClass < handle
     properties 
         
+        time % time at which each data has been stored
         association % associations without zeros
         P_MA_k % probability of missassociations at k
         P_H % hypotheses probabilities at k
@@ -11,7 +12,6 @@ classdef IntegrityDataClass < handle
         n_L_M
         M
         sigma_hat
-        time
         
         p_eps % prob that the estimate is out of bounds w/out faults
     end
