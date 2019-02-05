@@ -11,7 +11,7 @@ h_t= zeros(2,1);
 h_l= zeros(2,1);
 estimator.association_no_zeros= estimator.association( estimator.association ~= 0);
 obj.P_MA_k= ones(size(estimator.association_no_zeros)) * (-1);
-
+obj.P_MA_k_full= obj.P_MA_k;
 
 % compute kappa
 if isempty(obj.A_M)
@@ -82,6 +82,9 @@ for t= 1:length(estimator.association_no_zeros)
             end            
         end
     end
+    
+    % store the P_MA for the full LMs
+    obj.P_MA_k_full(t)= obj.P_MA_k(t);
     
     % landmark selection
     if params.SWITCH_LM_SELECTION

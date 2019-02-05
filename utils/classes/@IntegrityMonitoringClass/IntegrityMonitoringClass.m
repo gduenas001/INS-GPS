@@ -34,6 +34,7 @@ classdef IntegrityMonitoringClass < handle
         L_k
         Lpp_k
         P_MA_k
+        P_MA_k_full
         
         % augmented (M) 
         M= 0  % size of the preceding horizon in epochs
