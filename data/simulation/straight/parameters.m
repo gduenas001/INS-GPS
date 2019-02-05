@@ -11,6 +11,7 @@
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_LM_SELECTION= 0; % activate landmarks selection
  SWITCH_SEED= 6; % seed for random (zero for deactivate)
+ SWITCH_ONLY_ONE_LM_FAULT= 0; % if only one simultaneous landmark fault
  % --------------------------------------------------
 
 
