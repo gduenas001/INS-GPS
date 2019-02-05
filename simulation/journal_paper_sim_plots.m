@@ -10,6 +10,7 @@ ma0= load('no_MA');
 figure; hold on; grid on;
 plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.p_hmi, 'b-', 'linewidth', 2)
 plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ma0.data_obj.im.p_hmi, 'r-', 'linewidth', 2)
+plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ones(length(ma0.data_obj.im.time),1) * ma0.params.I_H, 'g.', 'linewidth', 2)
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 
 legend({'Assuming no MA','Actual integrity risk'}, 'interpreter', 'latex','fontsize', 10)
