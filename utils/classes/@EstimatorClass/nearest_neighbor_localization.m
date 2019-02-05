@@ -74,5 +74,6 @@ for i= 1:obj.num_of_extracted_features
         obj.appearances(obj.association(i))= obj.appearances(obj.association(i)) + 1;        
     end
 end
+obj.association_full = obj.association;
 end
 
