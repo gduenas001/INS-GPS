@@ -114,10 +114,10 @@ ylim([0, 70])
 
 legend({'$q_{D}$', '$T_D$'},'interpreter', 'latex','fontsize', 10)
 
-fig= gcf;
-fig.PaperUnits = 'inches';
-fig.PaperPosition = [0 0 3.7 2.5];
-print('detector','-dpdf','-r0')
+% fig= gcf;
+% fig.PaperUnits = 'inches';
+% fig.PaperPosition = [0 0 3.7 2.5];
+% print('detector','-dpdf','-r0')
 
 
 
