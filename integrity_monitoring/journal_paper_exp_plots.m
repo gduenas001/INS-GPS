@@ -1,5 +1,6 @@
 clear; close all; clc;
 
+test_n5= load('test_n5_P_MA_max');
 test_n10= load('test_n10_P_MA_max_1e_minus_3');
 test_n15= load('test_n15_P_MA_max_1e_minus_2');
 
@@ -7,7 +8,7 @@ test_n15= load('test_n15_P_MA_max_1e_minus_2');
 
 % interesting landmarks (1-6,14-20, 35-27, 31-34, 115-116, 120-124
 
-lm_ids= [1:50];
+lm_ids= [91,90,94];
 
 figure; hold on; grid on;
 for j= 1:length(lm_ids)
@@ -40,15 +41,25 @@ for j= 1:length(lm_ids)
         plot(time, P_MA, 'linewidth', 2)
     end
 end
-
-
+leg= legend({'$LM1$', '$LM2$', '$LM3$'},'interpreter', 'latex','fontsize', 10);
+xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
+xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+ylabel('P(MA)','interpreter', 'latex','fontsize', 10)
+xlim([187.2, 204]) % rset the x-axis (otherwise it moves)
+ylim([0.08,0.65]);
+% save figure
+fig= gcf;
+fig.PaperUnits = 'inches';
+fig.PaperPosition = [0 0 3.5 2.5];
+print('P_MA_test','-dpdf','-r0')
 %% plot integrity risk
 figure; hold on; grid on;
+plot(test_n5.data_obj.im.time, test_n5.data_obj.im.p_hmi + test_n10.params.I_H, 'g-', 'linewidth', 2)
 plot(test_n10.data_obj.im.time, test_n10.data_obj.im.p_hmi + test_n10.params.I_H, 'b-', 'linewidth', 2)
 plot(test_n15.data_obj.im.time, test_n15.data_obj.im.p_hmi + test_n10.params.I_H, 'r-', 'linewidth', 2)
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 
-leg= legend({'$n^{F^{(M)}} = 10$','$n^{F^{(M)}} = 15$'}, 'interpreter', 'latex','fontsize', 10);
+leg= legend({'$n^{F^{(M)}} = 5$','$n^{F^{(M)}} = 10$','$n^{F^{(M)}} = 15$'}, 'interpreter', 'latex','fontsize', 10);
 xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
 xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the x-axis (otherwise it moves)
 ylabel('P(HMI)','interpreter', 'latex','fontsize', 10)
@@ -57,20 +68,19 @@ xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the
 ylim([7*1e-8,1]);
 
 
-% % save fig
-% fig= gcf;
-% fig.PaperUnits = 'inches';
-% fig.PaperPosition = [0 0 3.5 3];
-% print('P_HMI_test','-dpdf','-r0')
+% save fig
+fig= gcf;% fig.PaperUnits = 'inches';
+fig.PaperPosition = [0 0 3.5 3];
+print('P_HMI_test','-dpdf','-r0')
 
 % % for the zoom in
 % xlim([test_n10.data_obj.im.time(1), 104])
 % set(leg, 'visible', 'off')
-% 
+%  
 % % save fig
 % fig= gcf;
 % fig.PaperUnits = 'inches';
-% fig.PaperPosition = [0 0 3.5 2.5];
+% fig.PaperPosition = [0 0 3.5 1.5];
 % print('P_HMI_zoom_test','-dpdf','-r0')
 
 %% plot map and path for test_n10
@@ -84,7 +94,7 @@ plot3(test_n10.data_obj.update.XX(1,:), test_n10.data_obj.update.XX(2,:), test_n
 lm_map= [test_n10.estimator.landmark_map(:,1),...
     test_n10.estimator.landmark_map(:,2),...
     zeros(test_n10.estimator.num_landmarks,1)];
-plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'k.', 'markersize', 8);
+plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'k.', 'markersize', 6);
 
 % plot landmarks IDs
 for i= 1:length(lm_map)
@@ -95,15 +105,17 @@ end
 
 xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 axis equal
+xlim([-315, 20])
+ylim([-95, 25])
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 xlabel('x [m]','interpreter', 'latex','fontsize', 10);
 ylabel('y [m]','interpreter', 'latex','fontsize', 10);
 
-% % save figure
-% fig= gcf;
-% fig.PaperUnits = 'inches';
-% fig.PaperPosition = [0 0 3.5 2.5];
-% print('path_test','-dpdf','-r0')
+% save figure
+fig= gcf;
+fig.PaperUnits = 'inches';
+fig.PaperPosition = [0 0 3.5 2.5];
+print('path_test','-dpdf','-r0')
 
 
 
@@ -127,6 +139,8 @@ plot(test_n10.data_obj.im.time, test_n10.data_obj.im.detector, 'b-', 'linewidth'
 plot(test_n10.data_obj.im.time, test_n10.data_obj.im.detector_threshold, 'b--', 'linewidth', 2)
 plot(test_n15.data_obj.im.time, test_n15.data_obj.im.detector, 'r-', 'linewidth', 2)
 plot(test_n15.data_obj.im.time, test_n15.data_obj.im.detector_threshold, 'r--', 'linewidth', 2)
+plot(test_n5.data_obj.im.time, test_n5.data_obj.im.detector, 'g-', 'linewidth', 2)
+plot(test_n5.data_obj.im.time, test_n5.data_obj.im.detector_threshold, 'g--', 'linewidth', 2)
 
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
