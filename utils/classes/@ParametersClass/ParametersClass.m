@@ -19,6 +19,7 @@ classdef ParametersClass < handle
         SWITCH_LM_SELECTION
         SWITCH_SEED
         SWITCH_ONLY_ONE_LM_FAULT
+        SWITCH_Factor_Graph_IM
         % --------------------------------------------------
     end
     
@@ -27,6 +28,7 @@ classdef ParametersClass < handle
         path_test= '../data/vehicle/20190110/';
         path_sim= '../data/simulation/straight/';
 %         path_sim= '../data/simulation/square/';
+        path_FG= '../data/Factor_Graph_IM/';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
@@ -140,6 +142,16 @@ classdef ParametersClass < handle
         S
         S_cal
         
+        way_points
+        min_distance_to_way_point
+        max_delta_steering %maximum change in steering angle during one second
+        max_steering
+        velocity_FG
+        FG_preceding_horizon_in_epochs
+        sig_velocity_FG
+        sig_steering_angle_FG
+        W_odometry_FG
+        wheelbase_FG
     end
         
     methods
@@ -158,6 +170,9 @@ classdef ParametersClass < handle
                 case 'simulation'
                     obj.SWITCH_SIM= 1;
                     obj.path= obj.path_sim;
+                case 'Factor_Graph'
+                    obj.SWITCH_Factor_Graph_IM= 1;
+                    obj.path= obj.path_FG;
                 otherwise
                     error('navigation_type must be either "slam" or "localization"');
             end
@@ -247,6 +262,21 @@ classdef ParametersClass < handle
             % -------------------------------------------
             % -------------------------------------------
             
+            % ---------- Factor Graph integrity monitoring -----------
+            if obj.SWITCH_Factor_Graph_IM
+                obj.way_points= way_points;
+                obj.min_distance_to_way_point= min_distance_to_way_point;
+                obj.dt_sim= dt_sim;
+                obj.max_delta_steering= max_delta_steering;
+                obj.max_steering= max_steering;
+                obj.velocity_FG= velocity_FG;
+                obj.wheelbase_FG= wheelbase_FG;
+                obj.FG_preceding_horizon_in_epochs= FG_preceding_horizon_in_epochs;
+                obj.sig_velocity_FG= sig_velocity_FG;
+                obj.sig_steering_angle_FG= sig_steering_angle_FG;
+            end
+            % -------------------------------------------
+            % -------------------------------------------
             
             % set file names
             obj.file_name_imu=  strcat(obj.path, 'IMU/IMU.mat');
@@ -263,6 +293,9 @@ classdef ParametersClass < handle
             if obj.SWITCH_SEED, rng(SWITCH_SEED); end
             
             if obj.SWITCH_SIM
+                obj.ind_pose= 1:3;
+                obj.ind_yaw= 3;
+            elseif obj.SWITCH_Factor_Graph_IM
                 obj.ind_pose= 1:3;
                 obj.ind_yaw= 3;
             else
@@ -309,6 +342,10 @@ classdef ParametersClass < handle
                         
             obj.W_odometry_sim= [obj.sig_velocity_sim^2, 0;
                                  0, obj.sig_steering_angle_sim^2];
+            % -------------------------------------------------------
+            % -------------------- Factor Graph -----------------------
+            obj.W_odometry_FG= [obj.sig_velocity_FG^2, 0;
+                                 0, obj.sig_steering_angle_FG^2];
             % -------------------------------------------------------
         end
         

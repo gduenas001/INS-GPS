@@ -33,7 +33,14 @@ classdef EstimatorClass < handle
         
         initial_attitude
         appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
-        FoV_landmarks_at_k % landmarks in the field of view        
+        FoV_landmarks_at_k % landmarks in the field of view
+        
+        index_current_way_point
+        goal_is_reached
+        steering_angle
+        indicator_of_FoV_LMs
+        index_of_FoV_LMs
+        PX_horizon
     end
     
     
@@ -47,8 +54,16 @@ classdef EstimatorClass < handle
                 obj.XX= zeros(3,1);
                 obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
                 obj.x_true(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
-                obj.PX= ones(3,3) * eps;
-            else                
+                obj.PX= eye(3) * eps;
+            elseif params.SWITCH_Factor_Graph_IM
+                % initialize sizes differently for simulation
+                obj.XX= [0;0;0.1];
+                obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
+                obj.PX= eye(3) * 0.1;
+                obj.goal_is_reached= 0;
+                obj.steering_angle= 0;
+                obj.index_current_way_point= 1;
+            else
                 % Initial attitude
                 obj.initialize_pitch_and_roll(imu_calibration_msmts)
                 % initialize the yaw angle
@@ -216,7 +231,16 @@ classdef EstimatorClass < handle
         % ----------------------------------------------     
         lidar_update_localization_sim(obj, z, association, params)
         % ----------------------------------------------
-        % ----------------------------------------------     
+        % ----------------------------------------------
+        compute_steering(obj, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        odometry_exact_prediction_FG(obj, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        get_lidar_jacobian_for_FoV_LMs_FG(obj, params)
+        % ----------------------------------------------
+        % ---------------------------------------------- 
         function increase_landmarks_cov(obj, minPXLM)
             
             if length(obj.PX) == 15, return, end

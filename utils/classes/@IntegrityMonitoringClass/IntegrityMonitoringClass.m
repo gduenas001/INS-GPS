@@ -65,13 +65,24 @@ classdef IntegrityMonitoringClass < handle
         mu_k
         kappa
         
+        %Factor Graph variables
+        D_bar_k
+        D_bar_ph
+        A
+        XX_ph
+        Gamma_FG
+        M_FG
+        PX_prior
+        PX_hor_FG
+        index_of_abs_msmt_in_A
+        n
     end
     
     
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj= IntegrityMonitoringClass(params)
+        function obj= IntegrityMonitoringClass(params,estimator)
             
             % if the preceding horizon is fixed in epochs --> set M
             if ~params.SWITCH_FIXED_LM_SIZE_PH
@@ -79,20 +90,30 @@ classdef IntegrityMonitoringClass < handle
             end
             
             % if it's a simulation --> change the indexes
-            if params.SWITCH_SIM, obj.ind_im= 1:3; end
+            if params.SWITCH_SIM || params.SWITCH_Factor_Graph_IM, obj.ind_im= 1:3; end
             
             % continuity requirement
             obj.C_req= params.continuity_requirement;
             
             % initialize the preceding horizon
             % TODO: should this change for a fixed horizon in landmarks?
-            obj.n_ph=     zeros(params.preceding_horizon_size,1);
-            obj.Phi_ph=   cell(1, params.preceding_horizon_size + 1); % need an extra epoch here
+            if params.SWITCH_Factor_Graph_IM
+                obj.Phi_ph=   cell(1, params.FG_preceding_horizon_in_epochs);
+                obj.H_ph=     cell(1, params.FG_preceding_horizon_in_epochs);
+                obj.D_bar_ph=    cell(1, params.FG_preceding_horizon_in_epochs);
+                obj.n_ph=     zeros(params.FG_preceding_horizon_in_epochs,1);
+                obj.XX_ph=       cell(1, params.FG_preceding_horizon_in_epochs+1);
+                obj.XX_ph{1}=    estimator.XX;
+                obj.PX_prior=    estimator.PX;
+            else
+                obj.Phi_ph=   cell(1, params.preceding_horizon_size + 1); % need an extra epoch here
+                obj.H_ph=     cell(1, params.preceding_horizon_size);
+                obj.n_ph=     zeros(params.preceding_horizon_size,1);
+            end
             obj.gamma_ph= cell(1, params.preceding_horizon_size);
             obj.q_ph=     ones(params.preceding_horizon_size, 1) * (-1);
             obj.L_ph=     cell(1, params.preceding_horizon_size);
             obj.Lpp_ph=   cell(1, params.preceding_horizon_size + 1); % need an extra epoch here (osama)
-            obj.H_ph=     cell(1, params.preceding_horizon_size);
             obj.Y_ph=     cell(1, params.preceding_horizon_size);
             obj.P_MA_ph=  cell(1, params.preceding_horizon_size);
             
@@ -118,6 +139,16 @@ classdef IntegrityMonitoringClass < handle
                 end
             end
         end
+        function compute_E_matrix_FG(obj, params, i, m_F)
+            if i == 0 % E matrix for only previous state faults
+                obj.E= zeros( obj.m, obj.m + obj.n + (obj.m-1)*(params.FG_preceding_horizon_in_epochs+1) );
+                obj.E(:, 1:obj.m)= eye(obj.m);
+            else % E matrix with a single LM fault
+                obj.E= zeros( obj.m + m_F , obj.m + obj.n + (obj.m-1)*(params.FG_preceding_horizon_in_epochs+1) );
+                obj.E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
+                obj.E( end-m_F+1 : end , obj.index_of_abs_msmt_in_A(:,i)' )= eye(m_F); % landmark i faulted
+            end
+        end
         % ----------------------------------------------
         % ----------------------------------------------
         monitor_integrity(obj, estimator, counters, data, params)
@@ -141,29 +172,40 @@ classdef IntegrityMonitoringClass < handle
         compute_B_bar_matrix(obj, estimator)
         % ----------------------------------------------
         % ----------------------------------------------
+        FG_covarience_update_and_integrity_monitoring(obj, estimator, counters, data,  params)
+        % ----------------------------------------------
+        % ----------------------------------------------
         function update_preceding_horizon(obj, estimator, params)
             
-            if params.SWITCH_FIXED_LM_SIZE_PH
-                obj.n_ph=     [estimator.n_k;     obj.n_ph(1:obj.M)];
-                obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:obj.M}};
-                obj.q_ph=     [estimator.q_k;     obj.q_ph(1:obj.M)];
-                obj.Phi_ph=   {obj.Phi_k,         obj.Phi_ph{1:obj.M+ 1}}; %%%%%%%% CAREFUL
-                obj.H_ph=     {obj.H_k,           obj.H_ph{1:obj.M}};
-                obj.L_ph=     {obj.L_k,           obj.L_ph{1:obj.M}};
-                obj.Lpp_ph=   {obj.Lpp_k,         obj.Lpp_ph{1:obj.M}};
-                obj.Y_ph=     {estimator.Y_k,     obj.Y_ph{1:obj.M}};
-                obj.P_MA_ph=  {obj.P_MA_k,        obj.P_MA_ph{1:obj.M}};
-                
-            else
-                obj.n_ph=     [estimator.n_k;     obj.n_ph(1:end-1)];
-                obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:end-1}};
-                obj.q_ph=     [estimator.q_k;     obj.q_ph(1:end-1)];
-                obj.Phi_ph=   {obj.Phi_k,         obj.Phi_ph{1:end-1}}; %%%%%%%% CAREFUL
+            if params.SWITCH_Factor_Graph_IM
+                obj.Phi_ph=   {obj.Phi_k,         obj.Phi_ph{1:end-1}};
                 obj.H_ph=     {obj.H_k,           obj.H_ph{1:end-1}};
-                obj.L_ph=     {obj.L_k,           obj.L_ph{1:end-1}};
-                obj.Lpp_ph=   {obj.Lpp_k,         obj.Lpp_ph{1:end-1}};
-                obj.Y_ph=     {estimator.Y_k,     obj.Y_ph{1:end-1}};
-                obj.P_MA_ph=  {obj.P_MA_k,        obj.P_MA_ph{1:end-1}};
+                obj.D_bar_ph=     {obj.D_bar_k,           obj.D_bar_ph{1:end-1}};
+                obj.n_ph=     [estimator.n_k;     obj.n_ph(1:end-1)];
+                obj.XX_ph= {estimator.XX, obj.XX_ph{1:end-1}};
+            else
+                if params.SWITCH_FIXED_LM_SIZE_PH
+                    obj.n_ph=     [estimator.n_k;     obj.n_ph(1:obj.M)];
+                    obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:obj.M}};
+                    obj.q_ph=     [estimator.q_k;     obj.q_ph(1:obj.M)];
+                    obj.Phi_ph=   {obj.Phi_k,         obj.Phi_ph{1:obj.M+ 1}}; %%%%%%%% CAREFUL
+                    obj.H_ph=     {obj.H_k,           obj.H_ph{1:obj.M}};
+                    obj.L_ph=     {obj.L_k,           obj.L_ph{1:obj.M}};
+                    obj.Lpp_ph=   {obj.Lpp_k,         obj.Lpp_ph{1:obj.M}};
+                    obj.Y_ph=     {estimator.Y_k,     obj.Y_ph{1:obj.M}};
+                    obj.P_MA_ph=  {obj.P_MA_k,        obj.P_MA_ph{1:obj.M}};
+
+                else
+                    obj.n_ph=     [estimator.n_k;     obj.n_ph(1:end-1)];
+                    obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:end-1}};
+                    obj.q_ph=     [estimator.q_k;     obj.q_ph(1:end-1)];
+                    obj.Phi_ph=   {obj.Phi_k,         obj.Phi_ph{1:end-1}}; %%%%%%%% CAREFUL
+                    obj.H_ph=     {obj.H_k,           obj.H_ph{1:end-1}};
+                    obj.L_ph=     {obj.L_k,           obj.L_ph{1:end-1}};
+                    obj.Lpp_ph=   {obj.Lpp_k,         obj.Lpp_ph{1:end-1}};
+                    obj.Y_ph=     {estimator.Y_k,     obj.Y_ph{1:end-1}};
+                    obj.P_MA_ph=  {obj.P_MA_k,        obj.P_MA_ph{1:end-1}};
+                end
             end
         end
         
