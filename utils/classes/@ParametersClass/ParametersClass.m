@@ -147,11 +147,12 @@ classdef ParametersClass < handle
         max_delta_steering %maximum change in steering angle during one second
         max_steering
         velocity_FG
-        FG_preceding_horizon_in_epochs
+        FG_prec_hor
         sig_velocity_FG
         sig_steering_angle_FG
         W_odometry_FG
         wheelbase_FG
+        min_state_var_FG
     end
         
     methods
@@ -271,9 +272,10 @@ classdef ParametersClass < handle
                 obj.max_steering= max_steering;
                 obj.velocity_FG= velocity_FG;
                 obj.wheelbase_FG= wheelbase_FG;
-                obj.FG_preceding_horizon_in_epochs= FG_preceding_horizon_in_epochs;
+                obj.FG_prec_hor= FG_prec_hor;
                 obj.sig_velocity_FG= sig_velocity_FG;
                 obj.sig_steering_angle_FG= sig_steering_angle_FG;
+                obj.min_state_var_FG= min_state_var_FG;
             end
             % -------------------------------------------
             % -------------------------------------------

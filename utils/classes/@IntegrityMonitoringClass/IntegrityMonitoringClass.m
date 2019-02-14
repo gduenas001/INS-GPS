@@ -73,7 +73,7 @@ classdef IntegrityMonitoringClass < handle
         Gamma_FG
         M_FG
         PX_prior
-        PX_hor_FG
+        PX_M_FG
         index_of_abs_msmt_in_A
         n
     end
@@ -98,11 +98,11 @@ classdef IntegrityMonitoringClass < handle
             % initialize the preceding horizon
             % TODO: should this change for a fixed horizon in landmarks?
             if params.SWITCH_Factor_Graph_IM
-                obj.Phi_ph=   cell(1, params.FG_preceding_horizon_in_epochs);
-                obj.H_ph=     cell(1, params.FG_preceding_horizon_in_epochs);
-                obj.D_bar_ph=    cell(1, params.FG_preceding_horizon_in_epochs);
-                obj.n_ph=     zeros(params.FG_preceding_horizon_in_epochs,1);
-                obj.XX_ph=       cell(1, params.FG_preceding_horizon_in_epochs+1);
+                obj.Phi_ph=   cell(1, params.FG_prec_hor);
+                obj.H_ph=     cell(1, params.FG_prec_hor);
+                obj.D_bar_ph=    cell(1, params.FG_prec_hor);
+                obj.n_ph=     zeros(params.FG_prec_hor,1);
+                obj.XX_ph=       cell(1, params.FG_prec_hor+1);
                 obj.XX_ph{1}=    estimator.XX;
                 obj.PX_prior=    estimator.PX;
             else
@@ -141,11 +141,14 @@ classdef IntegrityMonitoringClass < handle
         end
         function compute_E_matrix_FG(obj, params, i, m_F)
             if i == 0 % E matrix for only previous state faults
-                obj.E= zeros( obj.m, obj.m + obj.n + (obj.m-1)*(params.FG_preceding_horizon_in_epochs+1) );
-                obj.E(:, 1:obj.m)= eye(obj.m);
+                obj.E= zeros( obj.m-1, obj.m + obj.n + (obj.m-1)*(params.FG_prec_hor+1) );
+                %obj.E(:, 1:obj.m)= eye(obj.m);
+                obj.E(:, 1:obj.m-1)= eye(obj.m-1);
             else % E matrix with a single LM fault
-                obj.E= zeros( obj.m + m_F , obj.m + obj.n + (obj.m-1)*(params.FG_preceding_horizon_in_epochs+1) );
-                obj.E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
+                %obj.E= zeros( obj.m + m_F , obj.m + obj.n + (obj.m-1)*(params.FG_prec_hor+1) );
+                obj.E= zeros( params.m-1 + m_F , obj.m + obj.n + (obj.m-1)*(params.FG_prec_hor+1) );
+                %obj.E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
+                obj.E( 1:obj.m-1 , 1:obj.m-1 )= eye(obj.m-1); % previous bias
                 obj.E( end-m_F+1 : end , obj.index_of_abs_msmt_in_A(:,i)' )= eye(m_F); % landmark i faulted
             end
         end

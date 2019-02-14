@@ -26,7 +26,7 @@ while ~estimator.goal_is_reached
     % Store data
     data_obj.store_prediction_sim(epoch, estimator, counters.time_sim);
     
-    if epoch == 42
+    if epoch == 26
         a=0;
     end
 %     % ------------------- GPS -------------------

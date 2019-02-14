@@ -40,7 +40,6 @@ classdef EstimatorClass < handle
         steering_angle
         indicator_of_FoV_LMs
         index_of_FoV_LMs
-        PX_horizon
     end
     
     
@@ -59,7 +58,7 @@ classdef EstimatorClass < handle
                 % initialize sizes differently for simulation
                 obj.XX= [0;0;0.1];
                 obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
-                obj.PX= eye(3) * 0.1;
+                obj.PX= eye(3) * eps;
                 obj.goal_is_reached= 0;
                 obj.steering_angle= 0;
                 obj.index_current_way_point= 1;
