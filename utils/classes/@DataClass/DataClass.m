@@ -30,6 +30,11 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function store_prediction_FG(obj, epoch, estimator, time)
+            obj.pred.store_FG(epoch, estimator, time);
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function epoch= store_update(obj, epoch, estimator, time)
             obj.update.store(epoch, estimator, time);
             
@@ -38,6 +43,12 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function epoch= store_update_FG(obj, epoch, estimator, time, params)
+            obj.update.store_FG(epoch, estimator, time, params);
+            
+            % increase counter
+            epoch= epoch + 1;
+        end
         function epoch= store_update_sim(obj, epoch, estimator, time, params)
             obj.update.store_sim(epoch, estimator, time, params);
             
@@ -78,6 +89,9 @@ classdef DataClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         plot_map_localization_sim(obj, estimator, num_readings, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        plot_map_localization_FG(obj, estimator, num_readings, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function plot_detector(obj, params)
@@ -204,6 +218,10 @@ classdef DataClass < handle
                 plot(obj.im.time * params.velocity_sim, obj.im.p_hmi, 'b-', 'linewidth', 2)
                 xlabel('x [m]','interpreter', 'latex','fontsize', 15)
                 xlim([obj.im.time(1), obj.im.time(end)] * params.velocity_sim) % reset the x-axis (otherwise it moves)
+            elseif params.SWITCH_Factor_Graph_IM
+                plot(obj.im.time * params.velocity_FG, obj.im.p_hmi, 'b-', 'linewidth', 2)
+                xlabel('x [m]','interpreter', 'latex','fontsize', 15)
+                xlim([obj.im.time(1), obj.im.time(end)] * params.velocity_FG) % reset the x-axis (otherwise it moves)
             else
                 plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
                 xlabel('Time [s]','interpreter', 'latex','fontsize', 15)
@@ -221,6 +239,14 @@ classdef DataClass < handle
             if params.SWITCH_SIM
                 plot(obj.im.time * params.velocity_sim, obj.im.n_L_M, 'b-', 'linewidth', 2)
                 plot(obj.update.time * params.velocity_sim, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
+%                 plot(obj.im.time * params.velocity_sim, obj.update.miss_associations, 'r*')
+%                 plot(obj.update.time * params.velocity_sim, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
+                xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
+                legend({'$n^{F^(M)}$', '$n^F$'},...
+                    'interpreter', 'latex','fontsize', 15);
+            elseif params.SWITCH_Factor_Graph_IM
+                plot(obj.im.time * params.velocity_FG, obj.im.n_L_M, 'b-', 'linewidth', 2)
+                plot(obj.update.time * params.velocity_FG, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
 %                 plot(obj.im.time * params.velocity_sim, obj.update.miss_associations, 'r*')
 %                 plot(obj.update.time * params.velocity_sim, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
                 xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)

@@ -25,6 +25,12 @@ classdef PredictionDataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function store_FG(obj, epoch, estimator, time)
+            obj.XX(:,epoch)= estimator.x_true;
+            obj.time(epoch)= time;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         
     end
 end

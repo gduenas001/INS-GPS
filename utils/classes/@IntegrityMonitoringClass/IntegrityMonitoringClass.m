@@ -66,14 +66,13 @@ classdef IntegrityMonitoringClass < handle
         kappa
         
         %Factor Graph variables
-        D_bar_k
         D_bar_ph
         A
         XX_ph
         Gamma_FG
         M_FG
         PX_prior
-        PX_M_FG
+        PX_M
         index_of_abs_msmt_in_A
         n
     end
@@ -141,14 +140,14 @@ classdef IntegrityMonitoringClass < handle
         end
         function compute_E_matrix_FG(obj, params, i, m_F)
             if i == 0 % E matrix for only previous state faults
-                obj.E= zeros( obj.m-1, obj.m + obj.n + (obj.m-1)*(params.FG_prec_hor+1) );
-                %obj.E(:, 1:obj.m)= eye(obj.m);
-                obj.E(:, 1:obj.m-1)= eye(obj.m-1);
+                obj.E= zeros( obj.m, obj.n + (obj.m)*(params.FG_prec_hor+2) );
+                obj.E(:, 1:obj.m)= eye(obj.m);
+                %obj.E(:, 1:obj.m-1)= eye(obj.m-1);
             else % E matrix with a single LM fault
-                %obj.E= zeros( obj.m + m_F , obj.m + obj.n + (obj.m-1)*(params.FG_prec_hor+1) );
-                obj.E= zeros( params.m-1 + m_F , obj.m + obj.n + (obj.m-1)*(params.FG_prec_hor+1) );
-                %obj.E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
-                obj.E( 1:obj.m-1 , 1:obj.m-1 )= eye(obj.m-1); % previous bias
+                obj.E= zeros( obj.m + m_F , obj.n + (obj.m)*(params.FG_prec_hor+2) );
+                %obj.E= zeros( params.m-1 + m_F , obj.n + (obj.m)*(params.FG_prec_hor+2) );
+                obj.E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
+                %obj.E( 1:obj.m-1 , 1:obj.m-1 )= eye(obj.m-1); % previous bias
                 obj.E( end-m_F+1 : end , obj.index_of_abs_msmt_in_A(:,i)' )= eye(m_F); % landmark i faulted
             end
         end
@@ -181,9 +180,9 @@ classdef IntegrityMonitoringClass < handle
         function update_preceding_horizon(obj, estimator, params)
             
             if params.SWITCH_Factor_Graph_IM
-                obj.Phi_ph=   {obj.Phi_k,         obj.Phi_ph{1:end-1}};
-                obj.H_ph=     {obj.H_k,           obj.H_ph{1:end-1}};
-                obj.D_bar_ph=     {obj.D_bar_k,           obj.D_bar_ph{1:end-1}};
+                obj.Phi_ph=   {estimator.Phi_k,         obj.Phi_ph{1:end-1}};
+                obj.H_ph=     {estimator.H_k,           obj.H_ph{1:end-1}};
+                obj.D_bar_ph=     {estimator.D_bar,           obj.D_bar_ph{1:end-1}};
                 obj.n_ph=     [estimator.n_k;     obj.n_ph(1:end-1)];
                 obj.XX_ph= {estimator.XX, obj.XX_ph{1:end-1}};
             else

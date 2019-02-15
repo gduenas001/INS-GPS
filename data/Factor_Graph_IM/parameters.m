@@ -76,11 +76,12 @@ steering_angle_sim= deg2rad(0);
 sig_velocity_FG= 0.5*10;
 sig_steering_angle_FG= deg2rad(2)*10;
 wheelbase_FG= 0.5; % for the simulated car
-%way_points= [20,40,60,80,100;10,0,-10,0,0];
-way_points= [100;0];
+way_points= [20,40,60,80,100;10,0,-10,0,0];
+% way_points= [100;0];
 min_distance_to_way_point= 2;
 max_delta_steering= 10/180*pi; %maximum change in steering angle during one second
 max_steering= 45/180*pi;
 FG_prec_hor= 3;
 min_state_var_FG= 1e-4;
+P_Gyro_z= deg2rad(3);
 % -------------------------------------------

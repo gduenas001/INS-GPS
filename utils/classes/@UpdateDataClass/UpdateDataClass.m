@@ -44,6 +44,13 @@ classdef UpdateDataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function store_FG(obj, epoch, estimator, time, params)
+            obj.XX(:,epoch)= estimator.x_true;
+            obj.time(epoch)= time;
+            obj.number_of_associated_LMs(epoch)= estimator.n_L_k;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function delete_extra_allocated_memory(obj, counters)
             obj.XX(:, counters.k_update+1:end)= [];
             obj.PX(:, counters.k_update+1:end)= [];

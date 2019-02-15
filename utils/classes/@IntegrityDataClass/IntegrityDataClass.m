@@ -39,6 +39,7 @@ classdef IntegrityDataClass < handle
         function store(obj, im, estimator, counters, params)
             if params.SWITCH_Factor_Graph_IM
                 obj.p_hmi(counters.k_im)= im.p_hmi;
+                obj.n_L_M(counters.k_im)= im.n_L_M;
             else
                 obj.association{counters.k_im}= estimator.association_no_zeros;
                 obj.association_full{counters.k_im}= estimator.association_full;

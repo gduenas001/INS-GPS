@@ -3,7 +3,7 @@ function compute_steering(obj, params)
 % determine if current waypoint reached
 while 1
     current_way_point= params.way_points(:,obj.index_current_way_point);
-    d2= (current_way_point(1)-obj.XX(1))^2 + (current_way_point(2)-obj.XX(2))^2;
+    d2= (current_way_point(1)-obj.x_true(1))^2 + (current_way_point(2)-obj.x_true(2))^2;
     
     if d2 < params.min_distance_to_way_point^2
         obj.index_current_way_point= obj.index_current_way_point+1; % switch to next
@@ -19,7 +19,7 @@ while 1
 end
 
 % compute change in G to point towards current waypoint
-delta_steering= pi_to_pi(atan2(current_way_point(2)-obj.XX(2), current_way_point(1)-obj.XX(1)) - obj.XX(3) - obj.steering_angle);
+delta_steering= pi_to_pi(atan2(current_way_point(2)-obj.x_true(2), current_way_point(1)-obj.x_true(1)) - obj.x_true(3) - obj.steering_angle);
 
 % limit rate
 maxDelta= params.max_delta_steering*params.dt_sim;

@@ -153,6 +153,7 @@ classdef ParametersClass < handle
         W_odometry_FG
         wheelbase_FG
         min_state_var_FG
+        P_Gyro_z
     end
         
     methods
@@ -276,6 +277,7 @@ classdef ParametersClass < handle
                 obj.sig_velocity_FG= sig_velocity_FG;
                 obj.sig_steering_angle_FG= sig_steering_angle_FG;
                 obj.min_state_var_FG= min_state_var_FG;
+                obj.P_Gyro_z= P_Gyro_z;
             end
             % -------------------------------------------
             % -------------------------------------------
