@@ -17,8 +17,9 @@ classdef EstimatorClass < handle
         number_of_associated_LMs= 0
         num_of_extracted_features
         
-        n_k
-        
+        n_k % number of absolute measurements at current time
+        n_L_k % number of landmarks extracted at current time
+
         gamma_k
         q_k
         Y_k
@@ -31,16 +32,13 @@ classdef EstimatorClass < handle
         num_landmarks % nunber of landmarks in the map
         
         
-        initial_attitude
+        initial_attitude % save initial attitude for the calibration of IM?U biases
         appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
         FoV_landmarks_at_k % landmarks in the field of view
-        
-        index_current_way_point
-        goal_is_reached
-        steering_angle
-        indicator_of_FoV_LMs
-        index_of_FoV_LMs
-        n_L_k
+        index_current_way_point= 1
+        goal_is_reached= 0
+        steering_angle= 0
+        lm_ind_fov % indexes of the landmarks in the field of view
     end
     
     
@@ -55,14 +53,7 @@ classdef EstimatorClass < handle
                 obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
                 obj.x_true(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
                 obj.PX= eye(3) * eps;
-            elseif params.SWITCH_Factor_Graph_IM
-                % initialize sizes differently for simulation
-                obj.x_true= [0;0;0.1];
-                obj.x_true(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
-                obj.PX= eye(3) * eps;
-                obj.goal_is_reached= 0;
-                obj.steering_angle= 0;
-                obj.index_current_way_point= 1;
+                
             else
                 % Initial attitude
                 obj.initialize_pitch_and_roll(imu_calibration_msmts)
@@ -81,7 +72,7 @@ classdef EstimatorClass < handle
             % load map if exists
             if params.SWITCH_SLAM 
                 obj.num_landmarks= 0;
-            else % either simulation or real localization
+            else % in localization map is knonw a priori
                 data= load(strcat( params.path, 'landmark_map.mat' ));
                 obj.landmark_map= data.landmark_map;
                 obj.num_landmarks= size(obj.landmark_map, 1);
@@ -235,10 +226,7 @@ classdef EstimatorClass < handle
         compute_steering(obj, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        odometry_exact_prediction_FG(obj, params)
-        % ----------------------------------------------
-        % ----------------------------------------------
-        get_lidar_jacobian_for_FoV_LMs_FG(obj, params)
+        build_lidar_jacobian(obj, params)
         % ----------------------------------------------
         % ---------------------------------------------- 
         function increase_landmarks_cov(obj, minPXLM)

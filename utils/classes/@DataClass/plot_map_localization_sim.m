@@ -3,8 +3,15 @@ function plot_map_localization_sim(obj, estimator, num_readings, params)
 
 % Plot GPS+IMU estimated path
 figure; hold on; grid on;
-plot(obj.pred.XX(1,:), obj.pred.XX(2,:), 'b-');
-plot(obj.update.XX(1,:), obj.update.XX(2,:), 'g.','markersize', 7);
+
+% for factor graphs --> plot true x instead of estimated
+if params.SWITCH_FACTOR_GRAPHS
+    plot(obj.update.x_true(1,:), obj.update.x_true(2,:), 'g.','markersize', 7);
+else
+    plot(obj.pred.XX(1,:), obj.pred.XX(2,:), 'b-');
+    plot(obj.update.XX(1,:), obj.update.XX(2,:), 'g.','markersize', 7);
+end
+
 if ~isempty(obj.gps_msmts)
     plot(obj.gps_msmts(:,1), obj.gps_msmts(:,2), 'r*', 'markersize', 4);
 end

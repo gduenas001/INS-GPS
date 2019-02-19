@@ -13,22 +13,23 @@ classdef ParametersClass < handle
         SWITCH_LIDAR_UPDATE
         SWITCH_REMOVE_FAR_FEATURES
         SWITCH_CALIBRATION
-        SWITCH_SLAM= 0
-        SWITCH_SIM= 0
         SWITCH_FIXED_LM_SIZE_PH
         SWITCH_LM_SELECTION
         SWITCH_SEED
         SWITCH_ONLY_ONE_LM_FAULT
-        SWITCH_Factor_Graph_IM
+        
+        SWITCH_SLAM= 0
+        SWITCH_SIM= 0
+        SWITCH_FACTOR_GRAPHS= 0
         % --------------------------------------------------
     end
     
     properties (Constant)
 %         path_test= '../data/cart/20180725/';
         path_test= '../data/vehicle/20190110/';
-        path_sim= '../data/simulation/straight/';
+        path_sim_kf= '../data/simulation/straight/';
 %         path_sim= '../data/simulation/square/';
-        path_FG= '../data/Factor_Graph_IM/';
+        path_sim_fg= '../data/simulation/factor_graph/';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
@@ -142,6 +143,7 @@ classdef ParametersClass < handle
         S
         S_cal
         
+        % ------------------ Factor Graphs ---------------------
         way_points
         min_distance_to_way_point
         max_delta_steering %maximum change in steering angle during one second
@@ -153,7 +155,9 @@ classdef ParametersClass < handle
         W_odometry_FG
         wheelbase_FG
         min_state_var_FG
-        P_Gyro_z
+        sig_gyro_z
+        % -------------------------------------------
+        % -------------------------------------------
     end
         
     methods
@@ -166,17 +170,20 @@ classdef ParametersClass < handle
                 case 'slam'
                     obj.SWITCH_SLAM= 1;
                     obj.path= obj.path_test;
-                case 'localization'
-                    obj.SWITCH_SLAM= 0;
+                case 'localization_kf'
                     obj.path= obj.path_test;
-                case 'simulation'
+                case 'localization_fg'
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.path= obj.path_test;
+                case 'simulation_kf'
                     obj.SWITCH_SIM= 1;
-                    obj.path= obj.path_sim;
-                case 'Factor_Graph'
-                    obj.SWITCH_Factor_Graph_IM= 1;
-                    obj.path= obj.path_FG;
+                    obj.path= obj.path_sim_kf;
+                case 'simulation_fg'
+                    obj.SWITCH_SIM= 1;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.path= obj.path_sim_fg;
                 otherwise
-                    error('navigation_type must be either "slam" or "localization"');
+                    error('navigation_type must be either: "slam", "localization" or "factor_graph');
             end
                         
             % ---------------------------------------------------------
@@ -258,26 +265,15 @@ classdef ParametersClass < handle
                 obj.sig_gps_sim= sig_gps_sim;
                 obj.sig_velocity_sim= sig_velocity_sim;
                 obj.sig_steering_angle_sim= sig_steering_angle_sim;
-        
                 obj.wheelbase_sim= wheelbase_sim;
-            end
-            % -------------------------------------------
-            % -------------------------------------------
-            
-            % ---------- Factor Graph integrity monitoring -----------
-            if obj.SWITCH_Factor_Graph_IM
-                obj.way_points= way_points;
-                obj.min_distance_to_way_point= min_distance_to_way_point;
-                obj.dt_sim= dt_sim;
-                obj.max_delta_steering= max_delta_steering;
-                obj.max_steering= max_steering;
-                obj.velocity_FG= velocity_FG;
-                obj.wheelbase_FG= wheelbase_FG;
-                obj.FG_prec_hor= FG_prec_hor;
-                obj.sig_velocity_FG= sig_velocity_FG;
-                obj.sig_steering_angle_FG= sig_steering_angle_FG;
-                obj.min_state_var_FG= min_state_var_FG;
-                obj.P_Gyro_z= P_Gyro_z;
+                % if using factor graphs that needs controller
+                if obj.SWITCH_FACTOR_GRAPHS
+                    obj.way_points= way_points;
+                    obj.min_distance_to_way_point= min_distance_to_way_point;
+                    obj.max_delta_steering= max_delta_steering;
+                    obj.max_steering= max_steering;
+                    obj.sig_gyro_z= sig_gyro_z;
+                end
             end
             % -------------------------------------------
             % -------------------------------------------
@@ -291,15 +287,12 @@ classdef ParametersClass < handle
             
             % modify parameters
             obj.VRW= obj.VRW * obj.mult_factor_acc_imu; 
-            obj.ARW= obj.ARW * obj.mult_factor_gyro_imu; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
+            obj.ARW= obj.ARW * obj.mult_factor_gyro_imu; %%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
             
             % ------------------ build parameters ------------------
             if obj.SWITCH_SEED, rng(SWITCH_SEED); end
             
             if obj.SWITCH_SIM
-                obj.ind_pose= 1:3;
-                obj.ind_yaw= 3;
-            elseif obj.SWITCH_Factor_Graph_IM
                 obj.ind_pose= 1:3;
                 obj.ind_yaw= 3;
             else
@@ -347,10 +340,6 @@ classdef ParametersClass < handle
             obj.W_odometry_sim= [obj.sig_velocity_sim^2, 0;
                                  0, obj.sig_steering_angle_sim^2];
             % -------------------------------------------------------
-            % -------------------- Factor Graph -----------------------
-            obj.W_odometry_FG= [obj.sig_velocity_FG^2, 0;
-                                 0, obj.sig_steering_angle_FG^2];
-            % -------------------------------------------------------
         end
         
         
@@ -358,7 +347,7 @@ classdef ParametersClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function sig_yaw= sig_yaw_fn(~, v)
-            sig_yaw= deg2rad(5) + ( exp(10*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CAREFUL
+            sig_yaw= deg2rad(5) + ( exp(10*v)-1 )^(-1); %6.6035  %%%%%%%%%%%%%%%%%%%%%%% CAREFUL
         end
         % ----------------------------------------------
         % ----------------------------------------------

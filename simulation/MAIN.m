@@ -7,7 +7,7 @@ addpath('../utils/classes')
 
 
 % create objects
-params= ParametersClass("simulation");
+params= ParametersClass("simulation_kf");
 im= IntegrityMonitoringClass(params);
 estimator= EstimatorClass([], params);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);

@@ -8,11 +8,10 @@
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
- SWITCH_FIXED_LM_SIZE_PH= 1;
+ SWITCH_FIXED_LM_SIZE_PH= 0;
  SWITCH_LM_SELECTION= 0; % activate landmarks selection
- SWITCH_SEED= 6; % seed for random (zero for deactivate)
+ SWITCH_SEED= 0; % seed for random (zero for deactivate)
  SWITCH_ONLY_ONE_LM_FAULT= 0; % if only one simultaneous landmark fault
- SWITCH_Factor_Graph_IM= 1;
  % --------------------------------------------------
 
 
@@ -67,21 +66,19 @@ ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
 
-% ------------------ Factor Graph IM ---------------------
-% num_epochs_sim= 105;
+% --------------- Simulation & factor graphs -----------------
+num_epochs_sim= 400;
 dt_sim= 0.1; % time step for the simulation (equal for all updates)
 dt_gps= 1; % time step for the GPS in simulation
-velocity_FG= 5 / 3.6; % [m/s]
+sig_gps_sim= 0.2; % standar deviation for GPS in simulation (all z-y-x)
+velocity_sim= 5 / 3.6; % [m/s]
 steering_angle_sim= deg2rad(0);
-sig_velocity_FG= 0.5*10;
-sig_steering_angle_FG= deg2rad(2)*10;
-wheelbase_FG= 0.5; % for the simulated car
+sig_velocity_sim= 0.5*10;
+sig_steering_angle_sim= deg2rad(2)*10;
+wheelbase_sim= 0.5; % for the simulated car
 way_points= [20,40,60,80,100;10,0,-10,0,0];
-% way_points= [100;0];
 min_distance_to_way_point= 2;
-max_delta_steering= 10/180*pi; %maximum change in steering angle during one second
-max_steering= 45/180*pi;
-FG_prec_hor= 3;
-min_state_var_FG= 1e-4;
-P_Gyro_z= deg2rad(3);
+max_delta_steering= deg2rad( 10 ); % maximum change in steering angle during one second
+max_steering= deg2rad( 45 );
+sig_gyro_z= deg2rad(3); % standard dev of the gyro
 % -------------------------------------------

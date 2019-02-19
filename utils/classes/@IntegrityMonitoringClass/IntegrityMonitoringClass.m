@@ -15,18 +15,23 @@ classdef IntegrityMonitoringClass < handle
         is_extra_epoch_needed= -1 % initialize as (-1), then a boolean
         ind_im= [1,2,9];
 
-        n_ph
-        n_F_ph % number of features associated in the preceding horizon
         
         % (maybe unnecessary)
         E
         B_bar
         
-        % hypotheses probabilities
+        % hypotheses
         inds_H % faulted indexes under H hypotheses
         P_H_0
         P_H
+        T_d
+        n_H
+        n_max
         
+        % for MA purposes
+        mu_k
+        kappa
+
         % current-time (k) only used when needed to extract elements
         sigma_hat
         Phi_k
@@ -38,7 +43,7 @@ classdef IntegrityMonitoringClass < handle
         
         % augmented (M) 
         M= 0  % size of the preceding horizon in epochs
-        n_M   % num msmts in the preceding horizon (including k)
+        n_M   % num msmts in the preceding horizon (including k) -if FG ---> num abs msmts
         n_L_M % num landmarks in the preceding horizon (including k)
         Phi_M
         q_M
@@ -59,29 +64,28 @@ classdef IntegrityMonitoringClass < handle
         H_ph
         Y_ph
         P_MA_ph
-        T_d
-        n_H
-        n_max
-        mu_k
-        kappa
+        n_ph
+        n_F_ph % number of features associated in the preceding horizon
+
         
-        %Factor Graph variables
+        % Factor Graph variables
+        m_M       % number of states to estimate
+        n_total   % total number of msmts (prior + relative + abs)
+        XX_ph
         D_bar_ph
         A
-        XX_ph
-        Gamma_FG
-        M_FG
+        Gamma_fg % information matrix
+        M_fg
         PX_prior
         PX_M
-        index_of_abs_msmt_in_A
-        n
+        abs_msmt_ind
     end
     
     
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj= IntegrityMonitoringClass(params,estimator)
+        function obj= IntegrityMonitoringClass(params, estimator)
             
             % if the preceding horizon is fixed in epochs --> set M
             if ~params.SWITCH_FIXED_LM_SIZE_PH
@@ -89,26 +93,22 @@ classdef IntegrityMonitoringClass < handle
             end
             
             % if it's a simulation --> change the indexes
-            if params.SWITCH_SIM || params.SWITCH_Factor_Graph_IM, obj.ind_im= 1:3; end
+            if params.SWITCH_SIM, obj.ind_im= 1:3; end
             
             % continuity requirement
             obj.C_req= params.continuity_requirement;
             
             % initialize the preceding horizon
             % TODO: should this change for a fixed horizon in landmarks?
-            if params.SWITCH_Factor_Graph_IM
-                obj.Phi_ph=   cell(1, params.FG_prec_hor);
-                obj.H_ph=     cell(1, params.FG_prec_hor);
-                obj.D_bar_ph=    cell(1, params.FG_prec_hor);
-                obj.n_ph=     zeros(params.FG_prec_hor,1);
-                obj.XX_ph=       cell(1, params.FG_prec_hor+1);
-                obj.XX_ph{1}=    estimator.XX;
-                obj.PX_prior=    estimator.PX;
-            else
-                obj.Phi_ph=   cell(1, params.preceding_horizon_size + 1); % need an extra epoch here
-                obj.H_ph=     cell(1, params.preceding_horizon_size);
-                obj.n_ph=     zeros(params.preceding_horizon_size,1);
+            if params.SWITCH_SIM && params.SWITCH_FACTOR_GRAPHS
+                obj.XX_ph=     cell(1, params.preceding_horizon_size+1);
+                obj.XX_ph{1}=  estimator.XX;
+                obj.D_bar_ph=  cell(1, params.preceding_horizon_size);
+                obj.PX_prior=  estimator.PX;
             end
+            obj.n_ph=     zeros( params.preceding_horizon_size, 1 );
+            obj.Phi_ph=   cell( 1, params.preceding_horizon_size + 1 ); % need an extra epoch here
+            obj.H_ph=     cell( 1, params.preceding_horizon_size );
             obj.gamma_ph= cell(1, params.preceding_horizon_size);
             obj.q_ph=     ones(params.preceding_horizon_size, 1) * (-1);
             obj.L_ph=     cell(1, params.preceding_horizon_size);
@@ -120,9 +120,9 @@ classdef IntegrityMonitoringClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function neg_p_hmi= optimization_fn(obj, f_M_mag, fx_hat_dir, M_dir, sigma_hat, l, dof)
-            neg_p_hmi= - ((1 - normcdf(l , f_M_mag * fx_hat_dir, sigma_hat) +...
+            neg_p_hmi= - ( (1 - normcdf(l , f_M_mag * fx_hat_dir, sigma_hat) +...
                 normcdf(-l , f_M_mag * fx_hat_dir, sigma_hat))...
-                .* ncx2cdf(obj.detector_threshold, dof, f_M_mag.^2 * M_dir ));
+                .* ncx2cdf(obj.T_d, dof, f_M_mag.^2 * M_dir ) );
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -138,17 +138,14 @@ classdef IntegrityMonitoringClass < handle
                 end
             end
         end
-        function compute_E_matrix_FG(obj, params, i, m_F)
+        function compute_E_matrix_fg(obj, i, m_F)
             if i == 0 % E matrix for only previous state faults
-                obj.E= zeros( obj.m, obj.n + (obj.m)*(params.FG_prec_hor+2) );
+                obj.E= zeros( obj.m, obj.n_total );
                 obj.E(:, 1:obj.m)= eye(obj.m);
-                %obj.E(:, 1:obj.m-1)= eye(obj.m-1);
             else % E matrix with a single LM fault
-                obj.E= zeros( obj.m + m_F , obj.n + (obj.m)*(params.FG_prec_hor+2) );
-                %obj.E= zeros( params.m-1 + m_F , obj.n + (obj.m)*(params.FG_prec_hor+2) );
+                obj.E= zeros( obj.m + m_F , obj.n_total );
                 obj.E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
-                %obj.E( 1:obj.m-1 , 1:obj.m-1 )= eye(obj.m-1); % previous bias
-                obj.E( end-m_F+1 : end , obj.index_of_abs_msmt_in_A(:,i)' )= eye(m_F); % landmark i faulted
+                obj.E( end-m_F+1 : end , obj.abs_msmt_ind(:,i)' )= eye(m_F); % landmark i faulted
             end
         end
         % ----------------------------------------------
@@ -174,17 +171,18 @@ classdef IntegrityMonitoringClass < handle
         compute_B_bar_matrix(obj, estimator)
         % ----------------------------------------------
         % ----------------------------------------------
-        FG_covarience_update_and_integrity_monitoring(obj, estimator, counters, data,  params)
+        offline_integrity_monitoring_fg(obj, estimator, counters, data,  params)
         % ----------------------------------------------
         % ----------------------------------------------
         function update_preceding_horizon(obj, estimator, params)
             
-            if params.SWITCH_Factor_Graph_IM
-                obj.Phi_ph=   {estimator.Phi_k,         obj.Phi_ph{1:end-1}};
-                obj.H_ph=     {estimator.H_k,           obj.H_ph{1:end-1}};
-                obj.D_bar_ph=     {estimator.D_bar,           obj.D_bar_ph{1:end-1}};
-                obj.n_ph=     [estimator.n_k;     obj.n_ph(1:end-1)];
-                obj.XX_ph= {estimator.XX, obj.XX_ph{1:end-1}};
+            % TODO: organize 
+            if params.SWITCH_FACTOR_GRAPHS
+                obj.Phi_ph=   {estimator.Phi_k, obj.Phi_ph{1:end-1}};
+                obj.H_ph=     {estimator.H_k,   obj.H_ph{1:end-1}};
+                obj.n_ph=     [estimator.n_k;   obj.n_ph(1:end-1)];
+                obj.XX_ph=    {estimator.XX,    obj.XX_ph{1:end-1}};
+                obj.D_bar_ph= {estimator.D_bar, obj.D_bar_ph{1:end-1}};
             else
                 if params.SWITCH_FIXED_LM_SIZE_PH
                     obj.n_ph=     [estimator.n_k;     obj.n_ph(1:obj.M)];

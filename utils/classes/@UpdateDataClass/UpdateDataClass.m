@@ -1,6 +1,7 @@
 
 classdef UpdateDataClass < handle
     properties
+        x_true
         error
         XX
         PX
@@ -14,6 +15,7 @@ classdef UpdateDataClass < handle
     methods
         function obj= UpdateDataClass(num_readings, params)
             % allocate memory
+            obj.x_true= zeros(params.m, num_readings);
             obj.error= zeros(params.m, num_readings);
             obj.XX= zeros(params.m, num_readings);
             obj.PX= zeros(params.m, num_readings);
@@ -44,8 +46,12 @@ classdef UpdateDataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function store_FG(obj, epoch, estimator, time, params)
-            obj.XX(:,epoch)= estimator.x_true;
+        function store_fg(obj, epoch, estimator, time, params)
+            if params.SWITCH_SIM
+                obj.x_true(:,epoch)= estimator.x_true;
+            else
+                obj.XX(:,epoch)= estimator.XX;
+            end
             obj.time(epoch)= time;
             obj.number_of_associated_LMs(epoch)= estimator.n_L_k;
         end

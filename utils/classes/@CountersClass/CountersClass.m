@@ -17,13 +17,11 @@ classdef CountersClass < handle
     methods
         function obj= CountersClass(gps, lidar, params)
             
-            % if it's a simulation --> leave it
-            if params.SWITCH_SIM, return, end
-            if params.SWITCH_Factor_Graph_IM, return, end
-            
-            obj.time_gps= gps.time(1); % this is zero, as the GPS time is the reference
-            obj.time_lidar= lidar.time(1,2);
-            
+            % if it's a simulation --> time is not read from files
+            if ~params.SWITCH_SIM
+                obj.time_gps= gps.time(1); % this is zero, as the GPS time is the reference
+                obj.time_lidar= lidar.time(1,2);
+            end
         end
         
         function increase_gps_counter(obj)

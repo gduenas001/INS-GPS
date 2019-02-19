@@ -37,23 +37,21 @@ classdef IntegrityDataClass < handle
         end
         
         function store(obj, im, estimator, counters, params)
-            if params.SWITCH_Factor_Graph_IM
-                obj.p_hmi(counters.k_im)= im.p_hmi;
-                obj.n_L_M(counters.k_im)= im.n_L_M;
-            else
+            obj.p_hmi(counters.k_im)= im.p_hmi;
+            obj.n_L_M(counters.k_im)= im.n_L_M;
+            obj.P_H{counters.k_im}= im.P_H;
+            obj.detector_threshold(counters.k_im)= im.T_d;
+            obj.sigma_hat(counters.k_im)= im.sigma_hat;
+            obj.time(counters.k_im)= counters.time_sim;
+            obj.p_eps(counters.k_im)= 2* normcdf(-params.alert_limit, 0, im.sigma_hat);
+            obj.M(counters.k_im)= im.M;
+            
+            if ~params.SWITCH_FACTOR_GRAPHS      
                 obj.association{counters.k_im}= estimator.association_no_zeros;
                 obj.association_full{counters.k_im}= estimator.association_full;
                 obj.P_MA_k{counters.k_im}= im.P_MA_k;
-                obj.P_MA_k_full{counters.k_im}= im.P_MA_k_full;
-                obj.P_H{counters.k_im}= im.P_H;
+                obj.P_MA_k_full{counters.k_im}= im.P_MA_k_full;    
                 obj.detector(counters.k_im)= im.q_M;
-                obj.detector_threshold(counters.k_im)= im.detector_threshold;
-                obj.p_hmi(counters.k_im)= im.p_hmi;
-                obj.n_L_M(counters.k_im)= im.n_L_M;
-                obj.sigma_hat(counters.k_im)= im.sigma_hat;
-                obj.time(counters.k_im)= counters.time_sim;
-                obj.p_eps(counters.k_im)= 2* normcdf(-params.alert_limit, 0, im.sigma_hat);
-                obj.M(counters.k_im)= im.M;
             end
         end
         
