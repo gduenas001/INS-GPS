@@ -171,7 +171,13 @@ classdef IntegrityMonitoringClass < handle
         compute_B_bar_matrix(obj, estimator)
         % ----------------------------------------------
         % ----------------------------------------------
-        offline_integrity_monitoring_fg(obj, estimator, counters, data,  params)
+        monitor_integrity_offline_fg(obj, estimator, counters, data,  params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_whiten_jacobian_A(obj, estimator, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        p_hmi_H= compute_p_hmi_H(obj, alpha, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function update_preceding_horizon(obj, estimator, params)

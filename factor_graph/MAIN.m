@@ -33,7 +33,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          estimator.build_lidar_jacobian( params );
             
          % main function for factor graphs integrity monitoring
-         im.offline_integrity_monitoring_fg(estimator, counters, data_obj,  params);
+         im.monitor_integrity_offline_fg(estimator, counters, data_obj,  params);
 
          % Store data
          counters.k_update=...
