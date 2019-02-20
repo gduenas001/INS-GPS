@@ -184,11 +184,11 @@ classdef IntegrityMonitoringClass < handle
             
             % TODO: organize 
             if params.SWITCH_FACTOR_GRAPHS
-                obj.Phi_ph=   {estimator.Phi_k, obj.Phi_ph{1:end-1}};
-                obj.H_ph=     {estimator.H_k,   obj.H_ph{1:end-1}};
-                obj.n_ph=     [estimator.n_k;   obj.n_ph(1:end-1)];
-                obj.XX_ph=    {estimator.XX,    obj.XX_ph{1:end-1}};
-                obj.D_bar_ph= {estimator.D_bar, obj.D_bar_ph{1:end-1}};
+                obj.Phi_ph=   {inf, estimator.Phi_k, obj.Phi_ph{2:obj.M}};
+                obj.H_ph=     {estimator.H_k,   obj.H_ph{1:obj.M-1}};
+                obj.n_ph=     [estimator.n_k;   obj.n_ph(1:obj.M-1)];
+                obj.XX_ph=    {estimator.XX,    obj.XX_ph{1:obj.M}};
+                obj.D_bar_ph= {inf, estimator.D_bar, obj.D_bar_ph{2:obj.M}};
             else
                 if params.SWITCH_FIXED_LM_SIZE_PH
                     obj.n_ph=     [estimator.n_k;     obj.n_ph(1:obj.M)];

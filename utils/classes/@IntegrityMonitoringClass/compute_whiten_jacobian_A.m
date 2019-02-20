@@ -16,7 +16,7 @@ r_ind= params.m + 1;
 c_ind= 1;
 
 % build A whithen Jacobian
-for i= 1:obj.M
+for i= obj.M-1 : -1 : 0
     
     % gyro msmt submatrix
     obj.A( r_ind, c_ind : c_ind + params.m - 1 )= ...
@@ -29,7 +29,7 @@ for i= 1:obj.M
     r_ind= r_ind + 1;
     
     
-    if i == obj.M
+    if i == 0
         
         % plug steering angle and wheel speed model in A
         [~,S,V]= svd( estimator.D_bar );
@@ -58,12 +58,12 @@ for i= 1:obj.M
     else
         
         % plug steering angle and wheel speed model in A
-        [~,S,V]= svd( obj.D_bar_ph{ obj.M - i } );
+        [~,S,V]= svd( obj.D_bar_ph{ i + 1 } );
         r_S= rank(S);
         D_bar_ph_p= sqrtm( inv(S(1:r_S,1:r_S)) ) * V(:,1:r_S)';
         
         obj.A( r_ind : r_ind + r_S - 1, c_ind : c_ind + params.m - 1 )= ...
-            D_bar_ph_p * obj.Phi_ph{ obj.M - i };
+            D_bar_ph_p * obj.Phi_ph{ i + 1 };
         
         obj.A( r_ind : r_ind + r_S - 1, c_ind + params.m : c_ind + 2*params.m -1)= ...
             -D_bar_ph_p;
@@ -73,17 +73,17 @@ for i= 1:obj.M
         c_ind= c_ind + params.m;
         
         % lidar Jacobian part
-        n_L_i= obj.n_ph( obj.M - i ) / params.m_F;
-        obj.A( r_ind : r_ind + obj.n_ph( obj.M - i ) - 1,...
+        n_L_i= obj.n_ph( i ) / params.m_F;
+        obj.A( r_ind : r_ind + obj.n_ph( i ) - 1,...
             c_ind : c_ind + params.m - 1)= ...
-            kron( eye(n_L_i) , params.sqrt_inv_R_lidar ) * obj.H_ph{ obj.M - i };
+            kron( eye(n_L_i) , params.sqrt_inv_R_lidar ) * obj.H_ph{ i };
         
         % record lidar msmt indieces in A
         obj.abs_msmt_ind= [ obj.abs_msmt_ind,...
-            reshape( r_ind : r_ind + obj.n_ph(obj.M-i) - 1, params.m_F , [] ) ];
+            reshape( r_ind : r_ind + obj.n_ph(i) - 1, params.m_F , [] ) ];
         
         % update the row index
-        r_ind= r_ind + obj.n_ph( obj.M - i );
+        r_ind= r_ind + obj.n_ph( i );
     end
 end
 
