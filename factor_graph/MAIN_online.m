@@ -31,13 +31,39 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          estimator.get_lidar_msmt_sim(params);
          estimator.association= estimator.association_true;
          
-         % build the jacobian landmarks in the field of view
-         estimator.update_fg( counters, params );
+         % update fg msmt vector with all types of msmts
+         estimator.update_z_fg(counters, params);
+         
+         % solve the fg optimization
+         estimator.solve_fg(params)
+         
+         
+         
+         
+                  
+         
+
+         
+         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+         % update odometry msmts in the ph
+         estimator.odometry_ph= {estimator.odometry_k, estimator.odometry_ph{1:params.M}};
+         
+         % update lidar msmts in the ph
+         estimator.z_lidar_ph= {estimator.z_lidar(:), estimator.z_lidar_ph{1:params.M}};
+         
+         % update the previous poses
+         estimator.x_ph= {estimator.XX, estimator.x_ph{1:params.M}};
+         
+         % update the associations in the ph
+         estimator.association_ph= {estimator.association, estimator.association_ph{1:params.M}};
+         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+         
+         
          
          % Store data
          counters.k_update=...
              data_obj.store_update_fg(counters.k_update, estimator, counters.time_sim, params);
-         
+                  
          % increase counter
          counters.increase_lidar_counter();
          

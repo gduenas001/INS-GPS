@@ -1,5 +1,8 @@
 
 function A_k= compute_lidar_A(obj, x, association, params)
+% this function computes one part of the jacobian for the lidar msmts at
+% the corresponding time where estimate x and association occur
+
 
 % number of landmarks and msmts at this time
 n_L= length(association);
@@ -27,9 +30,6 @@ for i= 1:obj.n_L
     % whiten Jacobian
     A_k(inds, :)= params.sqrt_inv_R_lidar * A_k(inds, :);
 end
-
-% % whiten Jacobian
-% A_k= kron( eye( n_L ) , params.sqrt_inv_R_lidar ) * A_k;
 
 end
 

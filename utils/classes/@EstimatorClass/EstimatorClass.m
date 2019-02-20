@@ -41,13 +41,15 @@ classdef EstimatorClass < handle
         lm_ind_fov % indexes of the landmarks in the field of view
         
         x_ph % poses in the time window
-        b_fg % all the msmts in the time window
-        b_ph % msmts in the preceding horizon
+        z_fg % all the msmts in the time window
+        z_lidar_ph % lidar msmts in the preceding horizon
         z_lidar
         PX_prior % cov matrix of the prior
         m_M % number of states to estimate
         n_total % total numbe of msmts
         association_ph % associations during the ph
+        odometry_k % odometry msmts at the current time
+        odometry_ph % velocity and steering angle for the ph
     end
     
     
@@ -84,8 +86,9 @@ classdef EstimatorClass < handle
                 
                 % allocate memory
                 obj.x_ph= cell(1, params.M);
-                obj.b_ph= cell(1, params.M);
+                obj.z_lidar_ph= cell(1, params.M);
                 obj.association_ph= cell(1, params.M);
+                obj.odometry_ph= cell(1, params.M);
             end
             
             
@@ -249,10 +252,16 @@ classdef EstimatorClass < handle
         compute_lidar_jacobian_k(obj, params)
         % ----------------------------------------------
         % ---------------------------------------------- 
+        update_z_fg(obj, counters, params)
+        % ----------------------------------------------
+        % ---------------------------------------------- 
         compute_lidar_A(obj, x, association, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        [vts, vtc]= compute_Phi_and_D_bar(obj, x, vel, phi, params)
+        [Phi, D_bar, vts, vtc]= compute_Phi_and_D_bar(obj, x, vel, phi, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        solve_fg(obj, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function increase_landmarks_cov(obj, minPXLM)

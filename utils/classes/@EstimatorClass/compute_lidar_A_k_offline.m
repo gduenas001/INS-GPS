@@ -1,5 +1,5 @@
 
-function compute_lidar_jacobian_k(obj, params)
+function compute_lidar_A_k_offline(obj, params)
 % this funcion builds the Jacobian H for the factor graphs case without
 % mesaurements. It uses all the landmarks in the field of view of the lidar
 

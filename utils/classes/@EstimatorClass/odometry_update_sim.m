@@ -10,7 +10,8 @@ obj.x_true= [obj.x_true(1) + vel * params.dt_sim * cos(phi + obj.x_true(3));
             pi_to_pi( obj.x_true(3) + vel * params.dt_sim * sin(phi) / params.wheelbase_sim )];
 
 if params.SWITCH_OFFLINE    
-     obj.compute_Phi_and_D_bar(obj.x_true, vel, phi, params);
+     [obj.Phi_k, obj.D_bar, ~, ~]= obj.compute_Phi_and_D_bar(obj.x_true, vel, phi, params);
+     
 else
 
     % Add noise to the controls
@@ -18,7 +19,7 @@ else
     phi= phi + normrnd(0, params.sig_steering_angle_sim);
 
     % compute state evolution matrix and its noise covariance matrix
-    [vts, vtc]= obj.compute_Phi_and_D_bar(obj.XX, vel, phi, params);
+    [obj.Phi_k, obj.D_bar, vts, vtc]= obj.compute_Phi_and_D_bar(obj.XX, vel, phi, params);
     
     % Predict state
     obj.XX= [obj.XX(1) + vtc;
@@ -34,5 +35,8 @@ if ~params.SWITCH_FACTOR_GRAPHS
     obj.PX= obj.Phi_k * obj.PX * obj.Phi_k' + obj.D_bar;
 end
 
+
+% save the velocity and steering angle 
+obj.odometry_k= [vel; phi];
 
 end
