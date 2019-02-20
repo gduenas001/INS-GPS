@@ -29,6 +29,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
 
          % get the lidar msmts
          estimator.get_lidar_msmt_sim(params);
+         estimator.association= estimator.association_true;
          
          % build the jacobian landmarks in the field of view
          estimator.update_fg( counters, params );

@@ -9,11 +9,11 @@ b_k_lidar= kron( eye( obj.n_L_k ) , params.sqrt_inv_R_lidar ) * obj.z_lidar(:);
 if counters.k_lidar > params.preceding_horizon_size
 
     % initialize the z vector with the prior
-    obj.b_fg= sqrtm( inv(obj.PX_prior) ) * obj.x_ph{params.preceding_horizon_size};
+    obj.b_fg= sqrtm( inv(obj.PX_prior) ) * obj.x_ph{params.M};
     
     % put all the measurements together
-    for i= params.preceding_horizon_size - 1:-1:1
-        obj.b_fg= [obj.b_fg; zeros(3,1)];
+    for i= params.M - 1:-1:1
+        obj.b_fg= [obj.b_fg; zeros(3,1)]; % this includes gyro + inputs (3 ind msmts)
         obj.b_fg= [obj.b_fg; obj.b_ph{i}];
     end
     
@@ -27,12 +27,14 @@ end
 obj.n_total= length(obj.b_fg);
 
 % total number of states to estimate
-obj.m_M= (params.preceding_horizon_size + 1) * params.m;
+obj.m_M= (params.M + 1) * params.m;
 
 % update the cells with the msmts
-obj.b_ph= {b_k_lidar, obj.b_ph{1:params.preceding_horizon_size}};
+obj.b_ph= {b_k_lidar, obj.b_ph{1:params.M}};
 
 % update the previous poses
-obj.x_ph= {obj.XX, obj.x_ph{1:params.preceding_horizon_size}};
+obj.x_ph= {obj.XX, obj.x_ph{1:params.M}};
 
+% update the associations in the ph
+obj.association_ph= {obj.association, obj.association_ph{1:params.M}};
 end

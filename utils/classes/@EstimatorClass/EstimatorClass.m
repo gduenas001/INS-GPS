@@ -47,6 +47,7 @@ classdef EstimatorClass < handle
         PX_prior % cov matrix of the prior
         m_M % number of states to estimate
         n_total % total numbe of msmts
+        association_ph % associations during the ph
     end
     
     
@@ -82,8 +83,9 @@ classdef EstimatorClass < handle
                 obj.PX_prior= diag( ones(params.m,1) * inf );
                 
                 % allocate memory
-                obj.x_ph= cell(1, params.preceding_horizon_size);
-                obj.b_ph= cell(1, params.preceding_horizon_size);
+                obj.x_ph= cell(1, params.M);
+                obj.b_ph= cell(1, params.M);
+                obj.association_ph= cell(1, params.M);
             end
             
             
