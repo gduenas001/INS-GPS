@@ -1,9 +1,8 @@
 
-function compute_whiten_jacobian_A(obj, estimator, params)
-
+function A= compute_jacobian_A(obj, params)
 
 % initialize normalized Jacobian
-obj.A= zeros( obj.n_total, obj.m_M );
+A= zeros( obj.n_total, obj.m_M );
 
 % indexes of the absolute measurements in the rows of matrix A
 obj.abs_msmt_ind= [];
@@ -16,7 +15,7 @@ r_ind= params.m + 1;
 c_ind= 1;
 
 % build A whithen Jacobian
-for i= 1:obj.M
+for i= 1:params.M
     
     % gyro msmt submatrix
     obj.A( r_ind, c_ind : c_ind + params.m - 1 )= ...
@@ -29,10 +28,10 @@ for i= 1:obj.M
     r_ind= r_ind + 1;
     
     
-    if i == obj.M
+    if i == params.M
         
         % plug steering angle and wheel speed model in A
-        [~,S,V]= svd( estimator.D_bar );
+        [~,S,V]= svd( obj.D_bar );
         r_S= rank(S);
         D_bar_p= sqrtm( inv(S(1:r_S,1:r_S)) ) * V(:, 1:r_S)';
         
@@ -58,7 +57,7 @@ for i= 1:obj.M
     else
         
         % plug steering angle and wheel speed model in A
-        [~,S,V]= svd( obj.D_bar_ph{ obj.M - i } );
+        [~,S,V]= svd( obj.D_bar_ph{ params.M - i } );
         r_S= rank(S);
         D_bar_ph_p= sqrtm( inv(S(1:r_S,1:r_S)) ) * V(:,1:r_S)';
         
@@ -88,7 +87,10 @@ for i= 1:obj.M
 end
 
 
+
 end
+
+
 
 
 

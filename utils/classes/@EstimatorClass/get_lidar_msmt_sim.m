@@ -25,4 +25,10 @@ for l= 1:obj.num_landmarks
     obj.association_true= [obj.association_true; l];
 end
 
+% add them to the estimator class property
+obj.z_lidar= z_lidar;
+
+% if we use the NN associaiton this values get overwritten 
+obj.n_L_k= length(obj.association_true);
+obj.n_k= obj.n_L_k * params.m_F;
 end

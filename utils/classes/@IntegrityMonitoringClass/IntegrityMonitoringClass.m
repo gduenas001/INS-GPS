@@ -213,8 +213,7 @@ classdef IntegrityMonitoringClass < handle
                     obj.P_MA_ph=  {obj.P_MA_k,        obj.P_MA_ph{1:end-1}};
                 end
             end
-        end
-        
+        end 
     end
 end
 

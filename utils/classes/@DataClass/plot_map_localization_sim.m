@@ -5,9 +5,9 @@ function plot_map_localization_sim(obj, estimator, num_readings, params)
 figure; hold on; grid on;
 
 % for factor graphs --> plot true x instead of estimated
-if params.SWITCH_FACTOR_GRAPHS
+if params.SWITCH_OFFLINE
     plot(obj.update.x_true(1,:), obj.update.x_true(2,:), 'g.','markersize', 7);
-else
+else 
     plot(obj.pred.XX(1,:), obj.pred.XX(2,:), 'b-');
     plot(obj.update.XX(1,:), obj.update.XX(2,:), 'g.','markersize', 7);
 end

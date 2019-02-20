@@ -61,7 +61,7 @@ if counters.k_im > obj.M
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;
         
-        for i= 0:1%obj.n_H
+        for i= 0:0%obj.n_H
             
             % build extraction matrix
             if i == 0

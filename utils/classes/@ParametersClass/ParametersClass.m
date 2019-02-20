@@ -18,9 +18,11 @@ classdef ParametersClass < handle
         SWITCH_SEED
         SWITCH_ONLY_ONE_LM_FAULT
         
+        % switches set by the simulation name
         SWITCH_SLAM= 0
         SWITCH_SIM= 0
         SWITCH_FACTOR_GRAPHS= 0
+        SWITCH_OFFLINE= 0
         % --------------------------------------------------
     end
     
@@ -79,6 +81,7 @@ classdef ParametersClass < handle
         feature_height
         initial_yaw_angle
         preceding_horizon_size
+        M % same as preceding_horizon_size
         min_n_L_M
         continuity_requirement
         alert_limit
@@ -86,6 +89,7 @@ classdef ParametersClass < handle
         ARW
         sn_f
         sn_w
+        
         % -------------------- simulation -----------------------
         num_epochs_sim
         dt_sim
@@ -120,6 +124,7 @@ classdef ParametersClass < handle
         R_virt_Z
         R_virt_Y
         R_lidar
+        sqrt_inv_R_lidar
         T_NN
         xPlot
         yPlot
@@ -178,7 +183,12 @@ classdef ParametersClass < handle
                 case 'simulation_kf'
                     obj.SWITCH_SIM= 1;
                     obj.path= obj.path_sim_kf;
-                case 'simulation_fg'
+                case 'simulation_fg_offline'
+                    obj.SWITCH_SIM= 1;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.SWITCH_OFFLINE= 1;
+                    obj.path= obj.path_sim_fg;
+                case 'simulation_fg_online'
                     obj.SWITCH_SIM= 1;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.path= obj.path_sim_fg;
@@ -248,6 +258,7 @@ classdef ParametersClass < handle
             obj.feature_height= feature_height;
             obj.initial_yaw_angle= initial_yaw_angle;
             obj.preceding_horizon_size= preceding_horizon_size;
+            obj.M= preceding_horizon_size;
             obj.min_n_L_M= min_n_L_M;
             obj.continuity_requirement= continuity_requirement;
             obj.alert_limit= alert_limit;
@@ -309,13 +320,14 @@ classdef ParametersClass < handle
             obj.R_virt_Z= obj.sig_virt_vz.^2;
             obj.R_virt_Y= obj.sig_virt_vy.^2;
             obj.R_lidar= diag( [obj.sig_lidar, obj.sig_lidar] ).^2;
+            obj.sqrt_inv_R_lidar= sqrtm( inv( obj.R_lidar ) );
             obj.T_NN= chi2inv(1-obj.alpha_NN,2);
             xPlot= [-0.3; 0; -0.3];
             yPlot= [0.1; 0; -0.1];
             zPlot= [0; 0; 0];
             obj.xyz_B= [xPlot, yPlot, zPlot]';
             obj.R_minLM= obj.sig_minLM.^2;
-            
+
             % IMU -- white noise specs
             obj.sig_IMU_acc= obj.VRW * sqrt( 2000 / 3600 );
             obj.sig_IMU_gyr= deg2rad( obj.ARW * sqrt( 2000 / 3600 ) ); % rad

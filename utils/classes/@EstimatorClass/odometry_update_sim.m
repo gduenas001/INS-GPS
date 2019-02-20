@@ -9,7 +9,7 @@ obj.x_true= [obj.x_true(1) + vel * params.dt_sim * cos(phi + obj.x_true(3));
             obj.x_true(2) + vel * params.dt_sim * sin(phi + obj.x_true(3));
             pi_to_pi( obj.x_true(3) + vel * params.dt_sim * sin(phi) / params.wheelbase_sim )];
 
-if params.SWITCH_FACTOR_GRAPHS
+if params.SWITCH_OFFLINE
     
     % compute variables
     s= sin(phi + obj.x_true(3));

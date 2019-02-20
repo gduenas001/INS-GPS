@@ -67,14 +67,14 @@ sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
 
 % --------------- Simulation & factor graphs -----------------
-num_epochs_sim= 100;
+num_epochs_sim= 200;
 dt_sim= 0.1; % time step for the simulation (equal for all updates)
 dt_gps= 1; % time step for the GPS in simulation
 sig_gps_sim= 0.2; % standar deviation for GPS in simulation (all z-y-x)
 velocity_sim= 5 / 3.6; % [m/s]
 steering_angle_sim= deg2rad(0);
-sig_velocity_sim= 0.5*10;
-sig_steering_angle_sim= deg2rad(2)*10;
+sig_velocity_sim= 0.5;
+sig_steering_angle_sim= deg2rad(2);
 wheelbase_sim= 0.5; % for the simulated car
 way_points= [20,40,60,80,100;10,0,-10,0,0];
 min_distance_to_way_point= 2;
