@@ -251,7 +251,10 @@ classdef EstimatorClass < handle
         % ---------------------------------------------- 
         compute_lidar_A(obj, x, association, params)
         % ----------------------------------------------
-        % ---------------------------------------------- 
+        % ----------------------------------------------
+        [vts, vtc]= compute_Phi_and_D_bar(obj, x, vel, phi, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
         function increase_landmarks_cov(obj, minPXLM)
             
             if length(obj.PX) == 15, return, end

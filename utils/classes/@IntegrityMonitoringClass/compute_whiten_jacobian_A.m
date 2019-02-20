@@ -55,7 +55,9 @@ for i= obj.M-1 : -1 : 0
         obj.abs_msmt_ind= [ obj.abs_msmt_ind,...
             reshape( r_ind : r_ind + estimator.n_k - 1, params.m_F , [] ) ];
         
+        
     else
+        
         
         % plug steering angle and wheel speed model in A
         [~,S,V]= svd( obj.D_bar_ph{ i + 1 } );
