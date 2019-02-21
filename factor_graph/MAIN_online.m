@@ -55,13 +55,14 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          
          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
          % update odometry msmts in the ph
-         estimator.odometry_ph= {estimator.odometry_k, estimator.odometry_ph{1:params.M}};
+         estimator.odometry_ph= {inf, estimator.odometry_k, estimator.odometry_ph{2:params.M}};
          
          % update odometry msmts in the ph
-         estimator.z_gyro_ph= {estimator.z_gyro, estimator.z_gyro_ph{1:params.M}};
+         estimator.z_gyro_ph= {inf, estimator.z_gyro, estimator.z_gyro_ph{2:params.M}};
          
          % update lidar msmts in the ph
-         estimator.z_lidar_ph= {estimator.z_lidar(:), estimator.z_lidar_ph{1:params.M}};
+         z_lidar= estimator.z_lidar';
+         estimator.z_lidar_ph= {z_lidar(:), estimator.z_lidar_ph{1:params.M}};
          
          % update the previous poses
          estimator.x_ph= {estimator.XX, estimator.x_ph{1:params.M}};
@@ -70,7 +71,6 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          estimator.association_ph= {estimator.association, estimator.association_ph{1:params.M}};
          
          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-         
          
          
          % Store data

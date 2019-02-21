@@ -42,7 +42,7 @@ sig_ba= 0.05; % 0.1 m/s2 -- Initial acc bias uncertainty
 sig_bw= deg2rad(0.1); % 0.2 deg/s -- Initial gyros bias uncertainty
 sig_virt_vz= 0.01; % 5cm/s -- virtual msmt SD in z
 sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
-sig_lidar= 0.2; % 25cm -- lidar measurement in the nav frame
+sig_lidar= 0.20; % 25cm -- lidar measurement in the nav frame
 min_vel_gps= 2/3.6; % 2 km/h
 min_vel_yaw= 2/3.6; % 2 km/h
 taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer
@@ -67,18 +67,19 @@ sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
 
 % --------------- Simulation & factor graphs -----------------
-num_epochs_sim= 20;
+num_epochs_sim= 50;
 dt_sim= 0.1; % time step for the simulation (equal for all updates)
 dt_gps= 1; % time step for the GPS in simulation
 sig_gps_sim= 0.2; % standar deviation for GPS in simulation (all z-y-x)
 velocity_sim= 5 / 3.6; % [m/s]
 steering_angle_sim= deg2rad(0);
-sig_velocity_sim= 0.5*10;
-sig_steering_angle_sim= deg2rad(2)*10;
+sig_velocity_sim= 0.5;
+sig_steering_angle_sim= deg2rad(2);
 wheelbase_sim= 0.5; % for the simulated car
 way_points= [20,40,60,80,100;10,0,-10,0,0];
 min_distance_to_way_point= 2;
 max_delta_steering= deg2rad( 10 ); % maximum change in steering angle during one second
 max_steering= deg2rad( 45 );
 sig_gyro_z= deg2rad(3); % standard dev of the gyro
+optimoptions_display= 'notify'; %display options for the factor graphs optimization 
 % -------------------------------------------

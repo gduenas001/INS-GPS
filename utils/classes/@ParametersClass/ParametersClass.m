@@ -161,6 +161,7 @@ classdef ParametersClass < handle
         wheelbase_FG
         min_state_var_FG
         sig_gyro_z
+        optimoptions % optimoptions for the fg optimization
         % -------------------------------------------
         % -------------------------------------------
     end
@@ -352,6 +353,11 @@ classdef ParametersClass < handle
             obj.W_odometry_sim= [obj.sig_velocity_sim^2, 0;
                                  0, obj.sig_steering_angle_sim^2];
             % -------------------------------------------------------
+            if obj.SWITCH_FACTOR_GRAPHS && ~obj.SWITCH_OFFLINE
+                obj.optimoptions= optimoptions( @fminunc,...
+                    'Display', optimoptions_display, 'Algorithm','quasi-newton');
+            end
+
         end
         
         
