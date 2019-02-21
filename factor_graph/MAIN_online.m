@@ -24,6 +24,16 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
     estimator.odometry_update_sim( params );
     % ------------------------------------
     
+    % ------------- Gyro -------------
+    if epoch > 1
+        estimator.generate_gyro_msmt_sim(...
+            data_obj.update.x_true(params.ind_yaw,epoch-1), estimator.x_true(params.ind_yaw), params);
+    else
+        estimator.z_gyro= 0;
+    end
+    % --------------------------------
+    
+    
     % ----------------- LIDAR ----------------
      if params.SWITCH_LIDAR_UPDATE
 
@@ -35,8 +45,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          estimator.update_z_fg(counters, params);
          
          % solve the fg optimization
-         estimator.solve_fg(params)
-         
+         estimator.solve_fg(counters, params)
          
          
          
@@ -48,6 +57,9 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          % update odometry msmts in the ph
          estimator.odometry_ph= {estimator.odometry_k, estimator.odometry_ph{1:params.M}};
          
+         % update odometry msmts in the ph
+         estimator.z_gyro_ph= {estimator.z_gyro, estimator.z_gyro_ph{1:params.M}};
+         
          % update lidar msmts in the ph
          estimator.z_lidar_ph= {estimator.z_lidar(:), estimator.z_lidar_ph{1:params.M}};
          
@@ -56,6 +68,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          
          % update the associations in the ph
          estimator.association_ph= {estimator.association, estimator.association_ph{1:params.M}};
+         
          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
          
          

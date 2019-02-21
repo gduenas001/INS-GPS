@@ -44,6 +44,8 @@ classdef EstimatorClass < handle
         z_fg % all the msmts in the time window
         z_lidar_ph % lidar msmts in the preceding horizon
         z_lidar
+        z_gyro % current gyro msmt
+        z_gyro_ph % gyro msmts in the ph
         PX_prior % cov matrix of the prior
         m_M % number of states to estimate
         n_total % total numbe of msmts
@@ -82,13 +84,14 @@ classdef EstimatorClass < handle
             
             if params.SWITCH_FACTOR_GRAPHS
                 % initilize the prior to uninformative
-                obj.PX_prior= diag( ones(params.m,1) * inf );
+                obj.PX_prior= diag( ones(params.m,1) * 1000 );
                 
                 % allocate memory
                 obj.x_ph= cell(1, params.M);
                 obj.z_lidar_ph= cell(1, params.M);
                 obj.association_ph= cell(1, params.M);
                 obj.odometry_ph= cell(1, params.M);
+                obj.z_gyro_ph= cell(1, params.M);
             end
             
             
@@ -255,13 +258,28 @@ classdef EstimatorClass < handle
         update_z_fg(obj, counters, params)
         % ----------------------------------------------
         % ---------------------------------------------- 
-        compute_lidar_A(obj, x, association, params)
+        return_lidar_A(obj, x, association, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        [Phi, D_bar, vts, vtc]= compute_Phi_and_D_bar(obj, x, vel, phi, params)
+        [Phi, D_bar, vts, vtc]= return_Phi_and_D_bar(obj, x, vel, phi, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        solve_fg(obj, params)
+        solve_fg(obj, counters, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        x= return_odometry_update_sim(obj, x, u, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        z_gyro= generate_gyro_msmt_sim(obj, theta_prev, theta_next, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        z_expected= return_expected_z_lidar(obj, x, association, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        A= return_A_fg(obj, x, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        [cost]= optimization_fn_fg(obj, x, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function increase_landmarks_cov(obj, minPXLM)

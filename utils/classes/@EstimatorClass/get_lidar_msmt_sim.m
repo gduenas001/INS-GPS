@@ -15,8 +15,8 @@ for l= 1:obj.num_landmarks
     if sqrt( dx^2 + dy^2 ) > params.lidarRange, continue, end        
 
     % simulate msmt with noise
-    z_lm(1)=  dx*cpsi + dy*spsi + randn(1) * params.sig_lidar;
-    z_lm(2)= -dx*spsi + dy*cpsi + randn(1) * params.sig_lidar;
+    z_lm(1)=  dx*cpsi + dy*spsi + normrnd(0, params.sig_lidar);
+    z_lm(2)= -dx*spsi + dy*cpsi + normrnd(0, params.sig_lidar);
     
     % add measurement
     z_lidar= [z_lidar; z_lm];

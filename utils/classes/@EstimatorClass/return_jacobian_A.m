@@ -1,47 +1,26 @@
 
-function A= return_A(obj, x, params)
-% this function retuns the A jacobian for the optimization problem
-
-% from a vector to cells
-inds= 1:params.m;
-for i= params.M:-1:1
-    % update the cell
-    obj.x_ph{i}= x(inds);
-    
-    % update index
-    ind= ind + params.m;
-end
-% current pose
-obj.XX= x(end - params.m + 1:end);
-
+function A= return_jacobian_A(obj, params)
 
 
 % initialize normalized Jacobian
-A= zeros( obj.n_total, obj.m_M );
+obj.A= zeros( obj.n_total, obj.m_M );
 
 % plug the prior in A
-A( 1:params.m, 1:params.m )= sqrtm( inv(obj.PX_prior) );
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ADD THE ELEMENTS LINEARIZED AT K-M OUTSIDE THE LOOP,
-% THEN ADD THE ELEMENTS FOR EACH LINEARIZATION TIME LOOP BY LOOP
-% FINALLY, ADD THE A_K AT THE CURRENT TIME OUTSIDE THE LOOP
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+obj.A( 1:params.m, 1:params.m )= sqrtm( inv(obj.PX_prior) );
 
 % pointers to the next part of A to be filled
 r_ind= params.m + 1;
 c_ind= 1;
 
-% build A whithen Jacobian
-for i= obj.M : -1 : 0
+% build whithen Jacobian A
+for i= obj.M-1 : -1 : 0
     
     % gyro msmt submatrix
     obj.A( r_ind, c_ind : c_ind + params.m - 1 )= ...
-        -params.sig_gyro_z^(-1) * [0,0,1/params.dt_sim];
+        -params.sig_gyro_z^(-1) * [0, 0, 1/params.dt_sim];
     
     obj.A( r_ind, c_ind + params.m : c_ind + 2*params.m - 1 )= ...
-        params.sig_gyro_z^(-1) * [0,0,1/params.dt_sim];
+        params.sig_gyro_z^(-1) * [0, 0, 1/params.dt_sim];
     
     % update the row index to point towards the next msmt
     r_ind= r_ind + 1;
@@ -77,19 +56,16 @@ for i= obj.M : -1 : 0
     else
         
         
-        % compute Phi and D_bar
-        [Phi, D_bar, ~, ~]= obj.compute_Phi_and_D_bar(...
-                            obj.x_ph{i}, obj.odometry{i}(1), obj.odometry{i}(2), params);
-        
-        [~,S,V]= svd( D_bar );
+        % plug steering angle and wheel speed model in A
+        [~,S,V]= svd( obj.D_bar_ph{ i + 1 } );
         r_S= rank(S);
-        sqrt_inv_D_bar= sqrtm( inv(S(1:r_S,1:r_S)) ) * V(:,1:r_S)';
+        D_bar_ph_p= sqrtm( inv(S(1:r_S,1:r_S)) ) * V(:,1:r_S)';
         
         obj.A( r_ind : r_ind + r_S - 1, c_ind : c_ind + params.m - 1 )= ...
-            sqrt_inv_D_bar * Phi;
+            D_bar_ph_p * obj.Phi_ph{ i + 1 };
         
         obj.A( r_ind : r_ind + r_S - 1, c_ind + params.m : c_ind + 2*params.m -1)= ...
-            -sqrt_inv_D_bar;
+            -D_bar_ph_p;
         
         % update the row & column indexes
         r_ind= r_ind + r_S;
@@ -111,12 +87,7 @@ for i= obj.M : -1 : 0
 end
 
 
-
-
-
 end
-
-
 
 
 

@@ -1,5 +1,5 @@
 
-function [Phi, D_bar, vts, vtc]= compute_Phi_and_D_bar(obj, x, vel, phi, params)
+function [Phi, D_bar, vts, vtc]= return_Phi_and_D_bar(obj, x, vel, phi, params)
 % this function computes the state evolution matrix and its noise at the
 % corresponding time where the estimate is x and the odometry inputs are
 % vel and phi

@@ -19,7 +19,7 @@ else
     phi= phi + normrnd(0, params.sig_steering_angle_sim);
 
     % compute state evolution matrix and its noise covariance matrix
-    [obj.Phi_k, obj.D_bar, vts, vtc]= obj.compute_Phi_and_D_bar(obj.XX, vel, phi, params);
+    [obj.Phi_k, obj.D_bar, vts, vtc]= obj.return_Phi_and_D_bar(obj.XX, vel, phi, params);
     
     % Predict state
     obj.XX= [obj.XX(1) + vtc;

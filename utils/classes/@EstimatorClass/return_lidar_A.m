@@ -1,5 +1,5 @@
 
-function A_k= compute_lidar_A(obj, x, association, params)
+function A_k= return_lidar_A(obj, x, association, params)
 % this function computes one part of the jacobian for the lidar msmts at
 % the corresponding time where estimate x and association occur
 
