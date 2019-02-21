@@ -44,14 +44,16 @@ classdef EstimatorClass < handle
         z_fg % all the msmts in the time window
         z_lidar_ph % lidar msmts in the preceding horizon
         z_lidar
-        z_gyro % current gyro msmt
+        z_gyro= 0 % current gyro msmt
         z_gyro_ph % gyro msmts in the ph
         PX_prior % cov matrix of the prior
+        Gamma_prior % information matrix of the prior
         m_M % number of states to estimate
         n_total % total numbe of msmts
         association_ph % associations during the ph
         odometry_k % odometry msmts at the current time
         odometry_ph % velocity and steering angle for the ph
+        x_prior % stores x_{k-M} as a msmt for the next epoch
     end
     
     
@@ -85,6 +87,7 @@ classdef EstimatorClass < handle
             if params.SWITCH_FACTOR_GRAPHS
                 % initilize the prior to uninformative
                 obj.PX_prior= diag( ones(params.m,1) * 1000 );
+                obj.Gamma_prior= zeros(params.m);
                 
                 % allocate memory
                 obj.x_ph= cell(1, params.M);

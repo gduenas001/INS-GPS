@@ -8,9 +8,9 @@ obj.from_vector_to_estimator(x, params)
 cost= 0;
 
 % cost of the prior msmt
-z= obj.z_fg(1:params.m);
+z= obj.x_prior;
 z_expected= x(1:params.m);
-cost= cost +  ((z - z_expected)' / obj.PX_prior) * (z - z_expected);
+cost= cost +  (z - z_expected)' * obj.Gamma_prior * (z - z_expected);
 
 for i= params.M:-1:2
     
@@ -31,7 +31,7 @@ for i= params.M:-1:2
     z= obj.z_lidar_ph{i-1};
     n_L= length(z)/ params.m_F;
     z_expected= obj.return_expected_z_lidar(obj.x_ph{i-1}, obj.association_ph{i-1}, params);
-    cost= cost + ((z - z_expected)' /  kron(eye(n_L) , params.R_lidar) ) * (z - z_expected);
+    cost= cost + (z - z_expected)' *  kron( eye(n_L) , inv(params.R_lidar) ) * (z - z_expected);
     % ------------------------------------
     
 end
@@ -55,7 +55,7 @@ z= obj.z_lidar';
 z= z(:);
 n_L= length(z)/ params.m_F;
 z_expected= obj.return_expected_z_lidar(obj.XX, obj.association, params);
-cost= cost + ((z - z_expected)' /  kron(eye(n_L) , params.R_lidar) ) * (z - z_expected);
+cost= cost + (z - z_expected)' *  kron( eye(n_L) , inv(params.R_lidar) ) * (z - z_expected);
 % ------------------------------------
 
 end

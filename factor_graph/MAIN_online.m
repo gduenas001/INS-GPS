@@ -28,8 +28,6 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
     if epoch > 1
         estimator.generate_gyro_msmt_sim(...
             data_obj.update.x_true(params.ind_yaw,epoch-1), estimator.x_true(params.ind_yaw), params);
-    else
-        estimator.z_gyro= 0;
     end
     % --------------------------------
     
@@ -40,10 +38,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          % get the lidar msmts
          estimator.get_lidar_msmt_sim(params);
          estimator.association= estimator.association_true;
-         
-         % update fg msmt vector with all types of msmts
-         estimator.update_z_fg(counters, params);
-         
+                  
          % solve the fg optimization
          estimator.solve_fg(counters, params)
          
