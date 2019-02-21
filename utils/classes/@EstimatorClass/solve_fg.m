@@ -17,8 +17,6 @@ x_star= obj.from_estimator_to_vector(params);
 % saves the prior separately
 obj.x_prior= obj.x_ph{params.M-1};
 
-% obj.optimization_fn_fg(x_star, params);
-
 % solve the problem
 [x_star,~,~,~,~,hessian] = fminunc(fun, x_star, params.optimoptions);
 

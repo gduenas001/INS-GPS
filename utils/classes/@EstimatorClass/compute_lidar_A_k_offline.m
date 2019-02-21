@@ -1,5 +1,5 @@
 
-function compute_lidar_A_k_offline(obj, params)
+function compute_lidar_A_k_offline(obj, params) % TODO: osama - change this name, this computes H not A
 % this funcion builds the Jacobian H for the factor graphs case without
 % mesaurements. It uses all the landmarks in the field of view of the lidar
 

@@ -2,10 +2,11 @@
 function monitor_integrity_offline_fg(obj, estimator, counters, data,  params)
 
 
+% TODO: osama - this must be cleaned if it only runs once 
 if params.SWITCH_FIXED_LM_SIZE_PH
     
     % current horizon measurements
-    obj.n_M= sum( obj.n_ph ) + estimator.n_k;
+    obj.n_M= sum( obj.n_ph(1:params.M) ) + estimator.n_k;
     obj.n_L_M= obj.n_M / params.m_F;
     
     obj.M = obj.M + 1;
@@ -14,11 +15,11 @@ end
 
 % monitor integrity if the number of LMs in the preceding horizon is more than threshold
 if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
-    obj.n_L_M >= params.min_n_L_M && obj.M > 1 ) ||...
-    ( ~params.SWITCH_FIXED_LM_SIZE_PH &&...
-    counters.k_im > obj.M )
+    obj.n_L_M >= params.min_n_L_M && obj.M > 1 ) ||... % TODO: osama - why obj.m > 1???
+    ( ~params.SWITCH_FIXED_LM_SIZE_PH && counters.k_im > obj.M )
 
     % Modify preceding horizon to have enough landmarks
+    % TODO: osama - put this into a function
     if params.SWITCH_FIXED_LM_SIZE_PH
         
         obj.n_M= estimator.n_k;
@@ -37,11 +38,11 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         obj.n_M= estimator.n_k + sum( obj.n_ph(1:obj.M - 1) );
 
         % number of landmarks over the horizon
-        obj.n_L_M= obj.n_M / params.m_F;        
-        
+        obj.n_L_M= obj.n_M / params.m_F;
     end
 
     % compute extraction vector
+    % TODO: create a function that returns alpha for a given x input
     alpha= [ zeros( obj.M * params.m, 1 );...
             -sin( estimator.x_true(params.ind_yaw) );...
              cos( estimator.x_true(params.ind_yaw) );...
