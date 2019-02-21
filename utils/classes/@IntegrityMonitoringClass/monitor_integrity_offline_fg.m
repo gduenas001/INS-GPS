@@ -1,19 +1,52 @@
 
 function monitor_integrity_offline_fg(obj, estimator, counters, data,  params)
 
-if counters.k_im > obj.M
+
+if params.SWITCH_FIXED_LM_SIZE_PH
+    
+    % current horizon measurements
+    obj.n_M= sum( obj.n_ph ) + estimator.n_k;
+    obj.n_L_M= obj.n_M / params.m_F;
+    
+    obj.M = obj.M + 1;
+    
+end
+
+% monitor integrity if the number of LMs in the preceding horizon is more than threshold
+if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
+    obj.n_L_M >= params.min_n_L_M && obj.M > 1 ) ||...
+    ( ~params.SWITCH_FIXED_LM_SIZE_PH &&...
+    counters.k_im > obj.M )
+
+    % Modify preceding horizon to have enough landmarks
+    if params.SWITCH_FIXED_LM_SIZE_PH
+        
+        obj.n_M= estimator.n_k;
+        for i= 1:length(obj.n_ph)
+            obj.n_M= obj.n_M + obj.n_ph(i);
+            % if the preceding horizon is long enough --> stop
+            if obj.n_M >= params.min_n_L_M * params.m_F, break, end
+        end
+        % set the variables
+        obj.n_L_M= obj.n_M / params.m_F;
+        obj.M= i + 1;
+        
+    else
+        
+        % number of absolute msmts over the horizon
+        obj.n_M= estimator.n_k + sum( obj.n_ph(1:obj.M - 1) );
+
+        % number of landmarks over the horizon
+        obj.n_L_M= obj.n_M / params.m_F;        
+        
+    end
+
     % compute extraction vector
     alpha= [ zeros( obj.M * params.m, 1 );...
             -sin( estimator.x_true(params.ind_yaw) );...
              cos( estimator.x_true(params.ind_yaw) );...
              0 ];
        
-    % number of absolute msmts over the horizon
-    obj.n_M= estimator.n_k + sum( obj.n_ph(1:obj.M - 1) );
-    
-    % number of landmarks over the horizon
-    obj.n_L_M= obj.n_M / params.m_F;
-    
     % total number of msmts (prior + relative + abs)
     obj.n_total= obj.n_M + (obj.M + 1) * params.m;
     
