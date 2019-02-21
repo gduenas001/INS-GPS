@@ -47,31 +47,8 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
          % solve the fg optimization
          estimator.solve_fg(counters, params)
          
-         
-         
-                  
-         
-
-         
-         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-         % update odometry msmts in the ph
-         estimator.odometry_ph= {inf, estimator.odometry_k, estimator.odometry_ph{2:params.M}};
-         
-         % update odometry msmts in the ph
-         estimator.z_gyro_ph= {inf, estimator.z_gyro, estimator.z_gyro_ph{2:params.M}};
-         
-         % update lidar msmts in the ph
-         z_lidar= estimator.z_lidar';
-         estimator.z_lidar_ph= {z_lidar(:), estimator.z_lidar_ph{1:params.M}};
-         
-         % update the previous poses
-         estimator.x_ph= {estimator.XX, estimator.x_ph{1:params.M}};
-         
-         % update the associations in the ph
-         estimator.association_ph= {estimator.association, estimator.association_ph{1:params.M}};
-         
-         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-         
+         % update preceding horizon for the estimate
+         estimator.update_preceding_horizon(params)
          
          % Store data
          counters.k_update=...

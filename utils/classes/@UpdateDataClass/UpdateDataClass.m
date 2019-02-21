@@ -47,11 +47,8 @@ classdef UpdateDataClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function store_fg(obj, epoch, estimator, time, params)
-%             if params.SWITCH_SIM
-                obj.x_true(:,epoch)= estimator.x_true;
-%             else
-                obj.XX(:,epoch)= estimator.XX;
-%             end
+            obj.x_true(:,epoch)= estimator.x_true;
+            obj.XX(:,epoch)= estimator.XX;
             obj.time(epoch)= time;
             obj.number_of_associated_LMs(epoch)= estimator.n_L_k;
         end

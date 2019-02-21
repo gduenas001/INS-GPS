@@ -282,6 +282,16 @@ classdef EstimatorClass < handle
         [cost]= optimization_fn_fg(obj, x, params)
         % ----------------------------------------------
         % ----------------------------------------------
+        x= from_estimator_to_vector(obj, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        from_vector_to_estimator(obj, x, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        update_preceding_horizon(obj, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        
         function increase_landmarks_cov(obj, minPXLM)
             
             if length(obj.PX) == 15, return, end
