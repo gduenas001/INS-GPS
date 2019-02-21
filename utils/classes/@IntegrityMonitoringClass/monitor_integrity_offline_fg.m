@@ -68,9 +68,15 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     % find the prior covarince matrix for time k+1
     obj.PX_prior= obj.PX_M( params.m + 1 : 2*params.m, params.m + 1 : 2*params.m );
     
+    % fault probability of each association in the preceding horizon
+    obj.P_F_M= ones(obj.n_L_M, 1) * params.P_UA;
+    
+    % compute the hypotheses (n_H, n_max, inds_H)
+    obj.compute_hypotheses(params)
+    
     % initialization of p_hmi
     obj.p_hmi=0;
-    if obj.n_M < 5    
+    if obj.n_M < params.m + obj.n_max*params.m_F
         % if we don't have enough landmarks --> P(HMI)= 1
         obj.p_hmi= 1;
         
@@ -81,26 +87,20 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         
         % standard deviation in the state of interest
         obj.sigma_hat= sqrt( (alpha' / obj.Gamma_fg) * alpha );
-        
-        % number of hypotheses (just one per abs msmt for now)
-        obj.n_H= obj.n_L_M;
-        
+
         % set detector threshold from the continuity req
         obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M );
-        
-        % fault probability of each association in the preceding horizon
-        obj.P_F_M= ones(obj.n_L_M, 1) * params.P_UA;
         
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;
         
-        for i= 0:0%obj.n_H
+        for i= 0:obj.n_H
             
             % build extraction matrix
             if i == 0
                 obj.compute_E_matrix_fg( 0, params.m_F);
             else
-                obj.compute_E_matrix_fg( i, params.m_F);
+                obj.compute_E_matrix_fg( obj.inds_H{i}, params.m_F);
             end
             
             % compute P(HMI | H) for the worst-case fault
@@ -111,7 +111,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 obj.P_H_0= prod( 1 - obj.P_F_M );
                 obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
             else
-                obj.P_H(i)= prod( obj.P_F_M( i ) );
+                obj.P_H(i)= prod( obj.P_F_M( obj.inds_H{i} ) );
                 obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
             end
         end

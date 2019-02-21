@@ -79,6 +79,7 @@ classdef IntegrityMonitoringClass < handle
         PX_prior
         PX_M
         abs_msmt_ind
+        faulted_LMs_indices
     end
     
     
@@ -139,13 +140,16 @@ classdef IntegrityMonitoringClass < handle
             end
         end
         function compute_E_matrix_fg(obj, i, m_F)
-            if i == 0 % E matrix for only previous state faults
+            if sum(i) == 0 % E matrix for only previous state faults
                 obj.E= zeros( obj.m, obj.n_total );
                 obj.E(:, 1:obj.m)= eye(obj.m);
             else % E matrix with a single LM fault
-                obj.E= zeros( obj.m + m_F , obj.n_total );
+                obj.E= zeros( obj.m + m_F*length(i) , obj.n_total );
                 obj.E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
-                obj.E( end-m_F+1 : end , obj.abs_msmt_ind(:,i)' )= eye(m_F); % landmark i faulted
+                for j= 1:length(i)
+                    ind= obj.abs_msmt_ind(:,i(j));
+                    obj.E( obj.m + 1 + m_F*(j-1) : obj.m + m_F*(j) , ind(:)' )= eye(m_F); % landmark i faulted
+                end
             end
         end
         % ----------------------------------------------
