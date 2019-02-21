@@ -10,7 +10,7 @@ obj.x_true= [obj.x_true(1) + vel * params.dt_sim * cos(phi + obj.x_true(3));
              pi_to_pi( obj.x_true(3) + vel * params.dt_sim * sin(phi) / params.wheelbase_sim )];
 
 if params.SWITCH_OFFLINE    
-     [obj.Phi_k, obj.D_bar, ~, ~]= obj.compute_Phi_and_D_bar(obj.x_true, vel, phi, params);
+     [obj.Phi_k, obj.D_bar]= obj.return_Phi_and_D_bar(obj.x_true, vel, phi, params);
      
 else
 
@@ -19,15 +19,10 @@ else
     phi= phi + normrnd(0, params.sig_steering_angle_sim);
 
     % compute state evolution matrix and its noise covariance matrix
-    [obj.Phi_k, obj.D_bar, vts, vtc]= obj.return_Phi_and_D_bar(obj.XX, vel, phi, params);
+    [obj.Phi_k, obj.D_bar]= obj.return_Phi_and_D_bar(obj.XX, vel, phi, params);
     
     obj.XX= obj.return_odometry_update_sim(obj.XX, [vel; phi], params);
     
-%     % Predict state
-%     obj.XX= [obj.XX(1) + vtc;
-%              obj.XX(2) + vts;
-%              pi_to_pi( obj.XX(3)+ vel*params.dt_sim * sin(phi) / params.wheelbase_sim )];
-
 end
 
 

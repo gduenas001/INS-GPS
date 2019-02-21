@@ -166,7 +166,7 @@ classdef EstimatorClass < handle
         return_lidar_A(obj, x, association, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        [Phi, D_bar, vts, vtc]= return_Phi_and_D_bar(obj, x, vel, phi, params)
+        [Phi, D_bar]= return_Phi_and_D_bar(obj, x, vel, phi, params)
         % ----------------------------------------------
         % ----------------------------------------------
         solve_fg(obj, counters, params)

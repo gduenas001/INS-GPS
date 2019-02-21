@@ -22,7 +22,7 @@ for i= params.M:-1:2
     
     % ---------- odometry cost ----------
     z_expected= obj.return_odometry_update_sim(obj.x_ph{i}, obj.odometry_ph{i}, params) - obj.x_ph{i-1};
-    [~, D_bar, ~, ~]= obj.return_Phi_and_D_bar(...
+    [~, D_bar]= obj.return_Phi_and_D_bar(...
         obj.x_ph{i}, obj.odometry_ph{i}(1), obj.odometry_ph{i}(2), params);    
     cost= cost + z_expected' * pinv(D_bar) * z_expected;
     % ------------------------------------
@@ -45,7 +45,7 @@ cost= cost + ((z - z_expected)' / params.sig_gyro_z)* (z - z_expected);
 
 % ---------- odometry cost ----------
 z_expected= obj.return_odometry_update_sim(obj.x_ph{1}, obj.odometry_k, params) - obj.XX;
-[~, D_bar, ~, ~]= obj.return_Phi_and_D_bar(...
+[~, D_bar]= obj.return_Phi_and_D_bar(...
     obj.x_ph{1}, obj.odometry_k(1), obj.odometry_k(2), params);
 cost= cost + z_expected' * pinv(D_bar) * z_expected;
 % ------------------------------------
