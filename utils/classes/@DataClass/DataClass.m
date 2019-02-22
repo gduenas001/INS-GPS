@@ -67,10 +67,7 @@ classdef DataClass < handle
             obj.im.store(im, estimator, counters, params);
         end
         % ----------------------------------------------
-        % ----------------------------------------------
-            
-        % ----------------------------------------------
-        % ----------------------------------------------
+        % ----------------------------------------------    
         function delete_extra_allocated_memory(obj, counters)
             obj.update.delete_extra_allocated_memory(counters);
             obj.im.delete_extra_allocated_memory(counters);
@@ -103,6 +100,14 @@ classdef DataClass < handle
                 plot(obj.im.time, obj.im.detector_threshold, 'linewidth', 2)
                 xlabel('time [s]')
             end
+            legend('detector', 'threshold')
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_detector_fg(obj, params)
+            figure; hold on; grid on;
+            plot(obj.update.time, obj.update.q_d, 'linewidth', 2)
+            plot(obj.update.time, obj.update.T_d, 'linewidth', 2)
             legend('detector', 'threshold')
         end
         % ----------------------------------------------
@@ -243,6 +248,19 @@ classdef DataClass < handle
                 legend({'$n^{F^(M)}$', '$n^F$'},'interpreter', 'latex','fontsize', 15);
             end
 %             ylabel('Number of landmarks','interpreter', 'latex','fontsize', 15)
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_number_of_landmarks_fg(obj, params)
+            figure; hold on; grid on;
+            if params.SWITCH_SIM
+                plot(obj.update.time, obj.update.n_L_M, 'b-', 'linewidth', 2)
+                plot(obj.update.time, obj.update.n_L_k, 'g-', 'linewidth', 2)
+                xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
+                legend({'$n^{L^(M)}$', '$n^L$'},...
+                    'interpreter', 'latex','fontsize', 15);
+            else
+            end
         end
         % ----------------------------------------------
         % ----------------------------------------------

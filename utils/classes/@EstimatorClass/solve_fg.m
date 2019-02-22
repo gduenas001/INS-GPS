@@ -5,6 +5,15 @@ function solve_fg(obj, counters, params)
 % total number of states to estimate
 obj.m_M= (params.M + 1) * params.m;
 
+% number of associated landmarks at k
+obj.n_L_k= length(obj.association);
+
+% number of associations in the ph
+obj.n_L_M= obj.n_L_k + numel( cell2mat(obj.association_ph(1:params.M)') );
+
+% total number of measurements (relativ + absolute + prior)
+obj.n_total= obj.m_M + obj.n_L_M * params.m_F;
+
 % check that there are enough epochs
 if counters.k_lidar <= params.M, return, end
 
@@ -18,7 +27,13 @@ x_star= obj.from_estimator_to_vector(params);
 obj.x_prior= obj.x_ph{params.M-1};
 
 % solve the problem
-[x_star,~,~,~,~,hessian] = fminunc(fun, x_star, params.optimoptions);
+[x_star, obj.q_d,~,~,~,hessian] = fminunc(fun, x_star, params.optimoptions);
+
+% multiply by two so that it fits the non-central chi-squared
+obj.q_d= obj.q_d * 2;
+
+% compute detector threshold
+obj.T_d= chi2inv( 1- params.continuity_requirement, obj.n_total - obj.m_M );
 
 % debuggin points to check jacobian
 % [~, A]= obj.optimization_fn_fg(x_star, params);

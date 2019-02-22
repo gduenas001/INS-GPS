@@ -10,15 +10,16 @@ classdef EstimatorClass < handle
         
         PX= zeros(15)
         
+        
         association % association of current features
         association_full % association of current features
         association_true % only for simulation
         association_no_zeros % association of associated features
-        number_of_associated_LMs= 0
-        num_of_extracted_features
+        num_landmarks % nunber of landmarks in the map
+        num_associated_lms= 0
+        num_extracted_features
         
         n_k % number of absolute measurements at current time
-        n_L_k % number of landmarks extracted at current time
 
         gamma_k
         q_k
@@ -28,9 +29,8 @@ classdef EstimatorClass < handle
         Phi_k   % state evolution matrix
         D_bar % covariance increase for the state evolution
         
-        
-        num_landmarks % nunber of landmarks in the map
-        
+        T_d= 0 % detector threshold
+        q_d= 0 % detector for the window of time
         
         initial_attitude % save initial attitude for the calibration of IM?U biases
         appearances= zeros(1,300); % if there are more than 300 landmarks, something's wrong
@@ -42,8 +42,8 @@ classdef EstimatorClass < handle
         
         x_ph % poses in the time window
         z_fg % all the msmts in the time window
-        z_lidar_ph % lidar msmts in the preceding horizon
-        z_lidar
+        z_lidar_ph % lidar msmts in the ph
+        z_lidar % current lidar msmts
         z_gyro= 0 % current gyro msmt
         z_gyro_ph % gyro msmts in the ph
         PX_prior % cov matrix of the prior
@@ -54,6 +54,8 @@ classdef EstimatorClass < handle
         odometry_k % odometry msmts at the current time
         odometry_ph % velocity and steering angle for the ph
         x_prior % stores x_{k-M} as a msmt for the next epoch
+        n_L_k= 0 % number of associations at k
+        n_L_M= 0 % number of associations in the ph
     end
     
     
