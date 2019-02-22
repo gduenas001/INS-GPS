@@ -2,35 +2,27 @@
 function monitor_integrity_offline_fg(obj, estimator, counters, data,  params)
 
 
-% TODO: osama - this must be cleaned if it only runs once 
-if params.SWITCH_FIXED_LM_SIZE_PH
+% calculate the current number of LMs in PH; only before starting integrity monitoring
+if params.SWITCH_FIXED_LM_SIZE_PH && isempty(obj.p_hmi)
     
     % current horizon measurements
-    obj.n_M= sum( obj.n_ph(1:params.M) ) + estimator.n_k;
+    obj.n_M= sum( obj.n_ph(1:obj.M) ) + estimator.n_k;
+    % current horizon LMs
     obj.n_L_M= obj.n_M / params.m_F;
-    
-    obj.M = obj.M + 1;
+    % update the length of PH
+    obj.M= obj.M +1; 
     
 end
 
 % monitor integrity if the number of LMs in the preceding horizon is more than threshold
 if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
-    obj.n_L_M >= params.min_n_L_M && obj.M > 1 ) ||... % TODO: osama - why obj.m > 1???
+    obj.n_L_M >= params.min_n_L_M ) ||...
     ( ~params.SWITCH_FIXED_LM_SIZE_PH && counters.k_im > obj.M )
 
     % Modify preceding horizon to have enough landmarks
-    % TODO: osama - put this into a function
     if params.SWITCH_FIXED_LM_SIZE_PH
         
-        obj.n_M= estimator.n_k;
-        for i= 1:length(obj.n_ph)
-            obj.n_M= obj.n_M + obj.n_ph(i);
-            % if the preceding horizon is long enough --> stop
-            if obj.n_M >= params.min_n_L_M * params.m_F, break, end
-        end
-        % set the variables
-        obj.n_L_M= obj.n_M / params.m_F;
-        obj.M= i + 1;
+        obj.compute_required_epochs_for_min_LMs(params, estimator)
         
     else
         
@@ -40,13 +32,9 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         % number of landmarks over the horizon
         obj.n_L_M= obj.n_M / params.m_F;
     end
-
+    
     % compute extraction vector
-    % TODO: create a function that returns alpha for a given x input
-    alpha= [ zeros( obj.M * params.m, 1 );...
-            -sin( estimator.x_true(params.ind_yaw) );...
-             cos( estimator.x_true(params.ind_yaw) );...
-             0 ];
+    alpha= obj.build_state_of_interest_extraction_matrix(params, estimator.x_true);
        
     % total number of msmts (prior + relative + abs)
     obj.n_total= obj.n_M + (obj.M + 1) * params.m;
