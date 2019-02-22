@@ -89,7 +89,9 @@ classdef IntegrityMonitoringClass < handle
         function obj= IntegrityMonitoringClass(params, estimator)
             
             % if the preceding horizon is fixed in epochs --> set M
-            if ~params.SWITCH_FIXED_LM_SIZE_PH
+            if params.SWITCH_FIXED_LM_SIZE_PH
+                obj.M= 0;
+            else
                 obj.M= params.preceding_horizon_size;
             end
             
@@ -179,6 +181,12 @@ classdef IntegrityMonitoringClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         compute_whiten_jacobian_A(obj, estimator, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_required_epochs_for_min_LMs(obj, params, estimator)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        alpha= build_state_of_interest_extraction_matrix(obj, params, current_state)
         % ----------------------------------------------
         % ----------------------------------------------
         p_hmi_H= compute_p_hmi_H(obj, alpha, params)
