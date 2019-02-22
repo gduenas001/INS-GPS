@@ -166,7 +166,7 @@ classdef EstimatorClass < handle
         update_z_fg(obj, counters, params)
         % ----------------------------------------------
         % ---------------------------------------------- 
-        return_lidar_A(obj, x, association, params)
+        A_lidar= return_lidar_A(obj, x, association, params)
         % ----------------------------------------------
         % ----------------------------------------------
         [Phi, D_bar]= return_Phi_and_D_bar(obj, x, vel, phi, params)
@@ -187,7 +187,7 @@ classdef EstimatorClass < handle
         A= return_A_fg(obj, x, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        [cost]= optimization_fn_fg(obj, x, params)
+        [cost, A]= optimization_fn_fg(obj, x, params)
         % ----------------------------------------------
         % ----------------------------------------------
         x= from_estimator_to_vector(obj, params)

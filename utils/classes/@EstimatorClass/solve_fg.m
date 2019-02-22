@@ -20,11 +20,18 @@ obj.x_prior= obj.x_ph{params.M-1};
 % solve the problem
 [x_star,~,~,~,~,hessian] = fminunc(fun, x_star, params.optimoptions);
 
+% debuggin points to check jacobian
+% [~, A]= obj.optimization_fn_fg(x_star, params);
+% dif= inv(A'*A) - inv(hessian);
+% dif( abs(dif) < 5 )= 0;
+% diag(dif)
+
 % from a vector to cells 
 from_vector_to_estimator(obj, x_star, params)
 
 % store the prior, x_(k-M+1), as a future msmt
-obj.Gamma_prior= hessian(end-2*params.m+1:end-params.m, end-2*params.m+1:end-params.m);
+% hessian= A' * A;
+obj.Gamma_prior= hessian(params.m+1:2*params.m, params.m+1:2*params.m);
 
 end
 
