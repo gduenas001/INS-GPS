@@ -87,9 +87,9 @@ classdef EstimatorClass < handle
             
             
             if params.SWITCH_FACTOR_GRAPHS
-                % initilize the prior to uninformative
+                % initialize to uninformative prior
                 obj.PX_prior= diag( ones(params.m,1) * 1000 );
-                obj.Gamma_prior= zeros(params.m);
+                obj.Gamma_prior= diag( ones(params.m,1) * eps );
                 
                 % allocate memory
                 obj.x_ph= cell(1, params.M);
@@ -189,7 +189,7 @@ classdef EstimatorClass < handle
         A= return_A_fg(obj, x, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        [cost, A]= optimization_fn_fg(obj, x, params)
+        [cost, grad, A, b]= optimization_fn_fg(obj, x, params)
         % ----------------------------------------------
         % ----------------------------------------------
         x= from_estimator_to_vector(obj, params)
