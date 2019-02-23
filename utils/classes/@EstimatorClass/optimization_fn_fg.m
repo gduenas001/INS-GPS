@@ -102,23 +102,25 @@ for i= params.M:-1:2
     
     % ------------ lidar cost ------------
     z= obj.z_lidar_ph{i-1};
-    z_expected= obj.return_expected_z_lidar(obj.x_ph{i-1}, obj.association_ph{i-1}, params);
-    innov= z - z_expected;
     n= length(z);
     n_L= n / params.m_F;
-    kron_inv_R_lidar= kron( eye(n_L) , inv_R_lidar );
-    kron_sqrt_inv_R_lidar=  kron( eye(n_L) , sqrt_inv_R_lidar );
-    cost= cost + innov' *  kron_inv_R_lidar * innov;
-    % ------------------------------------
-    
-    % ---------- lidar submatrix ----------
-    if nargout > 1
-        A_lidar= obj.return_lidar_A(obj.x_ph{i-1}, obj.association_ph{i-1}, params);        
-        A( r_ind : r_ind + n - 1, c_ind : c_ind + params.m - 1)= A_lidar;
+    if n > 0
+        z_expected= obj.return_expected_z_lidar(obj.x_ph{i-1}, obj.association_ph{i-1}, params);
+        innov= z - z_expected;
+        kron_inv_R_lidar= kron( eye(n_L) , inv_R_lidar );
+        kron_sqrt_inv_R_lidar=  kron( eye(n_L) , sqrt_inv_R_lidar );
+        cost= cost + innov' *  kron_inv_R_lidar * innov;
+        % ------------------------------------
         
-        b( r_ind : r_ind + n - 1)= kron_sqrt_inv_R_lidar * innov;
+        % ---------- lidar submatrix ----------
+        if nargout > 1
+            A_lidar= obj.return_lidar_A(obj.x_ph{i-1}, obj.association_ph{i-1}, params);
+            A( r_ind : r_ind + n - 1, c_ind : c_ind + params.m - 1)= A_lidar;
+            
+            b( r_ind : r_ind + n - 1)= kron_sqrt_inv_R_lidar * innov;
+        end
+        % ------------------------------------
     end
-    % ------------------------------------
     
     % update the row index
     r_ind= r_ind + n;
@@ -183,23 +185,25 @@ c_ind= c_ind + params.m;
 % ------------ lidar cost ------------
 z= obj.z_lidar';
 z= z(:);
-z_expected= obj.return_expected_z_lidar(obj.XX, obj.association, params);
-innov= z - z_expected;
 n= length(z);
 n_L= n / params.m_F;
-kron_inv_R_lidar= kron( eye(n_L) , inv_R_lidar );
-kron_sqrt_inv_R_lidar=  kron( eye(n_L) , sqrt_inv_R_lidar );
-cost= cost + innov' *  kron_inv_R_lidar * innov;
-% ------------------------------------
-
-% ---------- lidar submatrix ----------
-if nargout > 1
-    A_lidar= obj.return_lidar_A(obj.XX, obj.association, params);
-    A( r_ind : r_ind + n - 1, c_ind : c_ind + params.m - 1)= A_lidar;
+if n > 0
+    z_expected= obj.return_expected_z_lidar(obj.XX, obj.association, params);
+    innov= z - z_expected;
+    kron_inv_R_lidar= kron( eye(n_L) , inv_R_lidar );
+    kron_sqrt_inv_R_lidar=  kron( eye(n_L) , sqrt_inv_R_lidar );
+    cost= cost + innov' *  kron_inv_R_lidar * innov;
+    % ------------------------------------
     
-    b(r_ind : r_ind + n - 1)= kron_sqrt_inv_R_lidar * innov;
+    % ---------- lidar submatrix ----------
+    if nargout > 1
+        A_lidar= obj.return_lidar_A(obj.XX, obj.association, params);
+        A( r_ind : r_ind + n - 1, c_ind : c_ind + params.m - 1)= A_lidar;
+        
+        b(r_ind : r_ind + n - 1)= kron_sqrt_inv_R_lidar * innov;
+    end
+    % ------------------------------------
 end
-% ------------------------------------
 
 if nargout > 1
     % return hessian

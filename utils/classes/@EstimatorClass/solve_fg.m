@@ -27,6 +27,8 @@ x_star= obj.from_estimator_to_vector(params);
 obj.x_prior= obj.x_ph{params.M};
 
 % solve the problem
+[residual, grad, A, b]= obj.optimization_fn_fg(x_star, params);
+
 [x_star, obj.q_d,~,~,~,hessian] = fminunc(fun, x_star, params.optimoptions);
 
 % multiply by two so that it fits the non-central chi-squared
