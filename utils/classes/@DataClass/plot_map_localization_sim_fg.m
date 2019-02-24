@@ -5,7 +5,7 @@ function plot_map_localization_sim_fg(obj, estimator, params)
 figure; hold on; grid on;
 
 % plot waypoints
-plot(params.way_points(1,:), params.way_points(2,:), 'bo', 'markersize', 10);
+plot(params.way_points(1,:), params.way_points(2,:), 'gp', 'markersize', 12, 'MarkerFaceColor', 'g');
 
 % plot true path
 plot(obj.update.x_true(1,:), obj.update.x_true(2,:), 'g-','markersize', 7);
@@ -25,7 +25,7 @@ end
 lm_map= [estimator.landmark_map(:,1),...
     estimator.landmark_map(:,2),...
     zeros(estimator.num_landmarks,1)];
-plot(lm_map(:,1), lm_map(:,2), 'g+', 'markersize',20);
+plot(lm_map(:,1), lm_map(:,2), 'k.', 'markersize', 20);
 
 % plot lidar msmts 
 if ~isempty(obj.msmts)

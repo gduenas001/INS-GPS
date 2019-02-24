@@ -77,8 +77,10 @@ classdef UpdateDataClass < handle
             obj.T_d(epoch)= estimator.T_d;
             obj.n_L_k(epoch)= estimator.n_L_k;
             obj.n_L_M(epoch)= estimator.n_L_M;
-            obj.num_faults(epoch)= estimator.num_faults_k;
-            obj.odometry(:, epoch)= estimator.odometry_k;
+            if ~params.SWITCH_OFFLINE
+                obj.num_faults(epoch)= estimator.num_faults_k;
+                obj.odometry(:, epoch)= estimator.odometry_k;
+            end
         end
         % ----------------------------------------------
         % ----------------------------------------------

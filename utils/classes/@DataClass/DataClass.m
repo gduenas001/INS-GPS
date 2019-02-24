@@ -74,6 +74,24 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function HMI_inds= find_HMI_sim(obj, params)
+        % this function finds the indexes where HMI occurs, i.e. where
+        % the error surpasses the alert limit and the detector is not
+        % triggered
+            
+            HMI_inds= [];
+            fail_ind= find( obj.update.error_state_interest > params.alert_limit );
+            
+            if isempty(fail_ind), return, end
+            
+            for i= 1:length(fail_ind)
+                if obj.update.q_d(fail_ind(i)) < obj.update.T_d(fail_ind(i))
+                    HMI_inds= [HMI_inds; fail_ind(i)];
+                end
+            end
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         lm_map= plot_map_slam(obj, estimator, gps, num_readings, params)
         % ----------------------------------------------
         % ----------------------------------------------
@@ -265,17 +283,16 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function plot_number_of_landmarks_fg(obj, params)
+        function plot_number_of_landmarks_fg_sim(obj, params)
             figure; hold on; grid on;
-            if params.SWITCH_SIM
-                plot(obj.update.time, obj.update.n_L_M, 'b-', 'linewidth', 2)
-                plot(obj.update.time, obj.update.n_L_k, 'g-', 'linewidth', 2)
+            plot(obj.update.time, obj.update.n_L_M, 'b-', 'linewidth', 2)
+            plot(obj.update.time, obj.update.n_L_k, 'g-', 'linewidth', 2)
+            if ~params.SWITCH_OFFLINE
                 plot(obj.update.time, obj.update.num_faults, 'r-', 'linewidth', 2)
-                xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
-                legend({'$n^{L^(M)}$', '$n^L$', 'n_{f}'},...
-                    'interpreter', 'latex','fontsize', 15);
-            else
             end
+            xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
+            legend({'$n^{L^(M)}$', '$n^L$', '$n_{f}$'},...
+                'interpreter', 'latex','fontsize', 15);
         end
         % ----------------------------------------------
         % ----------------------------------------------

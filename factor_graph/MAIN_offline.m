@@ -58,7 +58,7 @@ data_obj.delete_extra_allocated_memory(counters)
 
 % -------------------------- PLOTS --------------------------
 data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
-data_obj.plot_number_of_landmarks(params);
+data_obj.plot_number_of_landmarks_fg_sim(params);
 data_obj.plot_integrity_risk(params);
 % ------------------------------------------------------------
 

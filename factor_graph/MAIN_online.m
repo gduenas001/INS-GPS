@@ -69,10 +69,10 @@ data_obj.delete_extra_allocated_memory(counters)
 
 % -------------------------- PLOTS --------------------------
 data_obj.plot_map_localization_sim_fg(estimator, params)
-data_obj.plot_number_of_landmarks_fg(params);
-% data_obj.plot_detector_fg(params);
+data_obj.plot_number_of_landmarks_fg_sim(params);
+data_obj.plot_detector_fg(params);
 data_obj.plot_error_fg(params);
 % ------------------------------------------------------------
 
-
+data_obj.find_HMI_sim(params)
 

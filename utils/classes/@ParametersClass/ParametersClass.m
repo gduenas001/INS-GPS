@@ -311,7 +311,11 @@ classdef ParametersClass < handle
             obj.ARW= obj.ARW * obj.mult_factor_gyro_imu; %%%%%%%%%%%%%%%%%%%%%%%  CAREFUL
             
             % ------------------ build parameters ------------------
-            if obj.SWITCH_SEED, rng(SWITCH_SEED); end
+            if obj.SWITCH_SEED
+                rng(SWITCH_SEED);
+            else
+                rng('shuffle')
+            end
             
             if obj.SWITCH_SIM
                 obj.ind_pose= 1:3;
