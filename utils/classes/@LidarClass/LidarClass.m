@@ -12,12 +12,18 @@ classdef LidarClass < handle
         msmt   % this only stores the current msmt -->  private
     end
     
+    properties
+        index_of_last_static_lidar_epoch % index of last static lidar epoch
+    end
     
     
     methods
         % ----------------------------------------------
         % ----------------------------------------------
         function obj= LidarClass(params, init_time)
+            
+            % Initialization (it will be obatined during the run)
+            obj.index_of_last_static_lidar_epoch= 0;
             
             if params.SWITCH_SIM
                 obj.time= 0;

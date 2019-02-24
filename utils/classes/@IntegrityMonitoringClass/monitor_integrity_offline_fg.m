@@ -9,6 +9,7 @@ if params.SWITCH_FIXED_LM_SIZE_PH && isempty(obj.p_hmi)
     obj.n_M= sum( obj.n_ph(1:obj.M) ) + estimator.n_k;
     % current horizon LMs
     obj.n_L_M= obj.n_M / params.m_F;
+    estimator.n_L_M= obj.n_L_M;
     % update the length of PH
     obj.M= obj.M +1; 
     
@@ -31,6 +32,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
 
         % number of landmarks over the horizon
         obj.n_L_M= obj.n_M / params.m_F;
+        estimator.n_L_M= obj.n_L_M;
     end
     
     % compute extraction vector
@@ -72,7 +74,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     else % we have enough msmts
         
         % Least squares residual matrix
-        obj.M_M= eye( obj.n_total ) - obj.A * obj.PX_M * obj.A';
+        obj.M_M= eye( obj.n_total ) - (obj.A / (obj.A'*obj.A)) * obj.A';
         
         % standard deviation in the state of interest
         obj.sigma_hat= sqrt( (alpha' / obj.Gamma_fg) * alpha );

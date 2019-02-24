@@ -9,7 +9,7 @@ obj.A= zeros( obj.n_total, obj.m_M );
 obj.abs_msmt_ind= [];
 
 % plug the prior in A
-obj.A( 1:params.m, 1:params.m )= sqrtm( inv(obj.PX_prior) );
+obj.A( 1:params.m, 1:params.m )= sqrtm( inv(estimator.PX_prior) );
 
 % pointers to the next part of A to be filled
 r_ind= params.m + 1;
@@ -20,10 +20,10 @@ for i= obj.M-1 : -1 : 0
     
     % gyro msmt submatrix
     obj.A( r_ind, c_ind : c_ind + params.m - 1 )= ...
-        -params.sig_gyro_z^(-1) * [0,0,1/params.dt_sim];
+        -params.sig_gyro_z^(-1) * [0, 0, 1/params.dt_sim];
     
     obj.A( r_ind, c_ind + params.m : c_ind + 2*params.m - 1 )= ...
-        params.sig_gyro_z^(-1) * [0,0,1/params.dt_sim];
+        params.sig_gyro_z^(-1) * [0, 0, 1/params.dt_sim];
     
     % update the row index to point towards the next msmt
     r_ind= r_ind + 1;

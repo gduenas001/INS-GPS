@@ -15,6 +15,7 @@ imu= IMUClass(params, gps.timeInit);
 estimator= EstimatorClass(imu.msmt(1:3, params.num_epochs_static), params);
 data_obj= DataClass(imu.num_readings, lidar.num_readings, params);
 counters= CountersClass(gps, lidar, params);
+FG= FGDataInputClass(lidar.num_readings);
 
 % Initial discretization for cov. propagation
 estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
@@ -69,7 +70,7 @@ for epoch= 1:imu.num_readings - 1
          
         % Yaw update
         if params.SWITCH_YAW_UPDATE && norm(estimator.XX(4:6)) > params.min_vel_yaw
-            disp('yaw udpate');
+            disp('yaw update');
             estimator.yaw_update( imu.msmt(4:6,epoch+1), params); %Osama
         end
         counters.reset_time_sum_virt_y();
@@ -84,25 +85,29 @@ for epoch= 1:imu.num_readings - 1
             % GPS update -- only use GPS vel if it's fast
             estimator.gps_update( gps.msmt(:,counters.k_gps), gps.R(:,counters.k_gps), params);
             
+            % This is used to store gps msmt and R recieved at lidar epoch for FG
+            gps.IS_GPS_AVAILABLE= 1;
+            current_gps_msmt= gps.msmt(:,counters.k_gps);
+            current_gps_R= gps.R(:,counters.k_gps);
+            
             % Yaw update
             if params.SWITCH_YAW_UPDATE && norm(estimator.XX(4:6)) > params.min_vel_yaw
-                disp('yaw udpate');
+                disp('yaw update');
                 estimator.yaw_update( imu.msmt(4:6,epoch+1), params ); %Osama
             end
             estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
-
+            
             % Store data
             counters.k_update= data_obj.store_update( counters.k_update, estimator, counters.time_sim );
         end
         
         % Time GPS counter
         if counters.k_gps == gps.num_readings
-            params.turn_off_gps(); 
+            params.turn_off_gps();
         else
             counters.increase_gps_counter();
             counters.time_gps= gps.time(counters.k_gps);
         end
-        
     end
     % ----------------------------------------
     
@@ -117,27 +122,66 @@ for epoch= 1:imu.num_readings - 1
             % Remove people-features for the data set
             lidar.remove_features_in_areas(estimator.XX(1:9));
             
-            % NN data association
-            estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
+            if params.SWITCH_SLAM
             
-            % Evaluate the probability of mis-associations
-            im.prob_of_MA( estimator, params);
+                % NN data association
+                association= estimator.nearest_neighbor_slam(lidar.msmt(:,1:2), params);
+                
+                % Lidar update
+                estimator.lidar_update_slam(lidar.msmt(:,1:2), association, params);
+                
+            else
+                
+                % NN data association
+                estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
+                
+                % Evaluate the probability of mis-associations
+                im.prob_of_MA( estimator, params);
+                
+                % Lidar update
+                estimator.lidar_update_localization(lidar.msmt(:,1:2), params);
             
-            % Lidar update
-            estimator.lidar_update_localization(lidar.msmt(:,1:2), params);
+            end
             
             % Lineariza and discretize
             estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
             
-            % integrity monitoring
-            im.monitor_integrity(estimator, counters, data_obj, params);
+            % Store the required data for Factor Graph
+            z= lidar.msmt(:,1:2);
+            z(estimator.association == 0, :)= [];
+            FG.lidar{counters.k_lidar}= z;
+            FG.associations{counters.k_lidar}= estimator.association_no_zeros;
+            FG.imu{counters.k_lidar}= imu.msmt(:,epoch);
+            FG.pose{counters.k_lidar}= estimator.XX;
+            if gps.IS_GPS_AVAILABLE
+                FG.gps_msmt{counters.k_lidar}= current_gps_msmt;
+                FG.gps_R{counters.k_lidar}= current_gps_R;
+                gps.IS_GPS_AVAILABLE= 0; % mark the current gps reading as stored
+            end
+            
+            if ~params.SWITCH_SLAM
+                
+                % integrity monitoring
+                % im.monitor_integrity(estimator, counters, data_obj, params);
+            
+            end
             
             % Store data
             data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
             counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
             
-            % increase integrity counter
-            counters.increase_integrity_monitoring_counter();
+            if ~params.SWITCH_SLAM
+                
+                % increase integrity counter
+                % counters.increase_integrity_monitoring_counter();
+            
+            end
+            
+        else
+            
+            % Index of last static lidar epoch(it will be obatined during the run)
+            lidar.index_of_last_static_lidar_epoch= counters.k_lidar;
+            
         end
         
         % Time lidar counter
@@ -147,6 +191,7 @@ for epoch= 1:imu.num_readings - 1
             counters.increase_lidar_counter();
             counters.time_lidar= lidar.time(counters.k_lidar,2);
         end
+
     end
 end
 % ------------------------- END LOOP -------------------------
@@ -159,9 +204,20 @@ end
 data_obj.store_update(counters.k_update, estimator, counters.time_sim);
 data_obj.delete_extra_allocated_memory(counters)
 
+% delete fields corresponding to static epochs
+FG.delete_fields_corresponding_to_static_epochs(lidar)
 
 % ------------- PLOTS ------------
-data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
+if params.SWITCH_SLAM
+    
+    data_obj.plot_map_slam(estimator, gps, imu.num_readings, params)
+    
+else
+    
+    data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
+    
+end
+
 data_obj.plot_number_of_landmarks(params);
 data_obj.plot_number_epochs_in_preceding_horizon(params);
 data_obj.plot_estimates();

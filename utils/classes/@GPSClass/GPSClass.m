@@ -11,10 +11,17 @@ classdef GPSClass < handle
         
     end
     
+    properties
+        IS_GPS_AVAILABLE
+    end
+    
     methods
         % ----------------------------------------------
         % ----------------------------------------------
         function obj= GPSClass(timeStatic, params)
+            
+            % this indicator is used for collecting gps data recieved at lidar epoch (for FG)
+            obj.IS_GPS_AVAILABLE= 0;
             
             if params.SWITCH_SIM
                 obj.time= 0;
