@@ -10,8 +10,9 @@
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_LM_SELECTION= 0; % activate landmarks selection
- SWITCH_SEED= 0; % seed for random (zero for deactivate)
+ SWITCH_SEED= 1; % seed for random (zero for deactivate)
  SWITCH_ONLY_ONE_LM_FAULT= 0; % if only one simultaneous landmark fault
+ SWITCH_GENERATE_RANDOM_MAP= 1; % if the map is randomly generate at initialization
  % --------------------------------------------------
 
 
@@ -67,19 +68,21 @@ sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
 
 % --------------- Simulation & factor graphs -----------------
-num_epochs_sim= 200;
+num_epochs_sim= 100;
 dt_sim= 0.1; % time step for the simulation (equal for all updates)
 dt_gps= 1; % time step for the GPS in simulation
 sig_gps_sim= 0.2; % standar deviation for GPS in simulation (all z-y-x)
 velocity_sim= 25 / 3.6; % [m/s]
 steering_angle_sim= deg2rad(0);
-sig_velocity_sim= 0.5; % [m/s]
+sig_velocity_sim= 1; % [m/s]
 sig_steering_angle_sim= deg2rad(2); % [rad]
-wheelbase_sim= 0.5; % for the simulated car
-way_points= [20,40,60,80,100;10,0,-10,0,0];
+wheelbase_sim= 1; % for the simulated car
+way_points= [[10;-5], [40;-20], [70;0], [40;20], [10;5], [0;0]];
 min_distance_to_way_point= 2;
-max_delta_steering= deg2rad( 10 ); % maximum change in steering angle during one second
-max_steering= deg2rad( 45 );
+max_delta_steering= deg2rad( 20 ); % maximum change in steering angle during one second
+max_steering= deg2rad( 10 );
 sig_gyro_z= deg2rad(3); % [rad/s]  standard dev of the gyro
-optimoptions_display= 'notify'; %display options for the factor graphs optimization 
+map_limits= [-25, 125, -75, 75]; % [x_min, x_max, y_min,  y_max] 
+optimoptions_display= 'notify'; % display options for the factor graphs optimization 
+landmark_density= 0.001; % [landmarks / m^2]
 % -------------------------------------------

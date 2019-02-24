@@ -23,7 +23,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
      
     % ------------- Odometry -------------
     estimator.compute_steering(params)
-    estimator.odometry_update_sim( params );
+    estimator.odometry_update_sim_fg( params );
     % -------------------------------
     
     % ----------------- LIDAR ----------------

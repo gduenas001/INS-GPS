@@ -17,6 +17,7 @@ classdef ParametersClass < handle
         SWITCH_LM_SELECTION
         SWITCH_SEED
         SWITCH_ONLY_ONE_LM_FAULT
+        SWITCH_GENERATE_RANDOM_MAP
         
         % switches set by the simulation name
         SWITCH_SLAM= 0
@@ -161,7 +162,10 @@ classdef ParametersClass < handle
         wheelbase_FG
         min_state_var_FG
         sig_gyro_z
+        map_limits % [x_min, x_max, y_min,  y_max]
         optimoptions % optimoptions for the fg optimization
+        landmark_density % landmarks / m^2
+        landmark_map
         % -------------------------------------------
         % -------------------------------------------
     end
@@ -216,6 +220,7 @@ classdef ParametersClass < handle
             obj.SWITCH_LM_SELECTION= SWITCH_LM_SELECTION;
             obj.SWITCH_SEED= SWITCH_SEED;
             obj.SWITCH_ONLY_ONE_LM_FAULT= SWITCH_ONLY_ONE_LM_FAULT;
+            obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
@@ -285,6 +290,8 @@ classdef ParametersClass < handle
                     obj.max_delta_steering= max_delta_steering;
                     obj.max_steering= max_steering;
                     obj.sig_gyro_z= sig_gyro_z;
+                    obj.map_limits= map_limits;
+                    obj.landmark_density= landmark_density; 
                 end
             end
             % -------------------------------------------
@@ -361,10 +368,26 @@ classdef ParametersClass < handle
                     'HessianFcn', 'objective');
 %                     'Algorithm','quasi-newton',...
             end
+            
+            % generate random map
+            if obj.SWITCH_GENERATE_RANDOM_MAP
+                obj.landmark_map= obj.return_random_map();
+            end
+            
         end
         
         
         
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function landmark_map= return_random_map(obj)
+            x_dim= obj.map_limits(2) - obj.map_limits(1);
+            y_dim= obj.map_limits(4) - obj.map_limits(3);
+            map_area= x_dim * y_dim;
+            num_landmarks= round(obj.landmark_density * map_area);
+            landmark_map= [rand( num_landmarks, 1 ) .* x_dim + obj.map_limits(1),...
+                           rand( num_landmarks, 1 ) .* y_dim + obj.map_limits(3)];
+        end
         % ----------------------------------------------
         % ----------------------------------------------
         function sig_yaw= sig_yaw_fn(~, v)

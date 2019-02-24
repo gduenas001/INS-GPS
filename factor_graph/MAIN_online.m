@@ -21,7 +21,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
      
     % ------------- Odometry -------------
     estimator.compute_steering(params)
-    estimator.odometry_update_sim( params );
+    estimator.odometry_update_sim_fg( params );
     % ------------------------------------
     
     % ------------- Gyro -------------
@@ -68,9 +68,10 @@ data_obj.delete_extra_allocated_memory(counters)
 
 
 % -------------------------- PLOTS --------------------------
-data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
-data_obj.plot_number_of_landmarks_fg(params);
-data_obj.plot_detector_fg(params);
+data_obj.plot_map_localization_sim_fg(estimator, params)
+% data_obj.plot_number_of_landmarks_fg(params);
+% data_obj.plot_detector_fg(params);
+% data_obj.plot_error_fg(params);
 % ------------------------------------------------------------
 
 

@@ -49,8 +49,9 @@ from_vector_to_estimator(obj, x_star, params)
 % store the prior, x_(k-M+1), as a future msmt
 % hessian= A' * A;
 
-obj.PX_prior= inv( hessian );
-obj.PX_prior= obj.PX_prior( params.m + 1 : 2 * params.m , params.m + 1 : 2 * params.m );
+obj.PX= inv( hessian );
+obj.PX_prior= obj.PX( params.m + 1 : 2 * params.m , params.m + 1 : 2 * params.m );
+obj.PX= obj.PX( end - params.m + 1 : end , end - params.m + 1 : end  );
 % obj.Gamma_prior= inv( PX(params.m+1:2*params.m, params.m+1:2*params.m) );
 
 end

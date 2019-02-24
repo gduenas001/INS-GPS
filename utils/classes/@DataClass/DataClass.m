@@ -83,7 +83,7 @@ classdef DataClass < handle
         plot_map_localization_sim(obj, estimator, num_readings, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        plot_map_localization_FG(obj, estimator, num_readings, params)
+        plot_map_localization_fg(obj, estimator, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function plot_detector(obj, params)
@@ -162,6 +162,20 @@ classdef DataClass < handle
             
             legend({'$\delta \hat{x}$', '$\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
             xlabel('x [m]','interpreter', 'latex','fontsize', 15)
+            ylabel('error [m]','interpreter', 'latex','fontsize', 15)
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_error_fg(obj, params)
+            
+            figure; hold on; grid on;
+
+            plot(obj.update.time,  obj.update.error_state_interest(:), 'r-', 'linewidth', 2)
+            plot(obj.update.time,  obj.update.sig_state_interest(:) ,'r--','linewidth',2);
+            plot(obj.update.time, -obj.update.sig_state_interest(:),'r--','linewidth',2);
+            
+            legend({'$\delta \hat{x}$', '$\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
+            xlabel('time [s]','interpreter', 'latex','fontsize', 15)
             ylabel('error [m]','interpreter', 'latex','fontsize', 15)
         end
         % ----------------------------------------------
