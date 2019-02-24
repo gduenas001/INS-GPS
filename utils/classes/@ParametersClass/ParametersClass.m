@@ -18,6 +18,7 @@ classdef ParametersClass < handle
         SWITCH_SEED
         SWITCH_ONLY_ONE_LM_FAULT
         SWITCH_GENERATE_RANDOM_MAP
+        SWITCH_LIDAR_FAULTS
         
         % switches set by the simulation name
         SWITCH_SLAM= 0
@@ -221,6 +222,7 @@ classdef ParametersClass < handle
             obj.SWITCH_SEED= SWITCH_SEED;
             obj.SWITCH_ONLY_ONE_LM_FAULT= SWITCH_ONLY_ONE_LM_FAULT;
             obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
+            obj.SWITCH_LIDAR_FAULTS= SWITCH_LIDAR_FAULTS;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;

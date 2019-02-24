@@ -171,10 +171,10 @@ classdef DataClass < handle
             figure; hold on; grid on;
 
             plot(obj.update.time,  obj.update.error_state_interest(:), 'r-', 'linewidth', 2)
-            plot(obj.update.time,  obj.update.sig_state_interest(:) ,'r--','linewidth',2);
-            plot(obj.update.time, -obj.update.sig_state_interest(:),'r--','linewidth',2);
+%             plot(obj.update.time,  obj.update.sig_state_interest(:) ,'r--','linewidth',2);
+%             plot(obj.update.time, -obj.update.sig_state_interest(:),'r--','linewidth',2);
             
-            legend({'$\delta \hat{x}$', '$\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
+%             legend({'$\delta \hat{x}$', '$\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
             xlabel('time [s]','interpreter', 'latex','fontsize', 15)
             ylabel('error [m]','interpreter', 'latex','fontsize', 15)
         end
@@ -270,8 +270,9 @@ classdef DataClass < handle
             if params.SWITCH_SIM
                 plot(obj.update.time, obj.update.n_L_M, 'b-', 'linewidth', 2)
                 plot(obj.update.time, obj.update.n_L_k, 'g-', 'linewidth', 2)
+                plot(obj.update.time, obj.update.num_faults, 'r-', 'linewidth', 2)
                 xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
-                legend({'$n^{L^(M)}$', '$n^L$'},...
+                legend({'$n^{L^(M)}$', '$n^L$', 'n_{f}'},...
                     'interpreter', 'latex','fontsize', 15);
             else
             end

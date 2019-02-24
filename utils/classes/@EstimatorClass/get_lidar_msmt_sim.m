@@ -6,6 +6,7 @@ spsi= sin(obj.x_true(3));
 cpsi= cos(obj.x_true(3));
 z_lidar= [];
 obj.association_true= [];
+obj.num_faults_k= 0;
 for l= 1:obj.num_landmarks
     % check if the landmark is in the FoV
     dx= obj.landmark_map(l,1) - obj.x_true(1);
@@ -17,10 +18,18 @@ for l= 1:obj.num_landmarks
     % simulate msmt with noise
     z_lm(1)=  dx*cpsi + dy*spsi + normrnd(0, params.sig_lidar);
     z_lm(2)= -dx*spsi + dy*cpsi + normrnd(0, params.sig_lidar);
+        
+    % add possible fault
+    if params.SWITCH_LIDAR_FAULTS
+        if binornd(1, params.P_UA)
+            z_lm= z_lm + rand() * params.sig_lidar * 10;
+            obj.num_faults_k= obj.num_faults_k + 1;
+        end
+    end
     
     % add measurement
     z_lidar= [z_lidar; z_lm];
-    
+
     % save the true association
     obj.association_true= [obj.association_true; l];
 end

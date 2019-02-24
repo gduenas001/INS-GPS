@@ -11,11 +11,11 @@ estimator= EstimatorClass([], params);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
 counters= CountersClass([], [], params);
 
-% initialize time index
-epoch= 1;
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
+epoch= 1; % initialize time index
+
 while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
     disp(strcat('Epoch -> ', num2str(epoch)));
      
@@ -69,9 +69,9 @@ data_obj.delete_extra_allocated_memory(counters)
 
 % -------------------------- PLOTS --------------------------
 data_obj.plot_map_localization_sim_fg(estimator, params)
-% data_obj.plot_number_of_landmarks_fg(params);
+data_obj.plot_number_of_landmarks_fg(params);
 % data_obj.plot_detector_fg(params);
-% data_obj.plot_error_fg(params);
+data_obj.plot_error_fg(params);
 % ------------------------------------------------------------
 
 

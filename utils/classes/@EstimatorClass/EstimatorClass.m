@@ -20,6 +20,7 @@ classdef EstimatorClass < handle
         num_extracted_features
         
         n_k % number of absolute measurements at current time
+        num_faults_k % number of injected faults at current time
 
         gamma_k
         q_k

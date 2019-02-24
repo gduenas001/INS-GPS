@@ -15,6 +15,8 @@ classdef UpdateDataClass < handle
         T_d % detector thresholds
         n_L_k % number of associated features at k
         n_L_M % number of associated features in the ph
+        num_faults % number of injected faults 
+        odometry % [velocity, steering angle]
     end
     
     methods
@@ -34,6 +36,9 @@ classdef UpdateDataClass < handle
             obj.T_d= zeros(num_readings, 1); 
             obj.n_L_M= zeros(num_readings, 1);
             obj.n_L_k= zeros(num_readings, 1);
+            obj.num_faults= zeros(num_readings, 1);
+            obj.odometry= zeros(2, num_readings);
+            
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -72,6 +77,8 @@ classdef UpdateDataClass < handle
             obj.T_d(epoch)= estimator.T_d;
             obj.n_L_k(epoch)= estimator.n_L_k;
             obj.n_L_M(epoch)= estimator.n_L_M;
+            obj.num_faults(epoch)= estimator.num_faults_k;
+            obj.odometry(:, epoch)= estimator.odometry_k;
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -88,6 +95,8 @@ classdef UpdateDataClass < handle
             obj.T_d(counters.k_update+1:end)= [];
             obj.n_L_k(counters.k_update+1:end)= [];
             obj.n_L_M(counters.k_update+1:end)= [];
+            obj.num_faults(counters.k_update+1:end)= [];
+            obj.odometry(:, counters.k_update+1:end)= [];
         end
         % ----------------------------------------------
         % ----------------------------------------------
