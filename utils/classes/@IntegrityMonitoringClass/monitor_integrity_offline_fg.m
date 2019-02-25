@@ -45,7 +45,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     obj.m_M= (obj.M + 1) * params.m;
     
     % compute the H whiten Jacobian A
-    obj.compute_whiten_jacobian_A(estimator, params);
+    obj.compute_whiten_jacobian_A(estimator, params);% TODO: use the new function, remove this one
     
     % construct the information matrix
     obj.Gamma_fg= obj.A' * obj.A;

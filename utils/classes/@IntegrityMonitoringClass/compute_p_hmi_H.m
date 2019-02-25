@@ -6,8 +6,8 @@ f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A * obj.PX_M * alpha;
 f_M_dir= f_M_dir / norm(f_M_dir); % normalize
 
 % worst-case fault magnitude
-fx_hat_dir= alpha' * obj.PX_M * obj.A' * f_M_dir;
-M_dir= f_M_dir' * obj.M_M * f_M_dir;
+fx_hat_dir= abs( alpha' * obj.PX_M * obj.A' * f_M_dir );
+M_dir= abs( f_M_dir' * obj.M_M * f_M_dir );
 
 % worst-case fault magnitude
 f_mag_min= 0;

@@ -10,8 +10,8 @@
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_LM_SELECTION= 0; % activate landmarks selection
- SWITCH_SEED= 0; % seed for random (zero for deactivate)
- SWITCH_ONLY_ONE_LM_FAULT= 0; % if only one simultaneous landmark fault
+ SWITCH_SEED= 100; % seed for random (zero for deactivate)
+ SWITCH_ONLY_ONE_LM_FAULT= 1; % if only one simultaneous landmark fault
  SWITCH_GENERATE_RANDOM_MAP= 1; % if the map is randomly generate at initialization
  SWITCH_LIDAR_FAULTS= 1; % if we want to inject faults in the lidar msmts
  % --------------------------------------------------
@@ -22,7 +22,7 @@ m= 3; % number of states in the state vector
 I_MA= 1e-8; 
 P_MA_max= 1e-4; % maximum allowable miss-association probability for one association
 I_H= 1e-6; % risk allocated to unmonitored fault modes
-P_UA= 1e-4;
+P_UA= 1e-3;
 min_n_L_M= 5; % min number of landmarks in preceding horizon
 preceding_horizon_size= 3;
 min_appearances= 2; % only update estimate landmarks detected more than this number
@@ -75,7 +75,7 @@ dt_gps= 1; % time step for the GPS in simulation
 sig_gps_sim= 0.2; % standar deviation for GPS in simulation (all z-y-x)
 velocity_sim= 25 / 3.6; % [m/s]
 steering_angle_sim= deg2rad(0);
-sig_velocity_sim= 1; % [m/s]
+sig_velocity_sim= 0.2; % [m/s]
 sig_steering_angle_sim= deg2rad(2); % [rad]
 wheelbase_sim= 1; % for the simulated car
 way_points= [[10;-5], [40;-20], [70;0], [40;20], [10;5], [0;0]];
@@ -85,5 +85,5 @@ max_steering= deg2rad( 10 );
 sig_gyro_z= deg2rad(3); % [rad/s]  standard dev of the gyro
 map_limits= [-25, 125, -75, 75]; % [x_min, x_max, y_min,  y_max] 
 optimoptions_display= 'notify'; % display options for the factor graphs optimization 
-landmark_density= 0.001; % [landmarks / m^2]
+landmark_density= 0.003; % [landmarks / m^2]
 % -------------------------------------------
