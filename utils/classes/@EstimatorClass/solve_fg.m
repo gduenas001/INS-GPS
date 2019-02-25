@@ -1,21 +1,50 @@
 
 function solve_fg(obj, counters, params)
 
-
-% total number of states to estimate
-obj.m_M= (params.M + 1) * params.m;
-
 % number of associated landmarks at k
 obj.n_L_k= length(obj.association);
 
-% number of associations in the ph
-obj.n_L_M= obj.n_L_k + numel( cell2mat(obj.association_ph(1:params.M-1)') );
+
+% compute M
+if params.SWITCH_FIXED_LM_SIZE_PH
+       
+    % initialize number of associations in the ph
+    obj.n_L_M= obj.n_L_k;
+
+    is_enough_landmarks= false;
+    for M= 1:length(obj.n_L_k_ph)
+        obj.n_L_M= obj.n_L_M + obj.n_L_k_ph(M);
+        
+        % if the preceding horizon is long enough --> stop
+        if obj.n_L_M >= params.min_n_L_M 
+            is_enough_landmarks= true;
+            M= M + 1;
+            break
+        end
+    end
+    
+    % check that there are enough associations
+    if is_enough_landmarks && length(obj.x_ph) >= M && ~isempty(obj.x_ph{M})
+        obj.M= M;
+    else % increase ph
+        obj.M= obj.M + 1;
+        return
+    end
+    
+else
+    % number of associations in the ph
+    obj.n_L_M= obj.n_L_k + sum( obj.n_L_k_ph(1:obj.M-1) );
+    
+    % check that there are enough epochs
+    if counters.k_lidar <= obj.M, return, end
+
+end
+
+% total number of states to estimate
+obj.m_M= (obj.M + 1) * params.m;
 
 % total number of measurements (relativ + absolute + prior)
 obj.n_total= obj.m_M + obj.n_L_M * params.m_F;
-
-% check that there are enough epochs
-if counters.k_lidar <= params.M, return, end
 
 % create optimization function 
 fun= @(x) obj.optimization_fn_fg(x, params);
@@ -24,7 +53,7 @@ fun= @(x) obj.optimization_fn_fg(x, params);
 x_star= obj.from_estimator_to_vector(params);
 
 % saves the prior separately
-obj.x_prior= obj.x_ph{params.M};
+obj.x_prior= obj.x_ph{obj.M};
 
 % solve the problem
 [residual, grad, A, b]= obj.optimization_fn_fg(x_star, params);

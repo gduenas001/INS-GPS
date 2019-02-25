@@ -42,7 +42,7 @@ end
 r_ind= params.m + 1;
 c_ind= 1;
 
-for i= params.M:-1:2
+for i= obj.M:-1:2
     
     % ------------ gyro cost ------------
     z= obj.z_gyro_ph{i};

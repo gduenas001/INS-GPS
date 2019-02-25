@@ -41,6 +41,7 @@ classdef EstimatorClass < handle
         steering_angle= 0
         lm_ind_fov % indexes of the landmarks in the field of view
         
+        M= 0 % preceding horizon size in epochs
         x_ph % poses in the time window
         z_fg % all the msmts in the time window
         z_lidar_ph % lidar msmts in the ph
@@ -57,6 +58,7 @@ classdef EstimatorClass < handle
         x_prior % stores x_{k-M} as a msmt for the next epoch
         n_L_k= 0 % number of associations at k
         n_L_M= 0 % number of associations in the ph
+        n_L_k_ph % number of associations in the ph
     end
     
     
@@ -64,6 +66,13 @@ classdef EstimatorClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function obj= EstimatorClass(imu_calibration_msmts, params)
+            
+            % initialize preceding horizon size
+            if params.SWITCH_FIXED_LM_SIZE_PH
+                obj.M= 0;
+            else
+                obj.M= params.M;
+            end
             
             if params.SWITCH_SIM
                 % initialize sizes differently for simulation
@@ -89,6 +98,7 @@ classdef EstimatorClass < handle
             
             if params.SWITCH_FACTOR_GRAPHS
                 % initialize to uninformative prior
+                obj.x_prior= zeros(params.m, 1);
                 obj.PX_prior= diag( ones(params.m,1) * 1000 );
                 obj.Gamma_prior= diag( ones(params.m,1) * eps );
                 
@@ -98,6 +108,7 @@ classdef EstimatorClass < handle
                 obj.association_ph= cell(1, params.M);
                 obj.odometry_ph= cell(1, params.M);
                 obj.z_gyro_ph= cell(1, params.M);
+                obj.n_L_k_ph= zeros(params.M, 1);
             end
             
             
@@ -112,6 +123,7 @@ classdef EstimatorClass < handle
                 obj.landmark_map= data.landmark_map;
                 obj.num_landmarks= size(obj.landmark_map, 1);
             end
+                        
         end
         % ----------------------------------------------
         % ----------------------------------------------

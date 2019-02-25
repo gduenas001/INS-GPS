@@ -92,7 +92,7 @@ classdef IntegrityMonitoringClass < handle
             if params.SWITCH_FIXED_LM_SIZE_PH
                 obj.M= 0;
             else
-                obj.M= params.preceding_horizon_size;
+                obj.M= params.M;
             end
             
             % if it's a simulation --> change the indexes
@@ -104,20 +104,20 @@ classdef IntegrityMonitoringClass < handle
             % initialize the preceding horizon
             % TODO: should this change for a fixed horizon in landmarks?
             if params.SWITCH_SIM && params.SWITCH_FACTOR_GRAPHS
-                obj.XX_ph=     cell(1, params.preceding_horizon_size+1);
+                obj.XX_ph=     cell(1, params.M+1);
                 obj.XX_ph{1}=  estimator.XX;
-                obj.D_bar_ph=  cell(1, params.preceding_horizon_size);
+                obj.D_bar_ph=  cell(1, params.M);
                 obj.PX_prior=  estimator.PX;
             end
-            obj.n_ph=     zeros( params.preceding_horizon_size, 1 );
-            obj.Phi_ph=   cell( 1, params.preceding_horizon_size + 1 ); % need an extra epoch here
-            obj.H_ph=     cell( 1, params.preceding_horizon_size );
-            obj.gamma_ph= cell(1, params.preceding_horizon_size);
-            obj.q_ph=     ones(params.preceding_horizon_size, 1) * (-1);
-            obj.L_ph=     cell(1, params.preceding_horizon_size);
-            obj.Lpp_ph=   cell(1, params.preceding_horizon_size + 1); % need an extra epoch here (osama)
-            obj.Y_ph=     cell(1, params.preceding_horizon_size);
-            obj.P_MA_ph=  cell(1, params.preceding_horizon_size);
+            obj.n_ph=     zeros( params.M, 1 );
+            obj.Phi_ph=   cell( 1, params.M + 1 ); % need an extra epoch here
+            obj.H_ph=     cell( 1, params.M );
+            obj.gamma_ph= cell(1, params.M);
+            obj.q_ph=     ones(params.M, 1) * (-1);
+            obj.L_ph=     cell(1, params.M);
+            obj.Lpp_ph=   cell(1, params.M + 1); % need an extra epoch here (osama)
+            obj.Y_ph=     cell(1, params.M);
+            obj.P_MA_ph=  cell(1, params.M);
             
         end
         % ----------------------------------------------

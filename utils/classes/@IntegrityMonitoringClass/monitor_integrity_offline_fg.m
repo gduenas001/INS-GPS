@@ -50,7 +50,8 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     % construct the information matrix
     obj.Gamma_fg= obj.A' * obj.A;
     
-    % full covarince matrix
+    % full covarince matrix 
+%     TODO: use shur complement to ge the covariance
     obj.PX_M= inv(obj.Gamma_fg);
     
     % extract covarince matrix at time k
