@@ -4,13 +4,22 @@ dbstop if error
 addpath('../utils/functions')
 addpath('../utils/classes')
 
+for map_i= 1:10
+for run_i= 1:30
+
 
 % create objects
 params= ParametersClass("simulation_fg_online");
 estimator= EstimatorClass([], params);
+
+%%%%%%%%%%%%%%%%%%
+offline_data= load(strcat( params.path_sim_fg, 'results/density_001/map_', num2str(map_i), '/offline.mat' ));
+estimator.landmark_map= offline_data.params.landmark_map;
+estimator.num_landmarks= size(estimator.landmark_map, 1);
+%%%%%%%%%%%%%%%%%%
+
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
 counters= CountersClass([], [], params);
-
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
@@ -66,6 +75,11 @@ end
 % Store data for last epoch
 data_obj.delete_extra_allocated_memory(counters)
 
+% save workspace
+save(strcat( params.path_sim_fg, 'results/density_001/map_', num2str(map_i), '/online_', num2str(run_i) ));
+
+end
+end
 
 % -------------------------- PLOTS --------------------------
 data_obj.plot_map_localization_sim_fg(estimator, params)
