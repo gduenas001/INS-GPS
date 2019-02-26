@@ -158,6 +158,21 @@ classdef IntegrityMonitoringClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function E= return_E_matrix_fg(obj, i, m_F)
+            if sum(i) == 0 % E matrix for only previous state faults
+                E= zeros( obj.m, obj.n_total );
+                E(:, 1:obj.m)= eye(obj.m);
+            else % E matrix with a single LM fault
+                E= zeros( obj.m + m_F*length(i) , obj.n_total );
+                E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
+                for j= 1:length(i)
+                    ind= obj.abs_msmt_ind(:,i(j));
+                    E( obj.m + 1 + m_F*(j-1) : obj.m + m_F*(j) , ind(:)' )= eye(m_F); % landmark i faulted
+                end
+            end
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         monitor_integrity(obj, estimator, counters, data, params)
         % ----------------------------------------------
         % ----------------------------------------------
@@ -191,7 +206,7 @@ classdef IntegrityMonitoringClass < handle
         alpha= build_state_of_interest_extraction_matrix(obj, params, current_state)
         % ----------------------------------------------
         % ----------------------------------------------
-        p_hmi_H= compute_p_hmi_H(obj, alpha, params)
+        p_hmi_H= compute_p_hmi_H(obj, alpha, fault_ind, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function update_preceding_horizon(obj, estimator, params)

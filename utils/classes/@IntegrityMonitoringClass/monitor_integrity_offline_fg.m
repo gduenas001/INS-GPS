@@ -86,17 +86,10 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;
         
-        for i= 0:obj.n_H
-            
-            % build extraction matrix
-            if i == 0
-                obj.compute_E_matrix_fg( 0, params.m_F);
-            else
-                obj.compute_E_matrix_fg( obj.inds_H{i}, params.m_F);
-            end
+        for i= 0:obj.n_H   
             
             % compute P(HMI | H) for the worst-case fault
-            p_hmi_H= obj.compute_p_hmi_H(alpha, params);
+            p_hmi_H= obj.compute_p_hmi_H(alpha, i, params);
             
             % Add P(HMI | H) to the integrity risk
             if i == 0

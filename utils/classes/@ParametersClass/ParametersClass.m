@@ -312,9 +312,9 @@ classdef ParametersClass < handle
             
             % ------------------ build parameters ------------------
             if obj.SWITCH_SEED
-                rng(SWITCH_SEED);
+                obj.set_seed_to(SWITCH_SEED);
             else
-                rng('shuffle')
+%                 rng('shuffle')
             end
             
             if obj.SWITCH_SIM
@@ -422,6 +422,11 @@ classdef ParametersClass < handle
         % ----------------------------------------------
         function turn_off_gps(obj)
             obj.SWITCH_GPS_UPDATE= 0;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function set_seed_to(obj, seed)
+            rng(seed);
         end
         % ----------------------------------------------
         % ----------------------------------------------

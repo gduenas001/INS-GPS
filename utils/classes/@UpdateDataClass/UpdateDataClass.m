@@ -85,20 +85,20 @@ classdef UpdateDataClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function delete_extra_allocated_memory(obj, counters)
-            obj.x_true(:, counters.k_update+1:end)= [];
-            obj.XX(:, counters.k_update+1:end)= [];
-            obj.error(:, counters.k_update+1:end)= [];
-            obj.error_state_interest(counters.k_update+1:end)= [];
-            obj.sig_state_interest(counters.k_update+1:end)= [];
-            obj.PX(:, counters.k_update+1:end)= [];
-            obj.time( counters.k_update+1:end)= [];
-            obj.num_associated_lms( counters.k_update+1:end)= [];
-            obj.q_d(counters.k_update+1:end)= [];
-            obj.T_d(counters.k_update+1:end)= [];
-            obj.n_L_k(counters.k_update+1:end)= [];
-            obj.n_L_M(counters.k_update+1:end)= [];
-            obj.num_faults(counters.k_update+1:end)= [];
-            obj.odometry(:, counters.k_update+1:end)= [];
+            obj.x_true(:, counters.k_update:end)= [];
+            obj.XX(:, counters.k_update:end)= [];
+            obj.error(:, counters.k_update:end)= [];
+            obj.error_state_interest(counters.k_update:end)= [];
+            obj.sig_state_interest(counters.k_update:end)= [];
+            obj.PX(:, counters.k_update:end)= [];
+            obj.time( counters.k_update:end)= [];
+            obj.num_associated_lms( counters.k_update:end)= [];
+            obj.q_d(counters.k_update:end)= [];
+            obj.T_d(counters.k_update:end)= [];
+            obj.n_L_k(counters.k_update:end)= [];
+            obj.n_L_M(counters.k_update:end)= [];
+            obj.num_faults(counters.k_update:end)= [];
+            obj.odometry(:, counters.k_update:end)= [];
         end
         % ----------------------------------------------
         % ----------------------------------------------
