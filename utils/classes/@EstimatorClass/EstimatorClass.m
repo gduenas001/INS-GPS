@@ -18,6 +18,8 @@ classdef EstimatorClass < handle
         num_landmarks % nunber of landmarks in the map
         num_associated_lms= 0
         num_extracted_features
+        num_of_extracted_features
+        number_of_associated_LMs
         
         n_k % number of absolute measurements at current time
         num_faults_k % number of injected faults at current time
@@ -57,6 +59,9 @@ classdef EstimatorClass < handle
         x_prior % stores x_{k-M} as a msmt for the next epoch
         n_L_k= 0 % number of associations at k
         n_L_M= 0 % number of associations in the ph
+        H_k_gps
+        H_k_lidar
+        n_gps_k
     end
     
     
@@ -73,25 +78,26 @@ classdef EstimatorClass < handle
                 obj.PX= eye(3) * eps;
                 
             else
-                % Initial attitude
-                obj.initialize_pitch_and_roll(imu_calibration_msmts)
-                % initialize the yaw angle
-                obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
+                if ~params.SWITCH_FACTOR_GRAPHS
+                    % Initial attitude
+                    obj.initialize_pitch_and_roll(imu_calibration_msmts)
+                    % initialize the yaw angle
+                    obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
 
-                % save initial attitude for calibration
-                obj.initial_attitude= obj.XX(7:9);
-                
-                % initialize covariance
-                obj.PX(10:12, 10:12)= diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
-                obj.PX(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
+                    % save initial attitude for calibration
+                    obj.initial_attitude= obj.XX(7:9);
+
+                    % initialize covariance
+                    obj.PX(10:12, 10:12)= diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
+                    obj.PX(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
+                end
             end
             
             
             if params.SWITCH_FACTOR_GRAPHS
                 % initialize to uninformative prior
-                obj.PX_prior= diag( ones(params.m,1) * 1000 );
-                obj.Gamma_prior= diag( ones(params.m,1) * eps );
-                
+                obj.PX_prior= diag( ones(params.m,1) * 0.1 );
+                obj.Gamma_prior= inv(obj.PX_prior);
                 % allocate memory
                 obj.x_ph= cell(1, params.M);
                 obj.z_lidar_ph= cell(1, params.M);
@@ -196,6 +202,18 @@ classdef EstimatorClass < handle
         A= return_A_fg(obj, x, params)
         % ----------------------------------------------
         % ----------------------------------------------
+        compute_lidar_H_k_offline_sim(obj, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_lidar_H_k_offline_exp(obj, params, FG, epoch)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_gps_H_k_offline_exp(obj, FG, epoch)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_imu_Phi_k_offline_exp(obj, params, FG, epoch)
+        % ----------------------------------------------
+        % ----------------------------------------------
         [cost, grad, A, b]= optimization_fn_fg(obj, x, params)
         % ----------------------------------------------
         % ----------------------------------------------
@@ -221,9 +239,13 @@ classdef EstimatorClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function compute_alpha(obj,params)
-            obj.alpha= [-sin( obj.XX(params.ind_yaw) );...
-                        cos( obj.XX(params.ind_yaw) );...
-                        0 ];
+            if (~params.SWITCH_SIM) && params.SWITCH_FACTOR_GRAPHS
+                
+            else
+                obj.alpha= [-sin( obj.XX(params.ind_yaw) );...
+                            cos( obj.XX(params.ind_yaw) );...
+                           0 ];
+            end
         end
         % ----------------------------------------------
         % ----------------------------------------------

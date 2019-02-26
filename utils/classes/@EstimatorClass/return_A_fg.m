@@ -1,6 +1,6 @@
 
 function A= return_A_fg(obj, x, params)
-% this function retuns the A jacobian for the optimization problem
+
 
 % from a vector to cells
 obj.from_vector_to_estimator(x, params)

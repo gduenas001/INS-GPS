@@ -63,13 +63,15 @@ classdef UpdateDataClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function store_fg(obj, epoch, estimator, time, params)
-            estimator.compute_alpha(params);
+            estimator.compute_alpha(params)
             
             obj.x_true(:,epoch)= estimator.x_true;
             obj.XX(:,epoch)= estimator.XX;
             obj.error(:,epoch)= estimator.XX - estimator.x_true;
-            obj.error_state_interest(epoch)= estimator.alpha'* (estimator.XX - estimator.x_true);
-            obj.sig_state_interest(epoch)= sqrt( estimator.alpha'* estimator.PX * estimator.alpha );
+            if params.SWITCH_SIM
+                obj.error_state_interest(epoch)= estimator.alpha'* (estimator.XX - estimator.x_true);
+                obj.sig_state_interest(epoch)= sqrt( estimator.alpha'* estimator.PX * estimator.alpha );
+            end
             obj.PX(:, epoch)= diag( estimator.PX );
             obj.time(epoch)= time;
             obj.num_associated_lms(epoch)= estimator.n_L_k;

@@ -1,5 +1,5 @@
 
-function monitor_integrity_offline_fg(obj, estimator, counters, data,  params)
+function monitor_integrity_offline_fg_exp(obj, estimator, counters, data,  params)
 
 
 % calculate the current number of LMs in PH; only before starting integrity monitoring
@@ -36,16 +36,19 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     end
     
     % compute extraction vector
-    alpha= obj.build_state_of_interest_extraction_matrix(params, estimator.x_true);
-       
+    alpha= obj.build_state_of_interest_extraction_matrix(params, estimator.XX);
+    
+    % number of absolute msmts over the horizon
+    obj.n_M_gps= estimator.n_gps_k + sum( obj.n_gps_ph(1:obj.M - 1) );
+    
     % total number of msmts (prior + relative + abs)
-    obj.n_total= obj.n_M + (obj.M + 1) * (params.m);
+    obj.n_total= obj.n_M + obj.n_M_gps + (obj.M + 1) * (params.m);
     
     % number of states to estimate
-    obj.m_M= (obj.M + 1) * params.m;
+    obj.m_M= (obj.M + 1) * (params.m);
     
     % compute the H whiten Jacobian A
-    obj.compute_whiten_jacobian_A(estimator, params);% TODO: use the new function, remove this one
+    obj.compute_whiten_jacobian_A_exp(estimator, params);% TODO: use the new function, remove this one
     
     % construct the information matrix
     obj.Gamma_fg= obj.A' * obj.A;
@@ -68,7 +71,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     
     % initialization of p_hmi
     obj.p_hmi=0;
-    if obj.n_M < params.m + obj.n_max*params.m_F
+    if ( obj.n_M + obj.n_M_gps ) < ( params.m - 12 + obj.n_max*params.m_F )
         % if we don't have enough landmarks --> P(HMI)= 1
         obj.p_hmi= 1;
         
@@ -81,7 +84,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         obj.sigma_hat= sqrt( (alpha' / obj.Gamma_fg) * alpha );
 
         % set detector threshold from the continuity req
-        obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M );
+        obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M + obj.n_M_gps );
         
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;

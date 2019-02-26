@@ -1,15 +1,15 @@
 
 function compute_whiten_jacobian_A(obj, estimator, params)
-
+% this function computes the A jacobian for future use in integrity monitoring
 
 % initialize normalized Jacobian
 obj.A= zeros( obj.n_total, obj.m_M );
 
-% indexes of the absolute measurements in the rows of matrix A
+% indices of the absolute measurements in the rows of matrix A
 obj.abs_msmt_ind= [];
 
 % plug the prior in A
-obj.A( 1:params.m, 1:params.m )= sqrtm( inv(estimator.PX_prior) );
+obj.A( 1:params.m, 1:params.m )= sqrtm( obj.Gamma_prior );
 
 % pointers to the next part of A to be filled
 r_ind= params.m + 1;

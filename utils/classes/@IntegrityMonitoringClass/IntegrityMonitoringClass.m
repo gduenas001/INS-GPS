@@ -80,6 +80,13 @@ classdef IntegrityMonitoringClass < handle
         PX_M
         abs_msmt_ind
         faulted_LMs_indices
+        Gamma_prior
+        lidar_msmt_ind
+        gps_msmt_ind
+        n_gps_ph % number of gps msmt at each epoch in PH
+        H_gps_ph
+        H_lidar_ph
+        n_M_gps
     end
     
     
@@ -103,11 +110,15 @@ classdef IntegrityMonitoringClass < handle
             
             % initialize the preceding horizon
             % TODO: should this change for a fixed horizon in landmarks?
-            if params.SWITCH_SIM && params.SWITCH_FACTOR_GRAPHS
+            if params.SWITCH_FACTOR_GRAPHS
                 obj.XX_ph=     cell(1, params.preceding_horizon_size+1);
                 obj.XX_ph{1}=  estimator.XX;
                 obj.D_bar_ph=  cell(1, params.preceding_horizon_size);
-                obj.PX_prior=  estimator.PX;
+                obj.PX_prior=  estimator.PX_prior;
+                obj.Gamma_prior= estimator.Gamma_prior;
+                obj.n_gps_ph= zeros( params.preceding_horizon_size, 1 );
+                obj.H_gps_ph= cell( 1, params.preceding_horizon_size );
+                obj.H_lidar_ph= cell( 1, params.preceding_horizon_size );
             end
             obj.n_ph=     zeros( params.preceding_horizon_size, 1 );
             obj.Phi_ph=   cell( 1, params.preceding_horizon_size + 1 ); % need an extra epoch here
@@ -203,6 +214,11 @@ classdef IntegrityMonitoringClass < handle
                 obj.n_ph=     [estimator.n_k;   obj.n_ph(1:obj.M-1)];
                 obj.XX_ph=    {estimator.XX,    obj.XX_ph{1:obj.M}};
                 obj.D_bar_ph= {inf, estimator.D_bar, obj.D_bar_ph{2:obj.M}};
+                if ~params.SWITCH_SIM
+                    obj.H_gps_ph=     {estimator.H_k_gps,   obj.H_gps_ph{1:obj.M-1}};
+                    obj.H_lidar_ph=     {estimator.H_k_lidar,   obj.H_lidar_ph{1:obj.M-1}};
+                    obj.n_gps_ph= [estimator.n_gps_k,   obj.n_gps_ph(1:obj.M-1)];
+                end
             else
                 if params.SWITCH_FIXED_LM_SIZE_PH
                     obj.n_ph=     [estimator.n_k;     obj.n_ph(1:obj.M)];

@@ -30,7 +30,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
      if params.SWITCH_LIDAR_UPDATE
 
          % build the jacobian landmarks in the field of view
-         estimator.compute_lidar_A_k_offline( params );
+         estimator.compute_lidar_H_k_offline_sim( params );
             
          % main function for factor graphs integrity monitoring
          im.monitor_integrity_offline_fg(estimator, counters, data_obj,  params);

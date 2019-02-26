@@ -11,6 +11,8 @@
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_LM_SELECTION= 1; % landmark selection activation
  SWITCH_SEED= 1; 
+ SWITCH_GENERATE_RANDOM_MAP= 0;
+ SWITCH_LIDAR_FAULTS= 0;
  SWITCH_ONLY_ONE_LM_FAULT= 0; % only monitor one simultaneous landmark failing
  % --------------------------------------------------
 
