@@ -6,11 +6,11 @@ addpath('../utils/functions')
 addpath('../utils/classes')
 
 
-for map_i= 10:10
+for map_i= 1:10
     
 % seed the randomness
 rng(map_i)
-    
+     
 % create objects
 params= ParametersClass("simulation_fg_offline");
 estimator= EstimatorClass([], params);
@@ -62,7 +62,7 @@ data_obj.delete_extra_allocated_memory(counters)
 
 
 % save workspace
-save(strcat( params.path_sim_fg, 'results/density_001/map_', num2str(map_i), '/offline' ));
+save(strcat( params.path_sim_fg, 'results/density_003/map_', num2str(map_i), '/offline' ));
 
 end
 
