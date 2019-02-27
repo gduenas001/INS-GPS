@@ -7,7 +7,7 @@ num_maps= 10;
 num_runs= 30;
 
 % common paths for map and runs
-path= '../data/simulation/factor_graph/results/density_001/map_';
+path= '../data/simulation/factor_graph/results/density_004_fix/map_';
 
 availability= ones(num_maps,1) * inf;
 hmi_map= ones(num_maps,1) * inf;

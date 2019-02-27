@@ -12,7 +12,7 @@ SWITCH_FIXED_LM_SIZE_PH= 1;
 SWITCH_LM_SELECTION= 0; % activate landmarks selection
 SWITCH_SEED= 0; % seed for random (zero for deactivate)
 SWITCH_ONLY_ONE_LM_FAULT= 1; % if only one simultaneous landmark fault
-SWITCH_GENERATE_RANDOM_MAP= 1; % if the map is randomly generate at initialization
+SWITCH_GENERATE_RANDOM_MAP= 0; % if the map is randomly generate at initialization
 SWITCH_LIDAR_FAULTS= 1; % if we want to inject faults in the lidar msmts
 % --------------------------------------------------
 
@@ -22,7 +22,7 @@ m= 3; % number of states in the state vector
 I_MA= 1e-8; 
 P_MA_max= 1e-4; % maximum allowable miss-association probability for one association
 I_H= 1e-6; % risk allocated to unmonitored fault modes
-P_UA= 1e-3;
+P_UA= 1e-2;
 min_n_L_M= 10; % min number of landmarks in preceding horizon
 preceding_horizon_size= 3;
 continuity_requirement= 1e-5;
