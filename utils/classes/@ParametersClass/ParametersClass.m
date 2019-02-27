@@ -19,6 +19,7 @@ classdef ParametersClass < handle
         SWITCH_ONLY_ONE_LM_FAULT
         SWITCH_GENERATE_RANDOM_MAP
         SWITCH_LIDAR_FAULTS
+        SWITCH_GPS_FG
         
         % switches set by the simulation name
         SWITCH_SLAM= 0
@@ -168,6 +169,7 @@ classdef ParametersClass < handle
         optimoptions % optimoptions for the fg optimization
         landmark_density % landmarks / m^2
         landmark_map
+        
         % -------------------------------------------
         % -------------------------------------------
     end
@@ -229,6 +231,7 @@ classdef ParametersClass < handle
             obj.SWITCH_ONLY_ONE_LM_FAULT= SWITCH_ONLY_ONE_LM_FAULT;
             obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
             obj.SWITCH_LIDAR_FAULTS= SWITCH_LIDAR_FAULTS;
+            obj.SWITCH_GPS_FG= SWITCH_GPS_FG;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
@@ -318,9 +321,9 @@ classdef ParametersClass < handle
             
             % ------------------ build parameters ------------------
             if obj.SWITCH_SEED
-                rng(SWITCH_SEED);
+                obj.set_seed_to(SWITCH_SEED);
             else
-                rng('shuffle')
+%                 rng('shuffle')
             end
             
             if obj.SWITCH_SIM
@@ -429,6 +432,11 @@ classdef ParametersClass < handle
         % ----------------------------------------------
         function turn_off_gps(obj)
             obj.SWITCH_GPS_UPDATE= 0;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function set_seed_to(obj, seed)
+            rng(seed);
         end
         % ----------------------------------------------
         % ----------------------------------------------

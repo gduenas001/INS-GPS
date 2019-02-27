@@ -22,7 +22,7 @@ for epoch= 1:length(FG.imu) - 1
     disp(strcat('Epoch -> ', num2str(epoch)));
     
     % set the simulation time to the IMU time
-    counters.time_sim= counters.time_sim + 1/125;
+    counters.time_sim= counters.time_sim + 1/10;
     
     % Update the current state vector using the preprocessed data
     estimator.XX= FG.pose{epoch};
@@ -35,7 +35,7 @@ for epoch= 1:length(FG.imu) - 1
     estimator.compute_lidar_H_k_offline_exp( params, FG, epoch );
     
     % build the whiten jacobian for GPS msmt
-    estimator.compute_gps_H_k_offline_exp( FG, epoch );
+    estimator.compute_gps_H_k_offline_exp( params, FG, epoch );
     
     % main function for factor graphs integrity monitoring
     im.monitor_integrity_offline_fg_exp( estimator, counters, data_obj,  params );

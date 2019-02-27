@@ -43,6 +43,7 @@ classdef EstimatorClass < handle
         steering_angle= 0
         lm_ind_fov % indexes of the landmarks in the field of view
         
+        M= 0 % preceding horizon size in epochs
         x_ph % poses in the time window
         z_fg % all the msmts in the time window
         z_lidar_ph % lidar msmts in the ph
@@ -62,6 +63,7 @@ classdef EstimatorClass < handle
         H_k_gps
         H_k_lidar
         n_gps_k
+        n_L_k_ph % number of associations in the ph
     end
     
     
@@ -69,6 +71,13 @@ classdef EstimatorClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function obj= EstimatorClass(imu_calibration_msmts, params)
+            
+            % initialize preceding horizon size
+            if params.SWITCH_FIXED_LM_SIZE_PH
+                obj.M= 0;
+            else
+                obj.M= params.M;
+            end
             
             if params.SWITCH_SIM
                 % initialize sizes differently for simulation
@@ -98,12 +107,14 @@ classdef EstimatorClass < handle
                 % initialize to uninformative prior
                 obj.PX_prior= diag( ones(params.m,1) * 0.1 );
                 obj.Gamma_prior= inv(obj.PX_prior);
+                obj.x_prior= zeros(params.m, 1);
                 % allocate memory
                 obj.x_ph= cell(1, params.M);
                 obj.z_lidar_ph= cell(1, params.M);
                 obj.association_ph= cell(1, params.M);
                 obj.odometry_ph= cell(1, params.M);
                 obj.z_gyro_ph= cell(1, params.M);
+                obj.n_L_k_ph= zeros(params.M, 1);
             end
             
             
@@ -118,6 +129,7 @@ classdef EstimatorClass < handle
                 obj.landmark_map= data.landmark_map;
                 obj.num_landmarks= size(obj.landmark_map, 1);
             end
+                        
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -208,7 +220,7 @@ classdef EstimatorClass < handle
         compute_lidar_H_k_offline_exp(obj, params, FG, epoch)
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_gps_H_k_offline_exp(obj, FG, epoch)
+        compute_gps_H_k_offline_exp(obj, params, FG, epoch)
         % ----------------------------------------------
         % ----------------------------------------------
         compute_imu_Phi_k_offline_exp(obj, params, FG, epoch)

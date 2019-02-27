@@ -99,7 +99,7 @@ classdef IntegrityMonitoringClass < handle
             if params.SWITCH_FIXED_LM_SIZE_PH
                 obj.M= 0;
             else
-                obj.M= params.preceding_horizon_size;
+                obj.M= params.M;
             end
             
             % if it's a simulation --> change the indexes
@@ -120,15 +120,15 @@ classdef IntegrityMonitoringClass < handle
                 obj.H_gps_ph= cell( 1, params.preceding_horizon_size );
                 obj.H_lidar_ph= cell( 1, params.preceding_horizon_size );
             end
-            obj.n_ph=     zeros( params.preceding_horizon_size, 1 );
-            obj.Phi_ph=   cell( 1, params.preceding_horizon_size + 1 ); % need an extra epoch here
-            obj.H_ph=     cell( 1, params.preceding_horizon_size );
-            obj.gamma_ph= cell(1, params.preceding_horizon_size);
-            obj.q_ph=     ones(params.preceding_horizon_size, 1) * (-1);
-            obj.L_ph=     cell(1, params.preceding_horizon_size);
-            obj.Lpp_ph=   cell(1, params.preceding_horizon_size + 1); % need an extra epoch here (osama)
-            obj.Y_ph=     cell(1, params.preceding_horizon_size);
-            obj.P_MA_ph=  cell(1, params.preceding_horizon_size);
+            obj.n_ph=     zeros( params.M, 1 );
+            obj.Phi_ph=   cell( 1, params.M + 1 ); % need an extra epoch here
+            obj.H_ph=     cell( 1, params.M );
+            obj.gamma_ph= cell(1, params.M);
+            obj.q_ph=     ones(params.M, 1) * (-1);
+            obj.L_ph=     cell(1, params.M);
+            obj.Lpp_ph=   cell(1, params.M + 1); % need an extra epoch here (osama)
+            obj.Y_ph=     cell(1, params.M);
+            obj.P_MA_ph=  cell(1, params.M);
             
         end
         % ----------------------------------------------
@@ -154,6 +154,24 @@ classdef IntegrityMonitoringClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function compute_E_matrix_fg_exp(obj, i, m_F)
+            if sum(i) == 0 % E matrix for only previous state faults
+                obj.E= zeros( obj.m, obj.n_total );
+                obj.E(1:2, 1:2)= eye(2);
+                obj.E(3, 9)= 1;
+            else % E matrix with a single LM fault
+                obj.E= zeros( obj.m + m_F*length(i) , obj.n_total );
+                % previous bias
+                obj.E(1:2, 1:2)= eye(2);
+                obj.E(3, 9)= 1;
+                for j= 1:length(i)
+                    ind= obj.abs_msmt_ind(:,i(j));
+                    obj.E( obj.m + 1 + m_F*(j-1) : obj.m + m_F*(j) , ind(:)' )= eye(m_F); % landmark i faulted
+                end
+            end
+        end        
+        % ----------------------------------------------
+        % ----------------------------------------------
         function compute_E_matrix_fg(obj, i, m_F)
             if sum(i) == 0 % E matrix for only previous state faults
                 obj.E= zeros( obj.m, obj.n_total );
@@ -164,6 +182,21 @@ classdef IntegrityMonitoringClass < handle
                 for j= 1:length(i)
                     ind= obj.abs_msmt_ind(:,i(j));
                     obj.E( obj.m + 1 + m_F*(j-1) : obj.m + m_F*(j) , ind(:)' )= eye(m_F); % landmark i faulted
+                end
+            end
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function E= return_E_matrix_fg(obj, i, m_F)
+            if sum(i) == 0 % E matrix for only previous state faults
+                E= zeros( obj.m, obj.n_total );
+                E(:, 1:obj.m)= eye(obj.m);
+            else % E matrix with a single LM fault
+                E= zeros( obj.m + m_F*length(i) , obj.n_total );
+                E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
+                for j= 1:length(i)
+                    ind= obj.abs_msmt_ind(:,i(j));
+                    E( obj.m + 1 + m_F*(j-1) : obj.m + m_F*(j) , ind(:)' )= eye(m_F); % landmark i faulted
                 end
             end
         end
@@ -202,7 +235,7 @@ classdef IntegrityMonitoringClass < handle
         alpha= build_state_of_interest_extraction_matrix(obj, params, current_state)
         % ----------------------------------------------
         % ----------------------------------------------
-        p_hmi_H= compute_p_hmi_H(obj, alpha, params)
+        p_hmi_H= compute_p_hmi_H(obj, alpha, fault_ind, params)
         % ----------------------------------------------
         % ----------------------------------------------
         function update_preceding_horizon(obj, estimator, params)

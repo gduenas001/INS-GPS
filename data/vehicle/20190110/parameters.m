@@ -14,13 +14,14 @@
  SWITCH_GENERATE_RANDOM_MAP= 0;
  SWITCH_LIDAR_FAULTS= 0;
  SWITCH_ONLY_ONE_LM_FAULT= 0; % only monitor one simultaneous landmark failing
+ SWITCH_GPS_FG= 1;
  % --------------------------------------------------
 
 
 % --------------- Parameters ---------------
 m= 15; % number of states in the state vector
 P_MA_max= 1e-2; % maximum alloable miss-association probability
-P_UA= 1e-4;
+P_UA= 1e-3;
 I_H= 1e-7;
 min_n_L_M= 5; % min number of landmarks in the preceding horizon + current time
 min_appearances= 2; % only update estimate landmarks detected more than this number
@@ -61,7 +62,7 @@ feature_height= 1.5; % height of the features
 initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
 preceding_horizon_size= 5; % size of the preceding horizon in epochs
 continuity_requirement= 1e-5;
-alert_limit= 1;
+alert_limit= 0.5;
 VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD

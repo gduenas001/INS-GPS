@@ -78,10 +78,10 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     else % we have enough msmts
         
         % Least squares residual matrix
-        obj.M_M= eye( obj.n_total ) - (obj.A / (obj.A'*obj.A)) * obj.A';
+        obj.M_M= eye( obj.n_total ) - (obj.A * obj.PX_M) * obj.A';
         
         % standard deviation in the state of interest
-        obj.sigma_hat= sqrt( (alpha' / obj.Gamma_fg) * alpha );
+        obj.sigma_hat= sqrt( (alpha' * obj.PX_M) * alpha );
 
         % set detector threshold from the continuity req
         obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M + obj.n_M_gps );
@@ -89,17 +89,17 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;
         
-        for i= 0:obj.n_H
+        for i= 0:0%obj.n_H
             
-            % build extraction matrix
-            if i == 0
-                obj.compute_E_matrix_fg( 0, params.m_F);
-            else
-                obj.compute_E_matrix_fg( obj.inds_H{i}, params.m_F);
-            end
+%             % build extraction matrix
+%             if i == 0
+%                 obj.compute_E_matrix_fg( 0, params.m_F);
+%             else
+%                 obj.compute_E_matrix_fg( obj.inds_H{i}, params.m_F);
+%             end
             
             % compute P(HMI | H) for the worst-case fault
-            p_hmi_H= obj.compute_p_hmi_H(alpha, params);
+            p_hmi_H= obj.compute_p_hmi_H(alpha, i, params);
             
             % Add P(HMI | H) to the integrity risk
             if i == 0

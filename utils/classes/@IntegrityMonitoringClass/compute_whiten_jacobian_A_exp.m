@@ -23,7 +23,7 @@ for i= obj.M-1 : -1 : 0
         
         % plug whitened IMU model in A
         obj.A( r_ind : r_ind + params.m - 1, c_ind : c_ind + params.m - 1)= ...
-            estimator.Phi_k;
+            sqrtm( inv(estimator.D_bar) ) * estimator.Phi_k;
         
         obj.A( r_ind : r_ind + params.m - 1, c_ind + params.m : c_ind + 2*( params.m) - 1)= ...
             -sqrtm( inv(estimator.D_bar) );
@@ -65,7 +65,7 @@ for i= obj.M-1 : -1 : 0
         
         % plug whitened IMU model in A
         obj.A( r_ind : r_ind + params.m - 1, c_ind : c_ind + params.m - 1)= ...
-            obj.Phi_ph{ i + 1 };
+            sqrtm( inv(obj.D_bar_ph{ i + 1 }) ) * obj.Phi_ph{ i + 1 };
         
         obj.A( r_ind : r_ind + params.m - 1, c_ind + params.m : c_ind + 2*(params.m) - 1)= ...
             -sqrtm( inv(obj.D_bar_ph{ i + 1 }) );

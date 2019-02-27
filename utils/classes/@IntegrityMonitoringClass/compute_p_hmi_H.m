@@ -1,5 +1,21 @@
 
-function p_hmi_H= compute_p_hmi_H(obj, alpha, params)
+function p_hmi_H= compute_p_hmi_H(obj, alpha, fault_ind, params)
+
+ 
+% build extraction matrix
+if params.SWITCH_SIM
+    if fault_ind == 0
+        obj.compute_E_matrix_fg( 0, params.m_F);
+    else
+        obj.compute_E_matrix_fg( obj.inds_H{fault_ind}, params.m_F);
+    end
+else
+    if fault_ind == 0
+        obj.compute_E_matrix_fg_exp( 0, params.m_F);
+    else
+        obj.compute_E_matrix_fg_exp( obj.inds_H{fault_ind}, params.m_F);
+    end
+end
 
 % Worst-case fault direction
 f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A * obj.PX_M * alpha;
