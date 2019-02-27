@@ -6,7 +6,7 @@ addpath('../utils/functions')
 addpath('../utils/classes')
 
 
-for map_i= 1:10
+for map_i= 3:10
     
 % seed the randomness
 rng(map_i)
