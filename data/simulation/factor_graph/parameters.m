@@ -12,7 +12,7 @@ SWITCH_FIXED_LM_SIZE_PH= 1;
 SWITCH_LM_SELECTION= 0; % activate landmarks selection
 SWITCH_SEED= 0; % seed for random (zero for deactivate)
 SWITCH_ONLY_ONE_LM_FAULT= 1; % if only one simultaneous landmark fault
-SWITCH_GENERATE_RANDOM_MAP= 0; % if the map is randomly generate at initialization
+SWITCH_GENERATE_RANDOM_MAP= 1; % if the map is randomly generate at initialization
 SWITCH_LIDAR_FAULTS= 1; % if we want to inject faults in the lidar msmts
 % --------------------------------------------------
 
@@ -87,5 +87,5 @@ max_steering= deg2rad( 10 );
 sig_gyro_z= deg2rad(3); % [rad/s]  standard dev of the gyro
 map_limits= [-25, 230, -50, 50]; % [x_min, x_max, y_min,  y_max] 
 optimoptions_display= 'notify'; % display options for the factor graphs optimization 
-landmark_density= 0.002; % [landmarks / m^2]
+landmark_density= 0.005; % [landmarks / m^2]
 % -------------------------------------------

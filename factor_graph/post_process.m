@@ -1,5 +1,5 @@
 
-clear;% close all; clc;
+clear all; close all; clc;
 
 % integrity requirement
 I_REQ= 1e-5;
@@ -7,7 +7,7 @@ num_maps= 10;
 num_runs= 30;
 
 % common paths for map and runs
-path= '../data/simulation/factor_graph/results/density_004_fix/map_';
+path= '../data/simulation/factor_graph/results/density_002_fix/map_';
 
 availability= ones(num_maps,1) * inf;
 hmi_map= ones(num_maps,1) * inf;
@@ -54,7 +54,7 @@ for map_i= 1:num_maps
 %             end
 %         end
 %         
-% %     end
+%     end
 %     
 %     % average HMI
 %     hmi_map(map_i)= mean(hmi);

@@ -62,7 +62,7 @@ data_obj.delete_extra_allocated_memory(counters)
 
 
 % save workspace
-save(strcat( params.path_sim_fg, 'results/density_004/map_', num2str(map_i), '/offline' ));
+save(strcat( params.path_sim_fg, 'results/density_005/map_', num2str(map_i), '/offline' ));
 
 end
 
