@@ -262,6 +262,24 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function plot_integrity_risk_fg(obj, params)
+            figure; hold on; grid on;
+            if params.SWITCH_SIM
+                plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
+                xlabel('x [m]','interpreter', 'latex','fontsize', 15)
+                xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+            else
+                plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
+                xlabel('Time [s]','interpreter', 'latex','fontsize', 15)
+                xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+            end
+            % plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
+            ylabel('P(HMI)','interpreter', 'latex','fontsize', 15)
+            set(gca, 'YScale', 'log')
+            ylim([1e-15,1]);
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function plot_number_of_landmarks(obj, params)
             figure; hold on; grid on;
             if params.SWITCH_SIM

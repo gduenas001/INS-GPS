@@ -5,7 +5,7 @@ addpath('../utils/functions')
 addpath('../utils/classes')
 
 for map_i= 1:10
-for run_i= 1:30
+for run_i= 20:50
 
 
 % create objects
@@ -13,7 +13,7 @@ params= ParametersClass("simulation_fg_online");
 estimator= EstimatorClass([], params);
 
 %%%%%%%%%%%%%%%%%%
-offline_data= load(strcat( params.path_sim_fg, 'results/density_002/map_', num2str(map_i), '/offline.mat' ));
+offline_data= load(strcat( params.path_sim_fg, 'results/density_001/map_', num2str(map_i), '/offline.mat' ));
 estimator.landmark_map= offline_data.params.landmark_map;
 estimator.num_landmarks= size(estimator.landmark_map, 1);
 %%%%%%%%%%%%%%%%%%
@@ -76,7 +76,7 @@ end
 data_obj.delete_extra_allocated_memory(counters)
 
 % save workspace
-save(strcat( params.path_sim_fg, 'results/density_002/map_', num2str(map_i), '/online_', num2str(run_i) ));
+save(strcat( params.path_sim_fg, 'results/density_001/map_', num2str(map_i), '/online_', num2str(run_i) ));
 
 end
 end

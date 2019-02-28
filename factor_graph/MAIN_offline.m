@@ -6,7 +6,7 @@ addpath('../utils/functions')
 addpath('../utils/classes')
 
 
-for map_i= 3:10
+for map_i= 1:10
     
 % seed the randomness
 rng(map_i)
@@ -70,5 +70,5 @@ end
 % -------------------------- PLOTS --------------------------
 data_obj.plot_map_localization_sim_fg(estimator, params)
 data_obj.plot_number_of_landmarks_fg_sim(params);
-data_obj.plot_integrity_risk(params);
+data_obj.plot_integrity_risk_fg(params);
 % ------------------------------------------------------------
