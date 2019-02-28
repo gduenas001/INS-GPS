@@ -12,7 +12,7 @@ path= strcat('../data/simulation/factor_graph/results/density_00', num2str(densi
 
 availability= ones(num_maps,1) * inf;
 hmi_map= ones(num_maps,1) * inf;
-for map_i= 4:4%um_maps
+for map_i= 3:3%num_maps
     fprintf('map --> %d\n', map_i);
     
     % load the map
@@ -36,7 +36,7 @@ for map_i= 4:4%um_maps
     hmi= ones(num_runs, 1);
     detection_inds= cell(1, num_runs);
     failure_inds= cell(1, num_runs);
-    for run_i= 11:20%num_runs
+    for run_i= 31:31%num_runs
         % load the run
         file_name_run= strcat( path, num2str(map_i), '/online_', num2str(run_i), '.mat' );
         load(file_name_run);
