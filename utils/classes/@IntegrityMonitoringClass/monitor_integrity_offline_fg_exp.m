@@ -78,7 +78,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     else % we have enough msmts
         
         % Least squares residual matrix
-        obj.M_M= eye( obj.n_total ) - (obj.A * obj.PX_M) * obj.A';
+        obj.M_M= eye( obj.n_total ) - (obj.A / obj.Gamma_fg) * obj.A';
         
         % standard deviation in the state of interest
         obj.sigma_hat= sqrt( (alpha' * obj.PX_M) * alpha );
@@ -89,7 +89,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;
         
-        for i= 0:0%obj.n_H
+        for i= 0:obj.n_H
             
 %             % build extraction matrix
 %             if i == 0

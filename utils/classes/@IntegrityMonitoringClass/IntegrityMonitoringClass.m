@@ -87,6 +87,7 @@ classdef IntegrityMonitoringClass < handle
         H_gps_ph
         H_lidar_ph
         n_M_gps
+        A_reduced
     end
     
     

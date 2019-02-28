@@ -105,7 +105,7 @@ classdef EstimatorClass < handle
             
             if params.SWITCH_FACTOR_GRAPHS
                 % initialize to uninformative prior
-                obj.PX_prior= diag( ones(params.m,1) * 0.1 );
+                obj.PX_prior= diag( ones(params.m,1) * eps );
                 obj.Gamma_prior= inv(obj.PX_prior);
                 obj.x_prior= zeros(params.m, 1);
                 % allocate memory
