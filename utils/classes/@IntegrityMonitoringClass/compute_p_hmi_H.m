@@ -25,6 +25,18 @@ f_M_dir= f_M_dir / norm(f_M_dir); % normalize
 fx_hat_dir= abs( (alpha' / obj.Gamma_fg) * obj.A' * f_M_dir );
 M_dir= abs( f_M_dir' * obj.M_M * f_M_dir );
 
+% save the interesting values for the optimization
+obj.counter_H= obj.counter_H + 1;
+obj.noncentral_dof{obj.counter_H}=  obj.n_M + obj.n_M_gps;
+obj.f_dir_sig2{obj.counter_H}= (fx_hat_dir / obj.sigma_hat)^2;
+obj.M_dir{obj.counter_H}= M_dir;
+
+p_hmi_H= 0;
+return
+
+
+
+
 % check if we should start evaluating f mag at zero
 if abs(obj.optimization_fn(...
         0, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps )) > 1e-10
@@ -59,29 +71,29 @@ if abs(obj.optimization_fn(...
     end
     % make a general optimization first
 else
-%     [f_M_mag_out, p_hmi_H_1]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-%                 f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-%                 0, 20);
-%     [f_M_mag_out, p_hmi_H_2]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-%                 f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-%                 20, 60);
-%     [f_M_mag_out, p_hmi_H_3]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-%                 f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-%                 60, 120);
-%     [f_M_mag_out, p_hmi_H_4]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-%                 f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-%                 120, 200);
-[f_M_mag_out, p_hmi_H_1]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+    p_hmi_H_1= 0;
+    p_hmi_H_2= 0;
+    p_hmi_H_3= 0;
+    p_hmi_H_4= 0;
+    
+    [f_M_mag_out, p_hmi_H_1]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+        f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
+        0, 10);
+    p_hmi_H_1= -p_hmi_H_1;
+    if p_hmi_H_1 < 1e-10 || f_M_mag_out > 8
+        [f_M_mag_out, p_hmi_H_2]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+            f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
+            10, 100);
+        p_hmi_H_2= -p_hmi_H_2;
+        if p_hmi_H_2 < 1e-10 || f_M_mag_out > 180
+            [f_M_mag_out, p_hmi_H_3]= fminbnd( @(f_M_mag) obj.optimization_fn(...
                 f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-                0, 200);
-[f_M_mag_out, p_hmi_H_2]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-                f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-                200, 1000);
-
-             p_hmi_H= -min([p_hmi_H_1, p_hmi_H_2]);
+                100, 1000);
+            p_hmi_H_3= -p_hmi_H_3;
+        end
+    end
+    p_hmi_H= max( [p_hmi_H_1, p_hmi_H_2, p_hmi_H_3, p_hmi_H_4] );
 end
 
-obj.min_f_dir_vs_M_dir= min([abs(fx_hat_dir), abs(M_dir)]);
-obj.f_mag= f_M_mag_out;
 
 end

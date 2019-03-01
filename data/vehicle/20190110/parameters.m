@@ -15,7 +15,7 @@
  SWITCH_LIDAR_FAULTS= 0;
  SWITCH_ONLY_ONE_LM_FAULT= 1; % only monitor one simultaneous landmark failing
  SWITCH_GPS_FG= 1;
- SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 1;
+ SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 0;
  % --------------------------------------------------
 
 
@@ -63,7 +63,7 @@ feature_height= 1.5; % height of the features
 initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
 preceding_horizon_size= 5; % size of the preceding horizon in epochs
 continuity_requirement= 1e-5;
-alert_limit= 0.5;
+alert_limit= 1;
 VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD

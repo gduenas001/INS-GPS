@@ -90,6 +90,11 @@ classdef IntegrityMonitoringClass < handle
         A_reduced
         min_f_dir_vs_M_dir
         f_mag
+        
+        noncentral_dof= cell(10000,1)
+        f_dir_sig2= cell(10000,1)
+        M_dir= cell(10000,1)
+        counter_H=0
     end
     
     
@@ -140,6 +145,14 @@ classdef IntegrityMonitoringClass < handle
             neg_p_hmi= - ( (1 - normcdf(l , f_M_mag * fx_hat_dir, sigma_hat) +...
                 normcdf(-l , f_M_mag * fx_hat_dir, sigma_hat))...
                 * ncx2cdf(obj.T_d, dof, f_M_mag.^2 * M_dir ) );
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function neg_p_hmi= optimization_fn_test(obj, f_mag, ncp1, ncp2, dof1, T1, T2)
+            neg_p_hmi= ncx2cdf(T1, dof1, f_mag^2 * ncp1 ) *...   % ND prob
+                       (1 - ncx2cdf(T2, 1, f_mag^2 * ncp2) ); % failure prob
+            
+            neg_p_hmi= -neg_p_hmi;
         end
         % ----------------------------------------------
         % ----------------------------------------------
