@@ -7,7 +7,7 @@
  SWITCH_GPS_VEL_UPDATE= 1; % update of the GPS
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
- SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
+ SWITCH_CALIBRATION= 0; % initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_LM_SELECTION= 1; % landmark selection activation
  SWITCH_SEED= 1; 
@@ -15,6 +15,7 @@
  SWITCH_LIDAR_FAULTS= 0;
  SWITCH_ONLY_ONE_LM_FAULT= 1; % only monitor one simultaneous landmark failing
  SWITCH_GPS_FG= 1;
+ SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 1;
  % --------------------------------------------------
 
 
@@ -23,7 +24,7 @@ m= 15; % number of states in the state vector
 P_MA_max= 1e-2; % maximum alloable miss-association probability
 P_UA= 1e-3;
 I_H= 1e-7;
-min_n_L_M= 10; % min number of landmarks in the preceding horizon + current time
+min_n_L_M= 20; % min number of landmarks in the preceding horizon + current time
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 6000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
@@ -45,8 +46,8 @@ sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
 sig_lidar= 0.2; % 25cm -- lidar measurement in the nav frame
 min_vel_gps= 2/3.6; % 2 km/h
 min_vel_yaw= 2/3.6; % 2 km/h
-taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer
-tauw_normal_operation= 3000; % Tau for gyro bias -- from manufacturer
+taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer (default = 3000)
+tauw_normal_operation= 3000; % Tau for gyro bias -- from manufacturer (default = 3000)
 taua_calibration= 100; % 200 acc tau value during initial calibration
 tauw_calibration= 100; % 200 gyro tau value during initial calibration
 g_val= 9.80279; % value of g [m/s2] at the IIT

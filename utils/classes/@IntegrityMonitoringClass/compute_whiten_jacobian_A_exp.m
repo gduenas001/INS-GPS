@@ -6,7 +6,7 @@ function compute_whiten_jacobian_A_exp(obj, estimator, params)
 obj.A= zeros( obj.n_total, obj.m_M );
 
 % indices of the absolute measurements in the rows of matrix A
-obj.abs_msmt_ind= [];
+obj.lidar_msmt_ind= [];
 obj.gps_msmt_ind= [];
 
 % plug the prior in A
@@ -56,7 +56,7 @@ for i= obj.M-1 : -1 : 0
             estimator.H_k_lidar;
         
         % record lidar msmt indieces in A
-        obj.abs_msmt_ind= [ obj.abs_msmt_ind,...
+        obj.lidar_msmt_ind= [ obj.lidar_msmt_ind,...
             reshape( r_ind : r_ind + estimator.n_k - 1, params.m_F , [] ) ];
         
         
@@ -97,7 +97,7 @@ for i= obj.M-1 : -1 : 0
             obj.H_lidar_ph{ i };
         
         % record lidar msmt indieces in A
-        obj.abs_msmt_ind= [ obj.abs_msmt_ind,...
+        obj.lidar_msmt_ind= [ obj.lidar_msmt_ind,...
             reshape( r_ind : r_ind + obj.n_ph(i) - 1, params.m_F , [] ) ];
         
         % update the row index

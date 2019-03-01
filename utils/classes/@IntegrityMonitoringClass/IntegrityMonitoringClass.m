@@ -88,6 +88,8 @@ classdef IntegrityMonitoringClass < handle
         H_lidar_ph
         n_M_gps
         A_reduced
+        min_f_dir_vs_M_dir
+        f_mag
     end
     
     
@@ -161,13 +163,29 @@ classdef IntegrityMonitoringClass < handle
                 obj.E(1:2, 1:2)= eye(2);
                 obj.E(3, 9)= 1;
             else % E matrix with a single LM fault
-                obj.E= zeros( obj.m + m_F*length(i) , obj.n_total );
+                fault_type_indicator= -1 * ones(length(i),1);
+                for j = 1:length(i)
+                    if i(j) > obj.n_L_M
+                        fault_type_indicator(j)= 3;
+                    else
+                        fault_type_indicator(j)= 1;
+                    end
+                end
+                obj.E= zeros( obj.m + sum(fault_type_indicator*2) , obj.n_total );
                 % previous bias
                 obj.E(1:2, 1:2)= eye(2);
                 obj.E(3, 9)= 1;
+                r_ind= obj.m + 1;
                 for j= 1:length(i)
-                    ind= obj.abs_msmt_ind(:,i(j));
-                    obj.E( obj.m + 1 + m_F*(j-1) : obj.m + m_F*(j) , ind(:)' )= eye(m_F); % landmark i faulted
+                    if fault_type_indicator(j) == 1
+                        ind= obj.lidar_msmt_ind(:,i(j));
+                        obj.E( r_ind : r_ind + m_F - 1 , ind(:)' )= eye(m_F); % landmark i faulted
+                        r_ind= r_ind + m_F;
+                    else
+                        ind= obj.gps_msmt_ind(:,i(j)-obj.n_L_M);
+                        obj.E( r_ind : r_ind + 6 - 1 , ind(:)' )= eye(6); % landmark i faulted
+                        r_ind= r_ind + 6;
+                    end
                 end
             end
         end        

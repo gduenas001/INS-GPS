@@ -68,10 +68,8 @@ classdef UpdateDataClass < handle
             obj.x_true(:,epoch)= estimator.x_true;
             obj.XX(:,epoch)= estimator.XX;
             obj.error(:,epoch)= estimator.XX - estimator.x_true;
-            if params.SWITCH_SIM
-                obj.error_state_interest(epoch)= estimator.alpha'* (estimator.XX - estimator.x_true);
-                obj.sig_state_interest(epoch)= sqrt( estimator.alpha'* estimator.PX * estimator.alpha );
-            end
+            obj.error_state_interest(epoch)= estimator.alpha'* (estimator.XX - estimator.x_true);
+            obj.sig_state_interest(epoch)= sqrt( estimator.alpha'* estimator.PX * estimator.alpha );
             obj.PX(:, epoch)= diag( estimator.PX );
             obj.time(epoch)= time;
             obj.num_associated_lms(epoch)= estimator.n_L_k;

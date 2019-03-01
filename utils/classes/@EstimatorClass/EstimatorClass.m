@@ -106,6 +106,9 @@ classdef EstimatorClass < handle
             if params.SWITCH_FACTOR_GRAPHS
                 % initialize to uninformative prior
                 obj.PX_prior= diag( ones(params.m,1) * eps );
+                % initialize covariance
+                obj.PX_prior(10:12, 10:12)= diag( [params.sig_ba,params.sig_ba,params.sig_ba] ).^2;
+                obj.PX_prior(13:15, 13:15)= diag( [params.sig_bw,params.sig_bw,params.sig_bw] ).^2;
                 obj.Gamma_prior= inv(obj.PX_prior);
                 obj.x_prior= zeros(params.m, 1);
                 % allocate memory
@@ -252,7 +255,9 @@ classdef EstimatorClass < handle
         % ----------------------------------------------
         function compute_alpha(obj,params)
             if (~params.SWITCH_SIM) && params.SWITCH_FACTOR_GRAPHS
-                
+                obj.alpha= [-sin( obj.XX(params.ind_yaw) );...
+                            cos( obj.XX(params.ind_yaw) );...
+                           zeros(13,1) ];
             else
                 obj.alpha= [-sin( obj.XX(params.ind_yaw) );...
                             cos( obj.XX(params.ind_yaw) );...

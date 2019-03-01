@@ -14,8 +14,8 @@ C= [-F, G*S*G';
 % Proper method
 EXP= expm(C*dT);
 obj.Phi_k= EXP(16:end,16:end)';
-obj.D_bar= obj.Phi_k * EXP(1:15,16:end);
+% obj.D_bar= obj.Phi_k * EXP(1:15,16:end);
 
 % Simplified method
-%             obj.D_bar= (G*dT) * (S/dT) * (G*dT)'; % simplified version
+obj.D_bar= (G*dT) * (S/dT) * (G*dT)'; % simplified version
 end
