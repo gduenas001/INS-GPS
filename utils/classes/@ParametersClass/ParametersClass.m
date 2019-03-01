@@ -20,6 +20,7 @@ classdef ParametersClass < handle
         SWITCH_GENERATE_RANDOM_MAP
         SWITCH_LIDAR_FAULTS
         SWITCH_GPS_FG
+        SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt
         
         % switches set by the simulation name
         SWITCH_SLAM= 0
@@ -232,6 +233,7 @@ classdef ParametersClass < handle
             obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
             obj.SWITCH_LIDAR_FAULTS= SWITCH_LIDAR_FAULTS;
             obj.SWITCH_GPS_FG= SWITCH_GPS_FG;
+            obj.SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt;
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;
