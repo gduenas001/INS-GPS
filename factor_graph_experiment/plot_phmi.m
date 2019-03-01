@@ -1,10 +1,10 @@
 
 clear; close all; clc;
 
-I_REQ= 1e-5;
+I_REQ= 1e-7;
 
 % load data
-load('fg_M10_nogps');
+load('fg_M30_nogps.mat');
 figure; hold on; grid on;
 
 % plot P(HMI)

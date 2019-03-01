@@ -1,9 +1,9 @@
 clear all; close all; clc;
 
-I_REQ= 1e-3;
+I_REQ= 1e-9;
 
 % load data
-load('fg_M10_nogps');
+load('fg_M30_nogps');
 
 
 % figure
@@ -48,7 +48,7 @@ bands_poses(bands_ind+1:end)= [];
 
 % plot the bands in red
 for i= 1:length(bands_times)
-    plot(bands_poses{i}(1,:), bands_poses{i}(2,:), 'r-', 'linewidth', 2);
+    plot(bands_poses{i}(1,:), bands_poses{i}(2,:), 'r.', 'linewidth', 2);
 end
 
 
