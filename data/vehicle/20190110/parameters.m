@@ -15,7 +15,7 @@
  SWITCH_LIDAR_FAULTS= 0;
  SWITCH_ONLY_ONE_LM_FAULT= 1; % only monitor one simultaneous landmark failing
  SWITCH_GPS_FG= 1;
- SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 1;
+ SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 0;
  % --------------------------------------------------
 
 
@@ -24,7 +24,7 @@ m= 15; % number of states in the state vector
 P_MA_max= 1e-2; % maximum alloable miss-association probability
 P_UA= 1e-3;
 I_H= 1e-7;
-min_n_L_M= 20; % min number of landmarks in the preceding horizon + current time
+min_n_L_M= 40; % min number of landmarks in the preceding horizon + current time
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 6000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
