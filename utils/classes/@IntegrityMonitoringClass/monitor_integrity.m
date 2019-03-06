@@ -86,7 +86,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         obj.M_M= obj.B_bar' / obj.Y_M * obj.B_bar;
 
         % set the threshold from the continuity req
-        obj.detector_threshold= chi2inv(1 - obj.C_req, obj.n_M);
+        obj.T_d= chi2inv(1 - obj.C_req, obj.n_M);
         
         % compute detector
         obj.q_M= sum(obj.q_ph(1:obj.M)) + estimator.q_k;

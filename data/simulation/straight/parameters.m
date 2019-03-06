@@ -11,7 +11,11 @@
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_LM_SELECTION= 0; % activate landmarks selection
  SWITCH_SEED= 6; % seed for random (zero for deactivate)
- SWITCH_ONLY_ONE_LM_FAULT= 0; % if only one simultaneous landmark fault
+ SWITCH_ONLY_ONE_LM_FAULT= 1; % if only one simultaneous landmark fault
+ SWITCH_GENERATE_RANDOM_MAP= 0;
+ SWITCH_LIDAR_FAULTS= 0;
+ SWITCH_GPS_FG= 0;
+ SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 0;
  % --------------------------------------------------
 
 

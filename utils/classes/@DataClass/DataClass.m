@@ -290,7 +290,7 @@ classdef DataClass < handle
             figure; hold on; grid on;
             if params.SWITCH_SIM
                 plot(obj.im.time * params.velocity_sim, obj.im.n_L_M, 'b-', 'linewidth', 2)
-                plot(obj.update.time * params.velocity_sim, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
+                plot(obj.update.time * params.velocity_sim, obj.update.num_associated_lms, 'g-', 'linewidth', 2)
 %                 plot(obj.im.time * params.velocity_sim, obj.update.miss_associations, 'r*')
 %                 plot(obj.update.time * params.velocity_sim, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
                 xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
@@ -298,7 +298,7 @@ classdef DataClass < handle
                     'interpreter', 'latex','fontsize', 15);
             else
                 plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
-                plot(obj.update.time, obj.update.number_of_associated_LMs, 'g-', 'linewidth', 2)
+                plot(obj.update.time, obj.update.num_associated_lms, 'g-', 'linewidth', 2)
 %                 plot(obj.update.time, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
                 xlabel('time [s]','interpreter', 'latex')
                 legend({'$n^{F^(M)}$', '$n^F$'},'interpreter', 'latex','fontsize', 15);
