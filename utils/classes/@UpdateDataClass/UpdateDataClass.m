@@ -63,7 +63,7 @@ classdef UpdateDataClass < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function store_fg(obj, epoch, estimator, time, params)
-            estimator.compute_alpha(params);
+            estimator.compute_alpha(params)
             
             obj.x_true(:,epoch)= estimator.x_true;
             obj.XX(:,epoch)= estimator.XX;

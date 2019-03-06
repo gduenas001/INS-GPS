@@ -80,6 +80,16 @@ classdef IntegrityMonitoringClass < handle
         PX_M
         abs_msmt_ind
         faulted_LMs_indices
+        Gamma_prior
+        lidar_msmt_ind
+        gps_msmt_ind
+        n_gps_ph % number of gps msmt at each epoch in PH
+        H_gps_ph
+        H_lidar_ph
+        n_M_gps
+        A_reduced
+        min_f_dir_vs_M_dir
+        f_mag
     end
     
     
@@ -103,11 +113,15 @@ classdef IntegrityMonitoringClass < handle
             
             % initialize the preceding horizon
             % TODO: should this change for a fixed horizon in landmarks?
-            if params.SWITCH_SIM && params.SWITCH_FACTOR_GRAPHS
-                obj.XX_ph=     cell(1, params.M+1);
+            if params.SWITCH_FACTOR_GRAPHS
+                obj.XX_ph=     cell(1, params.preceding_horizon_size+1);
                 obj.XX_ph{1}=  estimator.XX;
-                obj.D_bar_ph=  cell(1, params.M);
-                obj.PX_prior=  estimator.PX;
+                obj.D_bar_ph=  cell(1, params.preceding_horizon_size);
+                obj.PX_prior=  estimator.PX_prior;
+                obj.Gamma_prior= estimator.Gamma_prior;
+                obj.n_gps_ph= zeros( params.preceding_horizon_size, 1 );
+                obj.H_gps_ph= cell( 1, params.preceding_horizon_size );
+                obj.H_lidar_ph= cell( 1, params.preceding_horizon_size );
             end
             obj.n_ph=     zeros( params.M, 1 );
             obj.Phi_ph=   cell( 1, params.M + 1 ); % need an extra epoch here
@@ -141,6 +155,40 @@ classdef IntegrityMonitoringClass < handle
                 end
             end
         end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function compute_E_matrix_fg_exp(obj, i, m_F)
+            if sum(i) == 0 % E matrix for only previous state faults
+                obj.E= zeros( obj.m, obj.n_total );
+                obj.E(1:2, 1:2)= eye(2);
+                obj.E(3, 9)= 1;
+            else % E matrix with a single LM fault
+                fault_type_indicator= -1 * ones(length(i),1);
+                for j = 1:length(i)
+                    if i(j) > obj.n_L_M
+                        fault_type_indicator(j)= 3;
+                    else
+                        fault_type_indicator(j)= 1;
+                    end
+                end
+                obj.E= zeros( obj.m + sum(fault_type_indicator*2) , obj.n_total );
+                % previous bias
+                obj.E(1:2, 1:2)= eye(2);
+                obj.E(3, 9)= 1;
+                r_ind= obj.m + 1;
+                for j= 1:length(i)
+                    if fault_type_indicator(j) == 1
+                        ind= obj.lidar_msmt_ind(:,i(j));
+                        obj.E( r_ind : r_ind + m_F - 1 , ind(:)' )= eye(m_F); % landmark i faulted
+                        r_ind= r_ind + m_F;
+                    else
+                        ind= obj.gps_msmt_ind(:,i(j)-obj.n_L_M);
+                        obj.E( r_ind : r_ind + 6 - 1 , ind(:)' )= eye(6); % landmark i faulted
+                        r_ind= r_ind + 6;
+                    end
+                end
+            end
+        end        
         % ----------------------------------------------
         % ----------------------------------------------
         function compute_E_matrix_fg(obj, i, m_F)
@@ -218,6 +266,11 @@ classdef IntegrityMonitoringClass < handle
                 obj.n_ph=     [estimator.n_k;   obj.n_ph(1:obj.M-1)];
                 obj.XX_ph=    {estimator.XX,    obj.XX_ph{1:obj.M}};
                 obj.D_bar_ph= {inf, estimator.D_bar, obj.D_bar_ph{2:obj.M}};
+                if ~params.SWITCH_SIM
+                    obj.H_gps_ph=     {estimator.H_k_gps,   obj.H_gps_ph{1:obj.M-1}};
+                    obj.H_lidar_ph=     {estimator.H_k_lidar,   obj.H_lidar_ph{1:obj.M-1}};
+                    obj.n_gps_ph= [estimator.n_gps_k,   obj.n_gps_ph(1:obj.M-1)];
+                end
             else
                 if params.SWITCH_FIXED_LM_SIZE_PH
                     obj.n_ph=     [estimator.n_k;     obj.n_ph(1:obj.M)];

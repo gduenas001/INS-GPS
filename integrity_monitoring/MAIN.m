@@ -122,26 +122,14 @@ for epoch= 1:imu.num_readings - 1
             % Remove people-features for the data set
             lidar.remove_features_in_areas(estimator.XX(1:9));
             
-            if params.SWITCH_SLAM
-            
-                % NN data association
-                association= estimator.nearest_neighbor_slam(lidar.msmt(:,1:2), params);
-                
-                % Lidar update
-                estimator.lidar_update_slam(lidar.msmt(:,1:2), association, params);
-                
-            else
-                
-                % NN data association
-                estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
-                
-                % Evaluate the probability of mis-associations
-                im.prob_of_MA( estimator, params);
-                
-                % Lidar update
-                estimator.lidar_update_localization(lidar.msmt(:,1:2), params);
-            
-            end
+            % NN data association
+            estimator.nearest_neighbor_localization(lidar.msmt(:,1:2), params);
+
+            % Evaluate the probability of mis-associations
+            im.prob_of_MA( estimator, params);
+
+            % Lidar update
+            estimator.lidar_update_localization(lidar.msmt(:,1:2), params);
             
             % Lineariza and discretize
             estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
@@ -159,23 +147,15 @@ for epoch= 1:imu.num_readings - 1
                 gps.IS_GPS_AVAILABLE= 0; % mark the current gps reading as stored
             end
             
-            if ~params.SWITCH_SLAM
-                
-                % integrity monitoring
-                % im.monitor_integrity(estimator, counters, data_obj, params);
-            
-            end
+            % integrity monitoring
+            % im.monitor_integrity(estimator, counters, data_obj, params);
             
             % Store data
             data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
             counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
-            
-            if ~params.SWITCH_SLAM
-                
-                % increase integrity counter
-                % counters.increase_integrity_monitoring_counter();
-            
-            end
+  
+            % increase integrity counter
+            % counters.increase_integrity_monitoring_counter();
             
         else
             
@@ -208,15 +188,7 @@ data_obj.delete_extra_allocated_memory(counters)
 FG.delete_fields_corresponding_to_static_epochs(lidar)
 
 % ------------- PLOTS ------------
-if params.SWITCH_SLAM
-    
-    data_obj.plot_map_slam(estimator, gps, imu.num_readings, params)
-    
-else
-    
-    data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
-    
-end
+data_obj.plot_map_localization(estimator, gps, imu.num_readings, params)
 
 data_obj.plot_number_of_landmarks(params);
 data_obj.plot_number_epochs_in_preceding_horizon(params);

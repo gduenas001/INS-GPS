@@ -7,20 +7,24 @@
  SWITCH_GPS_VEL_UPDATE= 1; % update of the GPS
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
- SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
+ SWITCH_CALIBRATION= 0; % initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_LM_SELECTION= 1; % landmark selection activation
  SWITCH_SEED= 1; 
- SWITCH_ONLY_ONE_LM_FAULT= 0; % only monitor one simultaneous landmark failing
+ SWITCH_GENERATE_RANDOM_MAP= 0;
+ SWITCH_LIDAR_FAULTS= 0;
+ SWITCH_ONLY_ONE_LM_FAULT= 1; % only monitor one simultaneous landmark failing
+ SWITCH_GPS_FG= 1;
+ SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 0;
  % --------------------------------------------------
 
 
 % --------------- Parameters ---------------
 m= 15; % number of states in the state vector
 P_MA_max= 1e-2; % maximum alloable miss-association probability
-P_UA= 1e-4;
+P_UA= 1e-3;
 I_H= 1e-7;
-min_n_L_M= 5; % min number of landmarks in the preceding horizon + current time
+min_n_L_M= 40; % min number of landmarks in the preceding horizon + current time
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 6000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
@@ -42,8 +46,8 @@ sig_virt_vy= 0.01; % 5cm/s -- virtual msmt SD in y
 sig_lidar= 0.2; % 25cm -- lidar measurement in the nav frame
 min_vel_gps= 2/3.6; % 2 km/h
 min_vel_yaw= 2/3.6; % 2 km/h
-taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer
-tauw_normal_operation= 3000; % Tau for gyro bias -- from manufacturer
+taua_normal_operation= 3000; % Tau for acc bias -- from manufacturer (default = 3000)
+tauw_normal_operation= 3000; % Tau for gyro bias -- from manufacturer (default = 3000)
 taua_calibration= 100; % 200 acc tau value during initial calibration
 tauw_calibration= 100; % 200 gyro tau value during initial calibration
 g_val= 9.80279; % value of g [m/s2] at the IIT
@@ -59,7 +63,7 @@ feature_height= 1.5; % height of the features
 initial_yaw_angle= -90; % [deg] initial yaw angle (different for each experiment) % smooth_turn(180)
 preceding_horizon_size= 5; % size of the preceding horizon in epochs
 continuity_requirement= 1e-5;
-alert_limit= 1;
+alert_limit= 0.5;
 VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
