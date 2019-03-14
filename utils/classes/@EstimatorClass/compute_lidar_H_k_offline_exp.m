@@ -1,15 +1,15 @@
 
-function compute_lidar_H_k_offline_exp(obj, params, FG, epoch) % TODO: osama - change this name, this computes H not A
-% this funcion builds the Jacobian H for the factor graphs case without
-% mesaurements. It uses all the landmarks in the field of view of the lidar
+function compute_lidar_H_k_offline_exp(obj, params, FG, epoch) 
+% this funcion builds the Jacobian H of LMs msmts for the factor graphs...
+% case without actual mesaurements.
 
 spsi= sin(obj.XX(9));
 cpsi= cos(obj.XX(9));
 
-% landmarks in the field of view
+% landmarks in the field of view (saved from the online run)
 obj.lm_ind_fov= FG.associations{epoch};
 
-% number of expected extracted landmarks
+% number of extracted landmarks (more specifically features)
 obj.n_L_k= length(FG.associations{epoch});
 
 % number of expected measurements
@@ -32,7 +32,7 @@ for i= 1:obj.n_L_k
                                
 end
 
-% compute the whiten jacobian
+% compute the whiten jacobian matrix for lidar msmts
 obj.H_k_lidar= kron( eye( obj.n_L_k ) , params.sqrt_inv_R_lidar ) * obj.H_k_lidar;
 
 end

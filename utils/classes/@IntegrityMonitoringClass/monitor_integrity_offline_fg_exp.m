@@ -15,7 +15,9 @@ if params.SWITCH_FIXED_LM_SIZE_PH && isempty(obj.p_hmi)
     
 end
 
-% monitor integrity if the number of LMs in the preceding horizon is more than threshold
+% monitor integrity if the number of abs msmts in PH is more than threshold,...
+% Or if the number of LMs in PH is more than threshold, ...
+% Or if the num of epochs in PH equals to a specific value
 if  ( params.SWITCH_FIXED_LM_SIZE_PH ...
       && obj.n_L_M + ((estimator.n_gps_k + sum(obj.n_gps_ph))/6) >= params.min_n_L_M ...
       && (( (estimator.n_gps_k + sum(obj.n_gps_ph) ~= 0) ...
@@ -23,14 +25,14 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH ...
       || (~params.SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt)) ) ||...
     ( ~params.SWITCH_FIXED_LM_SIZE_PH && counters.k_im > obj.M )
 
-    % Modify preceding horizon to have enough landmarks
+    % Modify PH to have enough landmarks (in case of Fixed LM or abs msmts)
     if params.SWITCH_FIXED_LM_SIZE_PH
         
         obj.compute_required_epochs_for_min_LMs(params, estimator)
         
     else
         
-        % number of absolute msmts over the horizon
+        % number of lidar msmts over the horizon
         obj.n_M= estimator.n_k + sum( obj.n_ph(1:obj.M - 1) );
 
         % number of landmarks over the horizon
@@ -41,7 +43,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH ...
     % compute extraction vector
     alpha= obj.build_state_of_interest_extraction_matrix(params, estimator.XX);
     
-    % number of absolute msmts over the horizon
+    % number of GPS msmts over the horizon
     obj.n_M_gps= estimator.n_gps_k + sum( obj.n_gps_ph(1:obj.M - 1) );
     
     % total number of msmts (prior + relative + abs)
@@ -50,8 +52,8 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH ...
     % number of states to estimate
     obj.m_M= (obj.M + 1) * (params.m);
     
-    % compute the H whiten Jacobian A
-    obj.compute_whiten_jacobian_A_exp(estimator, params);% TODO: use the new function, remove this one
+    % compute the whiten Jacobian matrix A
+    obj.compute_whiten_jacobian_A_exp(estimator, params);
     
     % construct the information matrix
     obj.Gamma_fg= obj.A' * obj.A;

@@ -21,19 +21,21 @@ for i= obj.M-1 : -1 : 0
     
     if i == 0
         
-        % plug whitened IMU model in A
+        
+        % Whiten IMU model and then plug it in A
         obj.A( r_ind : r_ind + params.m - 1, c_ind : c_ind + params.m - 1)= ...
             sqrtm( inv(estimator.D_bar) ) * estimator.Phi_k;
         
         obj.A( r_ind : r_ind + params.m - 1, c_ind + params.m : c_ind + 2*( params.m) - 1)= ...
             -sqrtm( inv(estimator.D_bar) );
         
+        
         % update the row & column indices
         r_ind= r_ind + params.m;
         c_ind= c_ind + params.m;
         
         
-        % plug whitened gps model in A
+        % plug the whitened gps model in A
         if estimator.n_gps_k ~= 0
             
             obj.A(  r_ind : r_ind + estimator.n_gps_k - 1,...
@@ -50,7 +52,7 @@ for i= obj.M-1 : -1 : 0
         end
         
         
-        % plug whitened lidar model in A
+        % plug the whitened lidar model in A
         obj.A(  r_ind : r_ind + estimator.n_k - 1,...
             c_ind : c_ind + params.m - 1 )= ...
             estimator.H_k_lidar;
@@ -63,7 +65,7 @@ for i= obj.M-1 : -1 : 0
         
     else
         
-        % plug whitened IMU model in A
+        % Whiten IMU model and then plug it in A
         obj.A( r_ind : r_ind + params.m - 1, c_ind : c_ind + params.m - 1)= ...
             sqrtm( inv(obj.D_bar_ph{ i + 1 }) ) * obj.Phi_ph{ i + 1 };
         
@@ -74,7 +76,7 @@ for i= obj.M-1 : -1 : 0
         r_ind= r_ind + params.m;
         c_ind= c_ind + params.m;
 
-        % plug whitened gps model in A
+        % plug the whitened gps model in A
         if obj.n_gps_ph( i ) ~= 0
             
             obj.A(  r_ind : r_ind + obj.n_gps_ph( i ) - 1,...
@@ -90,7 +92,7 @@ for i= obj.M-1 : -1 : 0
             
         end
         
-        % lidar Jacobian part
+        % plug the whitened lidar model in A
         n_L_i= obj.n_ph( i ) / params.m_F;
         obj.A( r_ind : r_ind + obj.n_ph( i ) - 1,...
             c_ind : c_ind + params.m - 1 )= ...
@@ -107,8 +109,3 @@ end
 
 
 end
-
-
-
-
-
