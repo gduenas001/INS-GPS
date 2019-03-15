@@ -10,8 +10,8 @@ addpath('../utils/classes')
 % create objects
 params= ParametersClass("experiment_fg_offline");
 load([params.path, 'FG.mat']); % organized experimental data (preprocessing using KF)
-estimator= EstimatorClass([], params);
-im= IntegrityMonitoringClass(params, estimator);
+estimator= EstimatorClassFgExp(params);
+im= IntegrityMonitoringClassFgExp(params, estimator);
 data_obj= DataClass(length(FG.imu), length(FG.lidar), params);
 counters= CountersClass([], [], params);
 
@@ -29,16 +29,16 @@ for epoch= 1:length(FG.imu) - 1
     estimator.x_true= FG.pose{epoch};
     
     % build the process noise and state evolution jacobian for IMU
-    estimator.compute_imu_Phi_k_offline_exp( params, FG, epoch );
+    estimator.compute_imu_Phi_k_offline( params, FG, epoch );
     
     % build the whiten jacobian for landmarks in the field of view
-    estimator.compute_lidar_H_k_offline_exp( params, FG, epoch );
+    estimator.compute_lidar_H_k_offline( params, FG, epoch );
     
     % build the whiten jacobian for GPS msmt
-    estimator.compute_gps_H_k_offline_exp( params, FG, epoch );
+    estimator.compute_gps_H_k_offline( params, FG, epoch );
     
     % main function for factor graphs integrity monitoring
-    im.monitor_integrity_offline_fg_exp( estimator, counters, data_obj,  params );
+    im.monitor_integrity( estimator, counters, data_obj,  params );
     
     % Store data
     counters.k_update= data_obj.store_update_fg(counters.k_update, estimator, counters.time_sim, params);
@@ -52,4 +52,4 @@ end
 data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
 data_obj.plot_number_of_landmarks_fg_sim(params);
 data_obj.plot_integrity_risk(params);
-%---------------------------------------------------------
+%------------------------------------------------------------

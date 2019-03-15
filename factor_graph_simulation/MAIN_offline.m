@@ -13,8 +13,8 @@ rng(map_i)
     
 % create objects
 params= ParametersClass("simulation_fg_offline");
-estimator= EstimatorClass([], params);
-im= IntegrityMonitoringClass(params, estimator);
+estimator= EstimatorClassFgSim(params);
+im= IntegrityMonitoringClassFgSim(params, estimator);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
 counters= CountersClass([], [], params);
 
@@ -28,14 +28,14 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
      
     % ------------- Odometry -------------
     estimator.compute_steering(params)
-    estimator.odometry_update_sim_fg( params );
+    estimator.odometry_update(params);
     % -------------------------------
     
     % ----------------- LIDAR ----------------
      if params.SWITCH_LIDAR_UPDATE
 
          % build the jacobian landmarks in the field of view
-         estimator.compute_lidar_H_k_offline_sim( params );
+         estimator.compute_lidar_H_k_offline( params );
             
          % main function for factor graphs integrity monitoring
          im.monitor_integrity_offline_fg(estimator, counters, data_obj,  params);
