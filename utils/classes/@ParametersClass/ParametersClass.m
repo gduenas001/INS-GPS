@@ -232,6 +232,12 @@ classdef ParametersClass < handle
             obj.SWITCH_ONLY_ONE_LM_FAULT= SWITCH_ONLY_ONE_LM_FAULT;
             obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
             obj.SWITCH_LIDAR_FAULTS= SWITCH_LIDAR_FAULTS;
+            
+            if (~obj.SWITCH_SIM) && obj.SWITCH_FACTOR_GRAPHS
+                obj.SWITCH_GPS_FG= SWITCH_GPS_FG;
+                obj.SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt;
+            end
+            
              % --------------------------------------------------
             obj.m= m;
             obj.I_MA= I_MA;

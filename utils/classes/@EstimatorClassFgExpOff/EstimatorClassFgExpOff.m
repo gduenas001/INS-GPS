@@ -1,4 +1,5 @@
-classdef EstimatorClassFgExp < handle
+
+classdef EstimatorClassFgExpOff < handle
     properties (SetAccess = immutable)
         landmark_map
     end
@@ -43,7 +44,7 @@ classdef EstimatorClassFgExp < handle
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj= EstimatorClassFgExp(params)
+        function obj= EstimatorClassFgExpOff(params)
             
             % initialize preceding horizon size
             if params.SWITCH_FIXED_LM_SIZE_PH

@@ -7,7 +7,7 @@ addpath('../utils/classes')
 
 % create objects
 params= ParametersClass("simulation_fg_online");
-estimator= EstimatorClass([], params);
+estimator= EstimatorClassFgSimOn([], params);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
 counters= CountersClass([], [], params);
 

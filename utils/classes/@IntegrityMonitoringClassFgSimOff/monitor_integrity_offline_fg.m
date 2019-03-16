@@ -108,6 +108,6 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
 end
 
 % update the preceding horizon
-update_preceding_horizon(obj, estimator, params)
+update_preceding_horizon(obj, estimator)
 
 end

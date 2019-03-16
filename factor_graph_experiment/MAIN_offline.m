@@ -10,8 +10,8 @@ addpath('../utils/classes')
 % create objects
 params= ParametersClass("experiment_fg_offline");
 load([params.path, 'FG.mat']); % organized experimental data (preprocessing using KF)
-estimator= EstimatorClassFgExp(params);
-im= IntegrityMonitoringClassFgExp(params, estimator);
+estimator= EstimatorClassFgExpOff(params);
+im= IntegrityMonitoringClassFgExpOff(params, estimator);
 data_obj= DataClass(length(FG.imu), length(FG.lidar), params);
 counters= CountersClass([], [], params);
 
