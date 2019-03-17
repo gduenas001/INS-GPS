@@ -21,12 +21,12 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
      
     % ------------- Odometry -------------
     estimator.compute_steering(params)
-    estimator.odometry_update_sim_fg( params );
+    estimator.odometry_update( params );
     % ------------------------------------
     
     % ------------- Gyro -------------
     if epoch > 1
-        estimator.generate_gyro_msmt_sim(...
+        estimator.generate_gyro_msmt(...
             data_obj.update.x_true(params.ind_yaw,epoch-1), estimator.x_true(params.ind_yaw), params);
     end
     % --------------------------------
@@ -36,11 +36,11 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
      if params.SWITCH_LIDAR_UPDATE
 
          % get the lidar msmts
-         estimator.get_lidar_msmt_sim(params);
+         estimator.get_lidar_msmt(params);
          estimator.association= estimator.association_true;
                   
          % solve the fg optimization
-         estimator.solve_fg(counters, params)
+         estimator.solve(counters, params)
          
          % update preceding horizon for the estimate
          estimator.update_preceding_horizon(params)

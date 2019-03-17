@@ -1,5 +1,5 @@
 
-classdef IntegrityMonitoringClassFgSimOff < handle
+classdef IntegrityMonitoringClassEkfSim < handle
     properties (Constant)
         m= 3
         calculate_A_M_recursively = 0;
@@ -13,7 +13,7 @@ classdef IntegrityMonitoringClassFgSimOff < handle
         detector_threshold
         
         is_extra_epoch_needed= -1 % initialize as (-1), then a boolean
-        ind_im= [1,2,9];
+        ind_im= 1:3;
 
         
         % (maybe unnecessary)
@@ -101,7 +101,7 @@ classdef IntegrityMonitoringClassFgSimOff < handle
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj= IntegrityMonitoringClassFgSimOff(params, estimator)
+        function obj= IntegrityMonitoringClassEkfSim(params, estimator)
             
             % if the preceding horizon is fixed in epochs --> set M
             if params.SWITCH_FIXED_LM_SIZE_PH
@@ -110,21 +110,10 @@ classdef IntegrityMonitoringClassFgSimOff < handle
                 obj.M= params.M;
             end
             
-            % if it's a simulation --> change the indexes
-            if params.SWITCH_SIM, obj.ind_im= 1:3; end
-            
             % continuity requirement
             obj.C_req= params.continuity_requirement;
             
             % initialize the preceding horizon
-            obj.XX_ph=     cell(1, params.preceding_horizon_size+1);
-            obj.XX_ph{1}=  estimator.XX;
-            obj.D_bar_ph=  cell(1, params.preceding_horizon_size);
-            obj.PX_prior=  estimator.PX_prior;
-            obj.Gamma_prior= estimator.Gamma_prior;
-            obj.n_gps_ph= zeros( params.preceding_horizon_size, 1 );
-            obj.H_gps_ph= cell( 1, params.preceding_horizon_size );
-            obj.H_lidar_ph= cell( 1, params.preceding_horizon_size );
             obj.n_ph=     zeros( params.M, 1 );
             obj.Phi_ph=   cell( 1, params.M + 1 ); % need an extra epoch here
             obj.H_ph=     cell( 1, params.M );
@@ -145,46 +134,65 @@ classdef IntegrityMonitoringClassFgSimOff < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function compute_E_matrix_fg(obj, i, m_F)
+        function compute_E_matrix(obj, i, m_F)
             if sum(i) == 0 % E matrix for only previous state faults
-                obj.E= zeros( obj.m, obj.n_total );
-                obj.E(:, 1:obj.m)= eye(obj.m);
-            else % E matrix with a single LM fault
-                obj.E= zeros( obj.m + m_F*length(i) , obj.n_total );
-                obj.E( 1:obj.m , 1:obj.m )= eye(obj.m); % previous bias
+                obj.E= zeros( obj.m, obj.n_M + obj.m );
+                obj.E(:, end-obj.m + 1:end)= eye(obj.m);
+            else % E matrix with faults in the PH
+                obj.E= zeros( obj.m + m_F*length(i) , obj.n_M + obj.m );
+                obj.E( end-obj.m+1 : end , end-obj.m+1:end )= eye(obj.m); % previous bias
                 for j= 1:length(i)
-                    ind= obj.abs_msmt_ind(:,i(j));
-                    obj.E( obj.m + 1 + m_F*(j-1) : obj.m + m_F*(j) , ind(:)' )= eye(m_F); % landmark i faulted
+                    obj.E( m_F*(j-1)+1 : m_F*j , (i(j)-1)*m_F + 1 : i(j)*m_F )= eye(m_F); % landmark i(j) faulted
                 end
             end
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        monitor_integrity(obj, estimator, counters, data, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
         compute_hypotheses(obj, params)
         % ----------------------------------------------
         % ----------------------------------------------
-        monitor_integrity(obj, estimator, counters, data,  params)
+        prob_of_MA(obj, estimator, association, params);
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_whiten_jacobian_A(obj, estimator, params)
+        compute_Y_M_matrix(obj,estimator)
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_required_epochs_for_min_LMs(obj, params, estimator)
+        compute_A_M_matrix(obj,estimator)
+        % ----------------------------------------------
+        % ----------------------------------------------
+        compute_B_bar_matrix(obj, estimator)
         % ----------------------------------------------
         % ----------------------------------------------
         alpha= build_state_of_interest_extraction_matrix(obj, params, current_state)
         % ----------------------------------------------
         % ----------------------------------------------
-        p_hmi_H= compute_p_hmi_H(obj, alpha, fault_ind, params)
-        % ----------------------------------------------
-        % ----------------------------------------------
-        function update_preceding_horizon(obj, estimator)
+        function update_preceding_horizon(obj, estimator, params)
             
-                obj.Phi_ph=   {inf, estimator.Phi_k, obj.Phi_ph{2:obj.M}};
-                obj.H_ph=     {estimator.H_k,   obj.H_ph{1:obj.M-1}};
-                obj.n_ph=     [estimator.n_k;   obj.n_ph(1:obj.M-1)];
-                obj.XX_ph=    {estimator.XX,    obj.XX_ph{1:obj.M}};
-                obj.D_bar_ph= {inf, estimator.D_bar, obj.D_bar_ph{2:obj.M}};
+            if params.SWITCH_FIXED_LM_SIZE_PH
+                obj.n_ph=     [estimator.n_k;     obj.n_ph(1:obj.M)];
+                obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:obj.M}};
+                obj.q_ph=     [estimator.q_k;     obj.q_ph(1:obj.M)];
+                obj.Phi_ph=   {obj.Phi_k,         obj.Phi_ph{1:obj.M+ 1}}; %%%%%%%% CAREFUL
+                obj.H_ph=     {obj.H_k,           obj.H_ph{1:obj.M}};
+                obj.L_ph=     {obj.L_k,           obj.L_ph{1:obj.M}};
+                obj.Lpp_ph=   {obj.Lpp_k,         obj.Lpp_ph{1:obj.M}};
+                obj.Y_ph=     {estimator.Y_k,     obj.Y_ph{1:obj.M}};
+                obj.P_MA_ph=  {obj.P_MA_k,        obj.P_MA_ph{1:obj.M}};
+
+            else
+                obj.n_ph=     [estimator.n_k;     obj.n_ph(1:end-1)];
+                obj.gamma_ph= {estimator.gamma_k, obj.gamma_ph{1:end-1}};
+                obj.q_ph=     [estimator.q_k;     obj.q_ph(1:end-1)];
+                obj.Phi_ph=   {obj.Phi_k,         obj.Phi_ph{1:end-1}}; %%%%%%%% CAREFUL
+                obj.H_ph=     {obj.H_k,           obj.H_ph{1:end-1}};
+                obj.L_ph=     {obj.L_k,           obj.L_ph{1:end-1}};
+                obj.Lpp_ph=   {obj.Lpp_k,         obj.Lpp_ph{1:end-1}};
+                obj.Y_ph=     {estimator.Y_k,     obj.Y_ph{1:end-1}};
+                obj.P_MA_ph=  {obj.P_MA_k,        obj.P_MA_ph{1:end-1}};
+            end
         end 
     end
 end

@@ -79,13 +79,13 @@ classdef EstimatorClassFgExpOff < handle
         discretize(obj, F, G, S, dT)
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_lidar_H_k_offline(obj, params, FG, epoch)
+        compute_lidar_H_k(obj, params, FG, epoch)
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_gps_H_k_offline(obj, params, FG, epoch)
+        compute_gps_H_k(obj, params, FG, epoch)
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_imu_Phi_k_offline(obj, params, FG, epoch)
+        compute_imu_Phi_k(obj, params, FG, epoch)
         % ----------------------------------------------
         % ----------------------------------------------
         function compute_alpha(obj,params)
