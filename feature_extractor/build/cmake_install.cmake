@@ -1,4 +1,4 @@
-# Install script for directory: /home/osamarobotics-lab/iit/integrity/INS-GPS/feature_extractor
+# Install script for directory: /home/robolab/iit/integrity/feature_extractor
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/osamarobotics-lab/iit/integrity/INS-GPS/feature_extractor/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/robolab/iit/integrity/feature_extractor/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

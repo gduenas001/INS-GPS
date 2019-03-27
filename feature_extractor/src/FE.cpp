@@ -346,6 +346,9 @@ for (int epoch= initial_frame; epoch < num_frames; epoch=epoch+2) // used in cas
 			    ++numClusters; 
 			    clusters.push_back(cloud_cluster);
 
+			// write the cluster centroid in the output file
+			    myfile << std::to_string(cloud_parameters["meanX"]) << "\t" << std::to_string(cloud_parameters["meanY"]) << "\n";
+
 			    if (VERBOSE)
 				{
 				    cout << "Cluster " << numClusters << " ----> " 
