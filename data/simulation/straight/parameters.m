@@ -17,8 +17,8 @@
 
 % --------------- Parameters ---------------
 m= 3; % number of states in the state vector
-I_MA= 1e-8; 
-P_MA_max= 1e-4; % maximum allowable miss-association probability for one association
+I_MA= 1e-5; 
+P_MA_max= 1e-5; % maximum allowable miss-association probability for one association
 I_H= 1e-6; % risk allocated to unmonitored fault modes
 P_UA= 1e-3;
 min_n_L_M= 10; % min number of landmarks in preceding horizon

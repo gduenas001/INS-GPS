@@ -48,7 +48,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     obj.sigma_hat= sqrt( alpha' * estimator.PX(params.ind_pose, params.ind_pose) * alpha );
     
     % detector threshold
-    obj.T_d = sqrt( chi2inv( 1 - params.continuity_requirement , obj.n_M ) );
+    obj.T_d= chi2inv( 1 - params.continuity_requirement , obj.n_M );
     
     % If there are no landmarks in the FoV at k 
     if estimator.n_k == 0
@@ -78,9 +78,6 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
 
         % M matrix
         obj.M_M= obj.B_bar' / obj.Y_M * obj.B_bar;
-
-        % set the threshold from the continuity req
-        obj.detector_threshold= chi2inv(1 - obj.C_req, obj.n_M);
         
         % compute detector
         obj.q_M= sum(obj.q_ph(1:obj.M)) + estimator.q_k;
@@ -110,37 +107,57 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                     obj.compute_E_matrix(obj.inds_H{i}, params.m_F);
                 end
                 
-                % Worst-case fault direction
-                f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A_M' * alpha;
-                f_M_dir= f_M_dir / norm(f_M_dir); % normalize
+                % compute N matrix
+                N= obj.E * obj.M_M * obj.E';
+                sqrt_inv_N= inv(sqrtm(N));
                 
-                % worst-case fault magnitude
-                fx_hat_dir= alpha' * obj.A_M * f_M_dir;
-                M_dir= f_M_dir' * obj.M_M * f_M_dir;
+                % compute D matrix
+                D= sqrt_inv_N * obj.E * obj.A_M' * alpha;
                 
-                % worst-case fault magnitude
-                f_mag_min= 0;
-                f_mag_max= 5;
-                f_mag_inc= 5;
-                p_hmi_H_prev= -1;
-                for k= 1:10
-                    [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-                        f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M),...
-                        f_mag_min, f_mag_max);
-                    
-                    % make it a positive number
-                    p_hmi_H= -p_hmi_H;
-                    
-                    % check if the new P(HMI|H) is smaller
-                    if k == 1 || p_hmi_H_prev < p_hmi_H
-                        p_hmi_H_prev= p_hmi_H;
-                        f_mag_min= f_mag_min + f_mag_inc;
-                        f_mag_max= f_mag_max + f_mag_inc;
-                    else
-                        p_hmi_H= p_hmi_H_prev;
-                        break
-                    end
-                end
+                % compute the relation between non-centrality paramters
+                kappa= obj.sigma_hat^(-2) * norm(D)^2;
+                
+                % compute norm on MA non-centrality parameter
+                lambda= ( sqrt(obj.q_M) + sqrt(  chi2inv( 1 - params.I_MA , obj.n_M ) ) )^2;
+                
+                % compute mu
+                mu= lambda * kappa;
+                
+                % compute P(HMI | H)
+                p_hmi_H= 1 - ncx2cdf( params.alert_limit^2 / obj.sigma_hat^2 , 1, mu );
+
+                
+%                 % Worst-case fault direction
+%                 f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A_M' * alpha;
+%                 f_M_dir= f_M_dir / norm(f_M_dir); % normalize
+%                 
+%                 % worst-case fault magnitude
+%                 fx_hat_dir= alpha' * obj.A_M * f_M_dir;
+%                 M_dir= f_M_dir' * obj.M_M * f_M_dir;
+%                 
+%                 % worst-case fault magnitude
+%                 f_mag_min= 0;
+%                 f_mag_max= 5;
+%                 f_mag_inc= 5;
+%                 p_hmi_H_prev= -1;
+%                 for k= 1:10
+%                     [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+%                         f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M),...
+%                         f_mag_min, f_mag_max);
+%                     
+%                     % make it a positive number
+%                     p_hmi_H= -p_hmi_H;
+%                     
+%                     % check if the new P(HMI|H) is smaller
+%                     if k == 1 || p_hmi_H_prev < p_hmi_H
+%                         p_hmi_H_prev= p_hmi_H;
+%                         f_mag_min= f_mag_min + f_mag_inc;
+%                         f_mag_max= f_mag_max + f_mag_inc;
+%                     else
+%                         p_hmi_H= p_hmi_H_prev;
+%                         break
+%                     end
+%                 end
                 
                 % Add P(HMI | H) to the integrity risk
                 if i == 0

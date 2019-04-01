@@ -24,7 +24,7 @@ m= 15; % number of states in the state vector
 P_MA_max= 1e-2; % maximum alloable miss-association probability
 P_UA= 1e-3;
 I_H= 1e-7;
-min_n_L_M= 40; % min number of landmarks in the preceding horizon + current time
+min_n_L_M= 4; % min number of landmarks in the preceding horizon + current time
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 6000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
@@ -68,5 +68,5 @@ VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
-I_MA= 1e-8;
+I_MA= 1e-5;
 % -------------------------------------------

@@ -40,7 +40,7 @@ classdef IntegrityDataClass < handle
             obj.p_hmi(counters.k_im)= im.p_hmi;
             obj.n_L_M(counters.k_im)= im.n_L_M;
             obj.P_H{counters.k_im}= im.P_H;
-            obj.detector_threshold(counters.k_im)= im.T_d^2;
+            obj.detector_threshold(counters.k_im)= im.T_d;
             obj.sigma_hat(counters.k_im)= im.sigma_hat;
             obj.time(counters.k_im)= counters.time_sim;
             obj.p_eps(counters.k_im)= 2* normcdf(-params.alert_limit, 0, im.sigma_hat);
