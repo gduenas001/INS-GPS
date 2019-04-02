@@ -157,6 +157,9 @@ classdef IntegrityMonitoringClassEkfExp < handle
         prob_of_MA(obj, estimator, association, params);
         % ----------------------------------------------
         % ----------------------------------------------
+        compute_gamma_M_vector(obj,estimator)
+        % ----------------------------------------------
+        % ----------------------------------------------
         compute_Y_M_matrix(obj,estimator)
         % ----------------------------------------------
         % ----------------------------------------------
