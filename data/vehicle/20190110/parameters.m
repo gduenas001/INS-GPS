@@ -13,7 +13,7 @@
  SWITCH_SEED= 1; 
  SWITCH_GENERATE_RANDOM_MAP= 0;
  SWITCH_LIDAR_FAULTS= 0;
- SWITCH_ONLY_ONE_LM_FAULT= 1; % only monitor one simultaneous landmark failing
+ SWITCH_ONLY_ONE_LM_FAULT= 0; % only monitor one simultaneous landmark failing
  SWITCH_GPS_FG= 1;
  SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 0;
  % --------------------------------------------------
@@ -68,5 +68,5 @@ VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
-I_MA= 1e-5;
+I_MA= 1e-7;
 % -------------------------------------------

@@ -104,6 +104,10 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             
         else % if we don't have enough landmarks --> P(HMI)= 1   
             obj.P_H= ones(obj.n_H, 1) * inf; % initializing P_H vector
+            
+            % compute norm on MA non-centrality parameter
+            lambda= ( sqrt(obj.q_M) + sqrt(  chi2inv( 1 - params.I_MA , obj.n_M ) ) )^2;
+                
             for i= 0:obj.n_H
                 % build extraction matrix
                 if i == 0
@@ -113,17 +117,15 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 end
                 
                 % compute N matrix
-                N= obj.E * obj.M_M * obj.E';
-                sqrt_inv_N= inv(sqrtm(N));
+%                 N= obj.E * obj.M_M * obj.E';
+%                 sqrt_inv_N= inv(sqrtm(N));
                 
                 % compute D matrix
-                D= sqrt_inv_N * obj.E * obj.A_M' * alpha;
+                D= ( sqrtm(obj.E * obj.M_M * obj.E') ) \ obj.E * obj.A_M' * alpha;
                 
                 % compute the relation between non-centrality paramters
                 kappa= obj.sigma_hat^(-2) * norm(D)^2;
                 
-                % compute norm on MA non-centrality parameter
-                lambda= ( sqrt(obj.q_M) + sqrt(  chi2inv( 1 - params.I_MA , obj.n_M ) ) )^2;
                 
                 % compute mu
                 mu= lambda * kappa;
@@ -131,8 +133,6 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 % compute P(HMI | H)
                 p_hmi_H= 1 - ncx2cdf( params.alert_limit^2 / obj.sigma_hat^2 , 1, mu );
 
-                
-                
                 
 %                 % Worst-case fault direction
 %                 f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A_M' * alpha;
