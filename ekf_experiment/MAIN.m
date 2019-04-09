@@ -155,7 +155,7 @@ for epoch= 1:imu.num_readings - 1
             counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
   
             % increase integrity counter
-            % counters.increase_integrity_monitoring_counter();
+            counters.increase_integrity_monitoring_counter();
             
         else
             
