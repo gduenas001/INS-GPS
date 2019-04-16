@@ -41,18 +41,22 @@ for j= 1:length(lm_ids)
         plot(time, P_MA, 'linewidth', 2)
     end
 end
-leg= legend({'$LM1$', '$LM2$', '$LM3$'},'interpreter', 'latex','fontsize', 10);
-xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
+
+legend({'lm 1', 'lm 2', 'lm 3'},...
+    'location', 'northwest',...
+    'interpreter', 'latex','fontsize', 12);
+xlabel('Time [s]','interpreter', 'latex','fontsize', 12)
 xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the x-axis (otherwise it moves)
-ylabel('P(MA)','interpreter', 'latex','fontsize', 10)
+ylabel('$P^{MA}$','interpreter', 'latex','fontsize', 12)
 xlim([187.2, 204]) % rset the x-axis (otherwise it moves)
 ylim([0.08,0.65]);
+set(gca,'TickLabelInterpreter','latex','fontsize', 12)
 
-% % save figure
-% fig= gcf;
-% fig.PaperUnits = 'inches';
-% fig.PaperPosition = [0 0 3.5 2.5];
-% print('P_MA_test','-dpdf','-r0')
+% save figure
+fig= gcf;
+fig.PaperUnits = 'inches';
+fig.PaperPosition = [0 0 7 3.5];
+print('P_MA_test','-dpdf','-r0')
 
 %% plot integrity risk
 
