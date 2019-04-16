@@ -8,23 +8,28 @@ ma0= load('no_MA');
 
 %% plot integrity risk
 figure; hold on; grid on;
-plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.p_hmi, 'b-', 'linewidth', 2)
-plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ma0.data_obj.im.p_hmi, 'r-', 'linewidth', 2)
-plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ones(length(ma0.data_obj.im.time),1) * ma0.params.I_H, 'g.', 'linewidth', 2)
-set(gca,'TickLabelInterpreter','latex','fontsize', 10)
+plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.p_hmi, 'linewidth', 2.3)
+plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ma0.data_obj.im.p_hmi, 'linewidth', 1.8)
 
-legend({'Assuming no MA','Actual integrity risk'}, 'interpreter', 'latex','fontsize', 10)
-xlabel('x [m]','interpreter', 'latex','fontsize', 10)
+plot(ma0.data_obj.im.time * ma0.params.velocity_sim,...
+    ones(length(ma0.data_obj.im.time),1) * ma0.params.I_H, 'linewidth', 2)
+set(gca,'TickLabelInterpreter','latex','fontsize', 12)
+
+legend({'Assuming no MA','Actual integrity risk'}, 'location', 'southwest',...
+    'interpreter', 'latex','fontsize', 12)
+xlabel('x [m]','interpreter', 'latex','fontsize', 12)
 xlim([0,116])
-ylabel('P(HMI)','interpreter', 'latex','fontsize', 10)
+ylabel('$P(HMI)$','interpreter', 'latex','fontsize', 12)
 set(gca, 'YScale', 'log')
 xlim([0,116])
 ylim([1e-20,1]);
 
+% % save figure
 % fig= gcf;
 % fig.PaperUnits = 'inches';
-% fig.PaperPosition = [0 0 3.5 2.5];
+% fig.PaperPosition = [0 0 7 4];
 % print('P_HMI','-dpdf','-r0')
+% 
 
 %% plot map and path
 
@@ -48,7 +53,7 @@ lm_map= [pma0.estimator.landmark_map(:,1),...
 % plots
 figure; hold on; grid on;
 plot( pma0.poses(1,:), pma0.poses(2,:), 'r-', 'linewidth', 2);
-plot( ma0.poses(1,:), ma0.poses(2,:), 'b-', 'linewidth', 2);
+% plot( ma0.poses(1,:), ma0.poses(2,:), 'b-', 'linewidth', 2);
 plot(lm_map(:,1), lm_map(:,2), 'k.', 'markersize',7, 'linewidth', 1);
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 % legend({'With injected MA','Without injected MA'}, 'interpreter', 'latex','fontsize', 10)
@@ -77,48 +82,58 @@ pma0.standard_dev_y= sqrt( pma0.data_obj.update.PX(2,:) );
 ma0.standard_dev_y= sqrt( pma0.data_obj.update.PX(2,:) );
 
 figure; hold on; grid on;
-plot(pma0.data_obj.update.time * pma0.params.velocity_sim, pma0.data_obj.update.error(2,:), 'r-', 'linewidth', 2)
-plot(ma0.data_obj.update.time * ma0.params.velocity_sim,  ma0.data_obj.update.error(2,:), 'b-', 'linewidth', 2)
+
+plot(ma0.data_obj.update.time * ma0.params.velocity_sim,  ma0.data_obj.update.error(2,:), 'linewidth', 2)
+plot(pma1.data_obj.update.time * pma1.params.velocity_sim, pma1.data_obj.update.error(2,:), 'linewidth', 2)
+
+
 plot(pma0.data_obj.update.time * pma0.params.velocity_sim, 3*pma0.standard_dev_y,'k--','linewidth',2);
-plot(0,-1,'g--')
-plot(pma0.data_obj.update.time * pma0.params.velocity_sim,...
-    ones(length(pma0.data_obj.update.time),1)*0.9, 'g.', 'linewidth',2)
 plot(pma0.data_obj.update.time * pma0.params.velocity_sim, -3*pma0.standard_dev_y,'k--','linewidth',2);
 plot(pma0.data_obj.update.time * pma0.params.velocity_sim,...
-    ones(length(pma0.data_obj.update.time),1)*(-0.9), 'g.', 'linewidth',2)
-set(gca,'TickLabelInterpreter','latex','fontsize', 10)
+    ones(length(pma0.data_obj.update.time),1)*0.9, '.', 'linewidth',2)
+plot(pma0.data_obj.update.time * pma0.params.velocity_sim,...
+    ones(length(pma0.data_obj.update.time),1)*(-0.9), '.', 'linewidth',2)
 
-legend({'$\delta \hat{x}$ with injected MA',...
-        '$\delta \hat{x}$ without injeced faults',...
-        '$3 \hat{\sigma}$'},...
-        'interpreter', 'latex','fontsize', 10)
-xlabel('x [m]','interpreter', 'latex','fontsize', 10)
-ylabel('error [m]','interpreter', 'latex','fontsize', 10)
+set(gca,'TickLabelInterpreter','latex','fontsize', 12)
+
+legend({'$\delta \hat{x}$ without injected faults',...
+        '$\delta \hat{x}$ with injected misassociation',...
+        '$3 \hat{\sigma}$ variance envolope'},...
+        'location', 'southwest',...
+        'interpreter', 'latex','fontsize', 12)
+xlabel('x [m]','interpreter', 'latex','fontsize', 12)
+ylabel('Error [m]','interpreter', 'latex','fontsize', 12)
 xlim([0,116])
-ylim([-1.1, 1.2])
+ylim([-1.2, 1.2])
 
-% fig= gcf;
-% fig.PaperUnits = 'inches';
-% fig.PaperPosition = [0 0 3.7 2.7];
-% print('error','-dpdf','-r0')
+% save figure
+fig= gcf;
+fig.PaperUnits = 'inches';
+fig.PaperPosition = [0 0 7 4];
+print('error','-dpdf','-r0')
 
 %% plot detector and detector threshold
 
 figure; hold on; grid on;
-plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.detector, 'linewidth', 2)
 plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.detector_threshold, 'linewidth', 2)
-set(gca,'TickLabelInterpreter','latex','fontsize', 10)
-xlabel('x [m]','interpreter', 'latex','fontsize', 10)
+plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.detector, 'linewidth', 2)
+
+set(gca,'TickLabelInterpreter','latex','fontsize', 12)
+xlabel('x [m]','interpreter', 'latex','fontsize', 12)
 xlim([0,116])
 ylim([0, 70])
 
-legend({'$q_{D}$', '$T_D$'},'interpreter', 'latex','fontsize', 10)
+legend({'Detector threshold, $T^q$',...
+        'Fault detector, $q$'},...
+        'location', 'southeast',...
+        'interpreter', 'latex','fontsize', 12)
 
-% fig= gcf;
-% fig.PaperUnits = 'inches';
-% fig.PaperPosition = [0 0 3.7 2.5];
-% print('detector','-dpdf','-r0')
-
+save figure
+fig= gcf;
+fig.PaperUnits = 'inches';
+fig.PaperPosition = [0 0 7 4];
+print('detector','-dpdf','-r0')
+ 
 
 
 % %% plot miss-association probability by time

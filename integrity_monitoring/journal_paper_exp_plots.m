@@ -47,74 +47,84 @@ xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the
 ylabel('P(MA)','interpreter', 'latex','fontsize', 10)
 xlim([187.2, 204]) % rset the x-axis (otherwise it moves)
 ylim([0.08,0.65]);
-% save figure
-fig= gcf;
-fig.PaperUnits = 'inches';
-fig.PaperPosition = [0 0 3.5 2.5];
-print('P_MA_test','-dpdf','-r0')
-%% plot integrity risk
-figure; hold on; grid on;
-plot(test_n5.data_obj.im.time, test_n5.data_obj.im.p_hmi + test_n10.params.I_H, 'g-', 'linewidth', 2)
-plot(test_n10.data_obj.im.time, test_n10.data_obj.im.p_hmi + test_n10.params.I_H, 'b-', 'linewidth', 2)
-plot(test_n15.data_obj.im.time, test_n15.data_obj.im.p_hmi + test_n10.params.I_H, 'r-', 'linewidth', 2)
-set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 
-leg= legend({'$n^{F^{(M)}} = 5$','$n^{F^{(M)}} = 10$','$n^{F^{(M)}} = 15$'}, 'interpreter', 'latex','fontsize', 10);
-xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
-xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the x-axis (otherwise it moves)
-ylabel('P(HMI)','interpreter', 'latex','fontsize', 10)
-set(gca, 'YScale', 'log')
-xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the x-axis (otherwise it moves)
-ylim([7*1e-8,1]);
-
-
-% save fig
-fig= gcf;% fig.PaperUnits = 'inches';
-fig.PaperPosition = [0 0 3.5 3];
-print('P_HMI_test','-dpdf','-r0')
-
-% % for the zoom in
-% xlim([test_n10.data_obj.im.time(1), 104])
-% set(leg, 'visible', 'off')
-%  
-% % save fig
+% % save figure
 % fig= gcf;
 % fig.PaperUnits = 'inches';
-% fig.PaperPosition = [0 0 3.5 1.5];
-% print('P_HMI_zoom_test','-dpdf','-r0')
+% fig.PaperPosition = [0 0 3.5 2.5];
+% print('P_MA_test','-dpdf','-r0')
+
+%% plot integrity risk
+
+figure; hold on; grid on;
+
+plot(test_n5.data_obj.im.time, test_n5.data_obj.im.p_hmi + test_n10.params.I_H, 'linewidth', 1.5)
+plot(test_n10.data_obj.im.time, test_n10.data_obj.im.p_hmi + test_n10.params.I_H, 'linewidth', 1.5)
+plot(test_n15.data_obj.im.time, test_n15.data_obj.im.p_hmi + test_n10.params.I_H, 'linewidth', 1.5)
+
+leg= legend({'Min. associations, $n^{A^{(M)}}_{min} = 5$',...
+             'Min. associations, $n^{A^{(M)}}_{min} = 10$',...
+             'Min. associations, $n^{A^{(M)}}_{min} = 15$'},...
+            'interpreter', 'latex','fontsize', 12);
+
+set(gca,'TickLabelInterpreter','latex','fontsize', 12)
+
+xlabel('Time [s]','interpreter', 'latex','fontsize', 12)
+xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+ylabel('$P(HMI)$','interpreter', 'latex','fontsize', 12)
+set(gca, 'YScale', 'log')
+xlim([test_n10.data_obj.im.time(1), test_n10.data_obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+ylim([5*1e-8,1]);
+
+
+% % save fig
+% fig= gcf;% fig.PaperUnits = 'inches';
+% fig.PaperPosition = [0 0 7 4];
+% print('P_HMI_test','-dpdf','-r0')
+
+
+% for the zoom in
+xlim([test_n10.data_obj.im.time(1), 104])
+set(leg, 'visible', 'off')
+ 
+% save fig
+fig= gcf;
+fig.PaperUnits = 'inches';
+fig.PaperPosition = [0 0 7 2];
+print('P_HMI_zoom_test','-dpdf','-r0')
 
 %% plot map and path for test_n10
 
-figure; hold on; grid on;
-plot3(test_n10.data_obj.pred.XX(1,:), test_n10.data_obj.pred.XX(2,:), test_n10.data_obj.pred.XX(3,:), 'b.');
-plot3(test_n10.data_obj.update.XX(1,:), test_n10.data_obj.update.XX(2,:), test_n10.data_obj.update.XX(3,:),...
-    'b.','markersize', 7);
+figure; hold on; box on;
+plot3(test_n10.data_obj.pred.XX(1,:), test_n10.data_obj.pred.XX(2,:), test_n10.data_obj.pred.XX(3,:), '.');
+% plot3(test_n10.data_obj.update.XX(1,:), test_n10.data_obj.update.XX(2,:), test_n10.data_obj.update.XX(3,:),...
+%     '.','markersize', 7);
 
 % create a map of landmarks
 lm_map= [test_n10.estimator.landmark_map(:,1),...
     test_n10.estimator.landmark_map(:,2),...
     zeros(test_n10.estimator.num_landmarks,1)];
-plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'k.', 'markersize', 6);
+plot3(lm_map(:,1), lm_map(:,2), lm_map(:,3), 'k.', 'markersize', 12);
 
-% plot landmarks IDs
-for i= 1:length(lm_map)
-    txt= num2str(i);
-    text(lm_map(i,1), lm_map(i,2), txt);
-    
-end
+% % plot landmarks IDs
+% for i= 1:length(lm_map)
+%     txt= num2str(i);
+%     text(lm_map(i,1), lm_map(i,2), txt);
+%     
+% end
 
 xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 axis equal
 xlim([-315, 20])
 ylim([-95, 25])
-set(gca,'TickLabelInterpreter','latex','fontsize', 10)
-xlabel('x [m]','interpreter', 'latex','fontsize', 10);
-ylabel('y [m]','interpreter', 'latex','fontsize', 10);
+set(gca,'TickLabelInterpreter','latex','fontsize', 12)
+xlabel('x [m]','interpreter', 'latex','fontsize', 12);
+ylabel('y [m]','interpreter', 'latex','fontsize', 12);
 
 % save figure
 fig= gcf;
 fig.PaperUnits = 'inches';
-fig.PaperPosition = [0 0 3.5 2.5];
+fig.PaperPosition = [0 0 7 3];
 print('path_test','-dpdf','-r0')
 
 
