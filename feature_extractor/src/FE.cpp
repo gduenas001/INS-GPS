@@ -40,6 +40,7 @@
 #include <pcl/conversions.h>
 #include <locale>
 #include <pcl/common/impl/io.hpp>
+//#include </home/robolab/Documents/pcl/cuda/filters/include/pcl/cuda/filters/filter.h>
 
 
 // User specific
@@ -190,10 +191,12 @@ void read_pcd_file_callback(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int epoch
 		filename2= sa2.str();
 
 		// reading VLP1 (192.168.1.201), taking into account that even pcd files is for VLP1
-		reader.read ("../point_cloud_data/" + filename1 + ".pcd", *cloud1);
+		//reader.read ("../point_cloud_data/" + filename1 + ".pcd", *cloud1);
+		reader.read ("/home/robolab/Robotics_Lab_experiment/src/gps_imu_lidar_data_collection/data/point_cloud_data/" + filename1 + ".pcd", *cloud1);
 
 		// reading VLP2 (192.168.1.202), taking into account that even pcd files is for VLP2
-		reader.read ("../point_cloud_data/" + filename2 + ".pcd", *cloud2);
+		//reader.read ("../point_cloud_data/" + filename2 + ".pcd", *cloud2);
+		reader.read ("/home/robolab/Robotics_Lab_experiment/src/gps_imu_lidar_data_collection/data/point_cloud_data/" + filename2 + ".pcd", *cloud2);
 
 		// Transforming pointclouds of VLP1 and VLP2 to be aligned (and coincided) with IMU referance frame
 		pcl::transformPointCloud (*cloud1, *cloud1, transform21);

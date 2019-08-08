@@ -8,11 +8,11 @@ addpath('../utils/classes')
 
 % create objects
 params= ParametersClass("localization_kf");
-im= IntegrityMonitoringClassEkfExp(params);
 gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
-estimator= EstimatorClassEkfExp(imu.msmt(1:3, params.num_epochs_static), params);
+estimator= EstimatorClassEkfExp(imu.msmt(1:3, 1:params.num_epochs_static), params);
+im= IntegrityMonitoringClassEkfExp(params, estimator);
 data_obj= DataClass(imu.num_readings, lidar.num_readings, params);
 counters= CountersClass(gps, lidar, params);
 FG= FGDataInputClass(lidar.num_readings);
@@ -124,16 +124,16 @@ for epoch= 1:imu.num_readings - 1
             
             % NN data association
             estimator.nearest_neighbor(lidar.msmt(:,1:2), params);
-
+            
             % Evaluate the probability of mis-associations
             im.prob_of_MA( estimator, params);
-
+            
             % Lidar update
             estimator.lidar_update(lidar.msmt(:,1:2), params);
-            
+
             % Lineariza and discretize
             estimator.linearize_discretize( imu.msmt(:,epoch+1), params.dt_imu, params); %Osama
-            
+
             % Store the required data for Factor Graph
             z= lidar.msmt(:,1:2);
             z(estimator.association == 0, :)= [];

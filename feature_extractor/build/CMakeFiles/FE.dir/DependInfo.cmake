@@ -55,7 +55,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/include/jsoncpp"
   "/usr/include/tcl"
   "/usr/include/pcl-1.8"
-  "/usr/include/eigen3"
+  "/usr/local/include/eigen3"
   "/usr/include/ni"
   "/usr/include/openni2"
   "../src/h_files"

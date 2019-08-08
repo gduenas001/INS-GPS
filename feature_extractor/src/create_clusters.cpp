@@ -75,7 +75,6 @@ void create_clusters (pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
 	ec.setMinClusterSize (PARAMS["minClusterSize"]);
 	ec.setSearchMethod (tree);
 	ec.setInputCloud (cloud);
-
 	ec.extract (cluster_indices);
  	
 

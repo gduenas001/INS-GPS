@@ -1,5 +1,5 @@
-initial_frame 2350
-num_frames 2600
+initial_frame 7000
+num_frames 9000
 leafSizeXY 0.05
 leafSizeZ 1
 minClusterSize 5

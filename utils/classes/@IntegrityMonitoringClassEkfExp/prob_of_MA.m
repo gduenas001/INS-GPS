@@ -94,7 +94,6 @@ for t= 1:length(estimator.association_no_zeros)
             estimator.association( estimator.association == lm_id_t )= 0;
         end
     end
-    
     % not more than probability one
     if obj.P_MA_k(t) > 1, obj.P_MA_k(t)= 1; end
 end

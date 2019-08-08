@@ -32,7 +32,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     ( ~params.SWITCH_FIXED_LM_SIZE_PH &&...
     counters.k_im > obj.M + 2 )
     
-    % Modify preceding horizon to have enough landmarks
+    % Mdify preceding horizon to have enough landmarks
     if params.SWITCH_FIXED_LM_SIZE_PH
         obj.n_M= estimator.n_k;
         for i= 1:length(obj.n_ph)

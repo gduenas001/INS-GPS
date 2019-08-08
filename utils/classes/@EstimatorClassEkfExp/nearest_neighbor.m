@@ -15,7 +15,7 @@ cpsi= cos(obj.XX(9));
 zHat= zeros(2,1);
 
 % select landmarks in the field of view
-obj.FoV_landmarks_at_k= zeros(obj.num_of_extracted_features, 1);
+obj.FoV_landmarks_at_k= zeros(obj.num_landmarks, 1);
 for i= 1:obj.num_landmarks
     
     dx= obj.landmark_map(i,1) - obj.XX(1);

@@ -26,7 +26,8 @@ if isempty(obj.A_M) || ~obj.calculate_A_M_recursively
     obj.A_M(:, obj.n_M+1 : obj.n_M + obj.m) = Dummy_Variable * obj.Lpp_ph{obj.M};
     
 % calculate matrix A_M recusively
-else   
+else
+    obj.L_k
     obj.A_M=[obj.L_k, obj.Lpp_k*obj.A_M];
     obj.A_M(:, obj.n_M +1 : end-obj.m) = [];
     obj.A_M(:, end-obj.m+1 : end) = obj.A_M(:, end-obj.m+1 : end)/obj.Lpp_ph{obj.M +1};

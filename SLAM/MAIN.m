@@ -10,7 +10,7 @@ params= ParametersClass('slam');
 gps= GPSClass(params.num_epochs_static * params.dt_imu, params);
 lidar= LidarClass(params, gps.timeInit);
 imu= IMUClass(params, gps.timeInit);
-estimator= EstimatorClassSlam(imu.inc_msmt(1:3, params.num_epochs_static), params);
+estimator= EstimatorClassSlam(imu.inc_msmt(1:3, 1:params.num_epochs_static), params);
 data_obj= DataClass(imu.num_readings, gps.num_readings, params);
 counters= CountersClass(gps, lidar, params);
 
@@ -87,7 +87,7 @@ for epoch= 1:imu.num_readings-1
             
             % Yaw update
             if params.SWITCH_YAW_UPDATE && norm(estimator.XX(4:6)) > params.min_vel_yaw
-                disp('yaw udpate');
+                disp('yaw update');
                 estimator.yaw_update( imu.msmt(4:6,epoch), params );
             end
             estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);

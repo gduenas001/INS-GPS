@@ -2,7 +2,6 @@ function lidar_update(obj, z, params)
 
 obj.XX(params.ind_yaw)= pi_to_pi( obj.XX(params.ind_yaw) ); 
 
-
 if all(obj.association == 0)
     obj.n_k= 0;
     obj.Y_k= [];

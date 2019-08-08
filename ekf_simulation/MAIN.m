@@ -15,10 +15,14 @@ counters= CountersClass([], [], params);
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
-for epoch= 1:params.num_epochs_sim
+epoch= 1;
+
+while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
+%for epoch= 1:params.num_epochs_sim
     disp(strcat('Epoch -> ', num2str(epoch)));
      
     % ------------- Odometry -------------
+    estimator.compute_steering(params)
     estimator.odometry_update( params );
     % -------------------------------
     
@@ -88,6 +92,7 @@ for epoch= 1:params.num_epochs_sim
     % increase time
     counters.increase_time_sum_sim(params);
     counters.increase_time_sim(params);
+    epoch= epoch + 1;
 end
 % ------------------------- END LOOP -------------------------
 % ------------------------------------------------------------
@@ -100,7 +105,8 @@ data_obj.delete_extra_allocated_memory(counters)
 
 
 % ------------- PLOTS -------------
-data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
+% data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
+data_obj.plot_map_localization_sim_fg(estimator, params)
 data_obj.plot_number_of_landmarks(params);
 % data_obj.plot_number_epochs_in_preceding_horizon(params);
 % data_obj.plot_estimates();
