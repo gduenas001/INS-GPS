@@ -254,7 +254,7 @@ classdef DataClass < handle
                 if params.SWITCH_FACTOR_GRAPHS
                     plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
                     xlabel('Time [s]','interpreter', 'latex','fontsize', 15)
-                    xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+                    xlim([obj.im.time(1), obj.im.time(end-1)]) % reset the x-axis (otherwise it moves)
                 else
                     plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
                     xlabel('Time [s]','interpreter', 'latex','fontsize', 15)

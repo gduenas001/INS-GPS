@@ -23,8 +23,8 @@ obj.noncentral_dof{obj.counter_H}=  obj.n_M + obj.n_M_gps;
 obj.f_dir_sig2{obj.counter_H}= (fx_hat_dir / obj.sigma_hat)^2;
 obj.M_dir{obj.counter_H}= M_dir;
 
-p_hmi_H= 0;
-return
+% p_hmi_H= 0;
+% return
 
 
 

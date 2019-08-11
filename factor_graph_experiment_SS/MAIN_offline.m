@@ -10,8 +10,8 @@ addpath('../utils/classes')
 % create objects
 params= ParametersClass("experiment_fg_offline");
 load([params.path, 'FG.mat']); % organized experimental data (preprocessing using KF)
-estimator= EstimatorClassFgExpOff(params);
-im= IntegrityMonitoringClassFgExpOff(params, estimator);
+estimator= EstimatorClassFgExpOffSS(params);
+im= IntegrityMonitoringClassFgExpOffSS(params, estimator);
 data_obj= DataClass(length(FG.imu), length(FG.lidar), params);
 counters= CountersClass([], [], params);
 
@@ -36,7 +36,7 @@ for epoch= 1:length(FG.imu) - 1
     
     % build the whiten jacobian for GPS msmt
     estimator.compute_gps_H_k( params, FG, epoch );
-
+    
     % main function for factor graphs integrity monitoring
     im.monitor_integrity( estimator, counters, data_obj,  params );
     
