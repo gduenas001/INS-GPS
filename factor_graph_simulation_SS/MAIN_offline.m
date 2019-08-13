@@ -12,7 +12,7 @@ for map_i= 8:8
 rng(map_i)
     
 % create objects
-params= ParametersClass("simulation_fg_offline");
+params= ParametersClass("simulation_fg_offline_SS");
 estimator= EstimatorClassFgSimOffSS(params);
 im= IntegrityMonitoringClassFgSimOffSS(params, estimator);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);

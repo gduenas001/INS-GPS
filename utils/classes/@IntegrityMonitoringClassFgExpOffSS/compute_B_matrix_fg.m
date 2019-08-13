@@ -1,18 +1,24 @@
 
 function compute_B_matrix_fg(obj, i, m_F)
 
+% initialize fault type indicator vector (GPS or LiDAR)
 fault_type_indicator= -1 * ones(length(i),1);
 
 for j = 1 : length( i )
     if i(j) > obj.n_L_M
+        % in the case of GPS
         fault_type_indicator(j)= 6;
     else
+        % in the case of LiDAR
         fault_type_indicator(j)= m_F;
     end
 end
 
+%initialize faulted msmts indices vector
 ind_faulted_msmts= zeros( sum(fault_type_indicator) , 1 );
 
+
+% fetch the faulted msmts indices
 tmp=0;
 
 for j = 1 : length( i )
@@ -26,6 +32,8 @@ for j = 1 : length( i )
     end
 end
 
+
+% build the fault-free msmts extraction matrix
 obj.B_j = zeros( obj.n_total-obj.m-sum(fault_type_indicator) , obj.n_total );
 
 tmp=1;

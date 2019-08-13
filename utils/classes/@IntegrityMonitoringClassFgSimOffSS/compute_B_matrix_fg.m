@@ -1,6 +1,7 @@
 
 function compute_B_matrix_fg(obj, i, m_F)
 
+%initialize faulted msmts indices vector
 ind_faulted_msmts= zeros( length(i)*m_F , 1 );
 
 for j = 1 : length( i )
@@ -9,6 +10,8 @@ for j = 1 : length( i )
     
 end
 
+
+% build the fault-free msmts extraction matrix
 obj.B_j = zeros( obj.n_total-obj.m-(m_F*length(i)) , obj.n_total );
 
 tmp=1;

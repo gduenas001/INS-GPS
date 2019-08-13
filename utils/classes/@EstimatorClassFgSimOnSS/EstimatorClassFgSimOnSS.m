@@ -65,13 +65,12 @@ classdef EstimatorClassFgSimOnSS < handle
         n_gps_k
         n_L_k_ph % number of associations in the ph
         
-        test_statistics
-        thresholds
-        sigma_hat_j
-        solns
-        sigma_hat_full
-        T_delta_j
-        x_hat
+        test_statistics %SS RAIM test statistics
+        sigma_hat_j %std dev of every solution (excluding the faulted msmts)
+        solns %state of interest estimate for every hypothesis (excluding the faulted msmts)
+        sigma_hat_full %std dev of the full solution (no faults case)
+        T_delta_j %Thresholds for every test statistic
+        x_hat % state of interest estimate of the full solution (no faults case)
     end
     
     

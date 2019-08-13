@@ -81,24 +81,9 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH ...
         obj.p_hmi= 1;
         
     else % we have enough msmts
-        
-        % Least squares residual matrix
-        % obj.M_M= eye( obj.n_total ) - (obj.A / obj.Gamma_fg) * obj.A';
-        % rank_M_M= obj.n_M + obj.n_M_gps;
-        
-        % fix the symmetry and the semi-positive def of the matrix
-        % if rank(obj.M_M) > rank_M_M
-        %     [U, D, ~]= svd(obj.M_M);
-        %     obj.M_M= U(:, 1:rank_M_M) * D(1:rank_M_M,1:rank_M_M) * U(:, 1:rank_M_M)';
-        %     obj.M_M= (obj.M_M + obj.M_M')/2;
-        % end
-        
+
         % standard deviation in the state of interest
         obj.sigma_hat= sqrt( (alpha' * obj.PX_M) * alpha );
-
-        % set detector threshold from the continuity req
-        % obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M + obj.n_M_gps );
-        obj.T_d= 0;
         
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;

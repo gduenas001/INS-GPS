@@ -8,7 +8,7 @@ addpath('../utils/classes')
 
 
 % create objects
-params= ParametersClass("experiment_fg_offline");
+params= ParametersClass("experiment_fg_offline_SS");
 load([params.path, 'FG.mat']); % organized experimental data (preprocessing using KF)
 estimator= EstimatorClassFgExpOffSS(params);
 im= IntegrityMonitoringClassFgExpOffSS(params, estimator);

@@ -74,17 +74,10 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         obj.p_hmi= 1;
         
     else % we have enough msmts
-        
-        % Least squares residual matrix
-        % obj.M_M= eye( obj.n_total ) - (obj.A / (obj.A'*obj.A)) * obj.A';
-        
+
         % standard deviation in the state of interest
         obj.sigma_hat= sqrt( (alpha' / obj.Gamma_fg) * alpha );
 
-        % set detector threshold from the continuity req
-        % obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M );
-        obj.T_d= 0;
-        
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;
         

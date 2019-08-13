@@ -24,7 +24,7 @@ classdef IntegrityMonitoringClassFgSimOffSS < handle
         inds_H % faulted indexes under H hypotheses
         P_H_0
         P_H
-        T_d
+        T_d=0
         n_H
         n_max
         
@@ -96,11 +96,11 @@ classdef IntegrityMonitoringClassFgSimOffSS < handle
         M_dir= cell(10000,1)
         counter_H=0
         
-        B_j
-        Gamma_fg_j % information matrix
-        sigma_hat_j
-        sigma_hat_delta_j
-        T_delta_j
+        B_j % fault-free msmts extraction matrix
+        Gamma_fg_j % information matrix for the jth fault hypothesis (exculding faulted LMs)
+        sigma_hat_j % std dev for the jth fault hypothesis (exculding faulted LMs)
+        sigma_hat_delta_j % std dev of the test statistic for the jth fault hypothesis (exculding faulted LMs)
+        T_delta_j % threshold for the jth fault hypothesis (exculding faulted LMs) 
     end
     
     

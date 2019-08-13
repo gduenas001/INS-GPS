@@ -1,5 +1,5 @@
 
-function [cost, grad, hessian, A, b]= optimization_fn(obj, x, params, k)
+function [cost, grad, hessian, A, b]= optimization_fn(obj, x, params, fault_hypothesis)
 
 % previous x star
 x_prev= obj.from_estimator_to_vector(params);
@@ -15,7 +15,7 @@ cost= 0;
 inv_R_lidar= inv(params.R_lidar);
 sqrt_inv_R_lidar= sqrtm(inv_R_lidar);
 
-if k == 0
+if fault_hypothesis == 0 %null hypothesis (include the prior)
     
     % cost of the prior msmt
     z= obj.x_prior;
@@ -42,7 +42,7 @@ if k == 0
     r_ind= params.m + 1;
     c_ind= 1;
 
-else
+else %faulted hypothesis (exclude the prior)
     
     A= zeros( obj.n_total-params.m_F-params.m, obj.m_M );
     b= ones( obj.n_total-params.m_F-params.m, 1 ) * inf;
@@ -110,20 +110,31 @@ for i= obj.M:-1:2
     r_ind= r_ind + r_S;
     c_ind= c_ind + params.m;
     
+    % tmp variable is used to find the index of the faulted LM
     if i == obj.M
         tmp= length(obj.z_lidar_ph{i-1})/params.m_F;
     else
         tmp= tmp + length(obj.z_lidar_ph{i-1})/params.m_F;
     end
     
-    if (k > 0) && (tmp-(length(obj.z_lidar_ph{i-1})/params.m_F) < k) && (tmp>=k)
+    %exclude the faulted LM from the cost function and the jacobian (A) and b
+    if (fault_hypothesis > 0) ...
+       && (tmp-(length(obj.z_lidar_ph{i-1})/params.m_F) < fault_hypothesis) ...
+       && (tmp>=fault_hypothesis)
         
         % ------------ lidar cost ------------
-        ind_of_faulted_LM= k - (tmp-(length(obj.z_lidar_ph{i-1})/params.m_F));
+        
+        %index of the faulted LM 
+        ind_of_faulted_LM= fault_hypothesis - (tmp-(length(obj.z_lidar_ph{i-1})/params.m_F));
+        
         z= obj.z_lidar_ph{i-1};
+        
+        %remove the faulted LM
         z((ind_of_faulted_LM-1)*params.m_F+1:ind_of_faulted_LM*params.m_F)=[];
+        
         n= length(z);
         n_L= n / params.m_F;
+        
         if n > 0
             z_expected= obj.return_expected_z_lidar(obj.x_ph{i-1}, obj.association_ph{i-1}, params, ind_of_faulted_LM);
             innov= z - z_expected;
@@ -145,7 +156,7 @@ for i= obj.M:-1:2
         % update the row index
         r_ind= r_ind + n;
         
-    else
+    else % null hypothesis include all of the LMs
         
         % ------------ lidar cost ------------
         z= obj.z_lidar_ph{i-1};
@@ -233,12 +244,21 @@ c_ind= c_ind + params.m;
 % ------------ lidar cost ------------
 z= obj.z_lidar';
 z= z(:);
+
+% tmp variable is used to find the index of the faulted LM
 tmp= tmp + length(z)/params.m_F;
 
-if (k > 0) && (tmp-(length(z)/params.m_F) < k) && (tmp>=k)
+%exclude the faulted LM from the cost function and the jacobian (A) and b
+if (fault_hypothesis > 0) ...
+   && (tmp-(length(z)/params.m_F) < fault_hypothesis)...
+   && (tmp>=fault_hypothesis)
     
-    ind_of_faulted_LM= k - (tmp-(length(z)/params.m_F));
+    %index of the faulted LM 
+    ind_of_faulted_LM= fault_hypothesis - (tmp-(length(z)/params.m_F));
+    
+    %remove the faulted LM
     z((ind_of_faulted_LM-1)*params.m_F+1:ind_of_faulted_LM*params.m_F)=[];
+    
     n= length(z);
     n_L= n / params.m_F;
     

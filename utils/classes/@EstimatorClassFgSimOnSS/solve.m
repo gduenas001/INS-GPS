@@ -46,15 +46,17 @@ obj.m_M= (obj.M + 1) * params.m;
 % total number of measurements (relativ + absolute + prior)
 obj.n_total= obj.m_M + obj.n_L_M * params.m_F;
 
-obj.solns= inf*ones(obj.n_L_M);
-obj.test_statistics= inf*ones(obj.n_L_M);
-obj.thresholds= inf*ones(obj.n_L_M);
-obj.sigma_hat_j= inf*ones(obj.n_L_M);
-obj.T_delta_j= inf*ones(obj.n_L_M);
+%initializaing SS RAIM parameters
+obj.solns= inf*ones(obj.n_L_M); %state of interest estimate for every hypothesis (excluding the faulted msmts)
+obj.test_statistics= inf*ones(obj.n_L_M); %SS RAIM test statistics
+obj.sigma_hat_j= inf*ones(obj.n_L_M); %std dev of every solution (excluding the faulted msmts)
+obj.T_delta_j= inf*ones(obj.n_L_M);  %Thresholds for every test statistic
 
+% perform the optimization for every hypothesis including the null (full solution)
+% Assuming that only one LM is faulted
 for i= 0:obj.n_L_M
 
-    % create optimization function 
+    % create optimization function for hypothesis i
     fun= @(x) obj.optimization_fn(x, params, i);
 
     % from cells to vectors
@@ -64,23 +66,37 @@ for i= 0:obj.n_L_M
     obj.x_prior= obj.x_ph{obj.M};
 
     % solve the problem
-    [residual, grad, A, b]= obj.optimization_fn(x_star, params, i);
+    % [residual, grad, A, b]= obj.optimization_fn(x_star, params, i);
 
+    % solve the problem
     [x_star, ~,~,~,~,hessian] = fminunc(fun, x_star, params.optimoptions);
     
-    if i ~= 0 
+    if i ~= 0 % evaluating the test statistic and threshold for the ith hypothesis (faulted hypothesis)
+        
         alpha= build_state_of_interest_extraction_matrix(obj, params, x_star);
+        
         obj.solns(i)=alpha'*x_star;
+        
         obj.sigma_hat_j(i) = sqrt( alpha' / hessian * alpha );
+        
         sigma_hat_delta_j = sqrt( obj.sigma_hat_j(i)^2 - obj.sigma_hat_full^2 );
+        
         obj.test_statistics(i)= obj.x_hat-obj.solns(i);
+        
         obj.T_delta_j(i)= norminv( 1 - params.continuity_requirement/(2*obj.n_L_M) ) * sigma_hat_delta_j;
-    else
+        
+    else % evaluating the full solution for the null hypothsis (no faults)
+        
         hessian_full= hessian;
+        
         x_full= x_star;
+        
         alpha= build_state_of_interest_extraction_matrix(obj, params, x_full);
+        
         obj.x_hat= alpha'*x_full;
+        
         obj.sigma_hat_full= sqrt( alpha' / hessian_full * alpha );
+        
     end
     
     % multiply by two so that it fits the non-central chi-squared

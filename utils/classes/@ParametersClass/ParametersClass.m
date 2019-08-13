@@ -199,11 +199,25 @@ classdef ParametersClass < handle
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.SWITCH_OFFLINE= 1;
                     obj.path= obj.path_sim_fg;
+                case 'simulation_fg_offline_SS'
+                    obj.SWITCH_SIM= 1;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.SWITCH_OFFLINE= 1;
+                    obj.path= obj.path_sim_fg;
                 case 'simulation_fg_online'
                     obj.SWITCH_SIM= 1;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.path= obj.path_sim_fg;
+                case 'simulation_fg_online_SS'
+                    obj.SWITCH_SIM= 1;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.path= obj.path_sim_fg;
                 case 'experiment_fg_offline'
+                    obj.SWITCH_SIM= 0;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.SWITCH_OFFLINE= 1;
+                    obj.path= obj.path_exp_fg;
+                case 'experiment_fg_offline_SS'
                     obj.SWITCH_SIM= 0;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.SWITCH_OFFLINE= 1;
