@@ -73,7 +73,7 @@ obj.T_d= chi2inv( 1- params.continuity_requirement, obj.n_total - obj.m_M );
 % diag(dif)
 
 % from a vector to cells 
-from_vector_to_estimator(obj, x_star, params)
+from_vector_to_estimator(obj, x_star, params);
 
 % store the prior, x_(k-M+1), as a future msmt
 % hessian= A' * A;
