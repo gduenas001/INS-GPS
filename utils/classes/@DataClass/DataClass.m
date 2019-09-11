@@ -247,9 +247,9 @@ classdef DataClass < handle
         function plot_integrity_risk(obj, params)
             figure; hold on; grid on;
             if params.SWITCH_SIM
-                plot(obj.im.time * params.velocity_sim, obj.im.p_hmi, 'b-', 'linewidth', 2)
-                xlabel('x [m]','interpreter', 'latex','fontsize', 15)
-                xlim([obj.im.time(1), obj.im.time(end)] * params.velocity_sim) % reset the x-axis (otherwise it moves)
+                plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
+                xlabel('Time [s]','interpreter', 'latex','fontsize', 15)
+                xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
             else
                 if params.SWITCH_FACTOR_GRAPHS
                     plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
@@ -264,7 +264,15 @@ classdef DataClass < handle
             % plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
             ylabel('P(HMI)','interpreter', 'latex','fontsize', 15)
             set(gca, 'YScale', 'log')
-            ylim([1e-15,1]);
+            ylim([1e-50,max(obj.im.p_hmi)]);
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_alert_limit_over_sig_hat(obj, params)
+            figure; hold on; grid on;
+            plot(obj.im.time * params.velocity_sim, obj.im.sigma_hat/params.alert_limit, 'b-', 'linewidth', 2)
+            xlabel('x [m]','interpreter', 'latex','fontsize', 15)
+            ylabel('SigHat/AlertLimit','interpreter', 'latex','fontsize', 15)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -291,8 +299,9 @@ classdef DataClass < handle
         % ----------------------------------------------
         function plot_number_of_landmarks_fg_sim(obj, params)
             figure; hold on; grid on;
-            plot(obj.update.time, obj.update.n_L_M, 'b-', 'linewidth', 2)
-            plot(obj.update.time, obj.update.n_L_k, 'g-', 'linewidth', 2)
+            plot(obj.update.time(1:end-1), obj.update.n_L_M(1:end-1), 'b-', 'linewidth', 2)
+            %plot(obj.update.time(1:end-1), obj.update.n_L_k(1:end-1), 'g-', 'linewidth', 2)
+            plot(obj.update.time(1:end-1), obj.update.GPS_L_M(1:end-1), 'r-', 'linewidth', 2)
             if ~params.SWITCH_OFFLINE
                 plot(obj.update.time, obj.update.num_faults, 'r-', 'linewidth', 2)
             end

@@ -64,6 +64,9 @@ classdef EstimatorClassFgSimOn < handle
         H_k_lidar
         n_gps_k
         n_L_k_ph % number of associations in the ph
+        detector_elapsed_time=0
+        availability=0
+        b
     end
     
     

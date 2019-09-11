@@ -87,6 +87,10 @@ classdef IntegrityMonitoringClassFgExpOffSS < handle
         sigma_hat_j % std dev for the jth fault hypothesis (exculding faulted LMs)
         sigma_hat_delta_j % std dev of the test statistic for the jth fault hypothesis (exculding faulted LMs)
         T_delta_j % threshold for the jth fault hypothesis (exculding faulted LMs) 
+        p_hmi_elapsed_time=0
+        GPS_L_M
+        GPS_M
+        f_avg=0
     end
     
     
@@ -184,7 +188,7 @@ classdef IntegrityMonitoringClassFgExpOffSS < handle
         compute_required_epochs_for_min_LMs(obj, params, estimator)
         % ----------------------------------------------
         % ----------------------------------------------
-        compute_B_matrix_fg(obj, i, m_F)
+        compute_B_matrix_fg(obj, params, i, m_F)
         % ----------------------------------------------
         % ----------------------------------------------
         alpha= build_state_of_interest_extraction_matrix(obj, params, current_state)

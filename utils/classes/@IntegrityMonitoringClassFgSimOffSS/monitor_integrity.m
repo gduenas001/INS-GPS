@@ -67,6 +67,8 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     % compute the hypotheses (n_H, n_max, inds_H)
     obj.compute_hypotheses(params)
     
+    tic
+    
     % initialization of p_hmi
     obj.p_hmi=0;
     if obj.n_M < params.m + obj.n_max*params.m_F
@@ -97,6 +99,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         end
     end
     
+    obj.p_hmi_elapsed_time=toc;
     % store integrity related data
     data.store_integrity_data(obj, estimator, counters, params) 
 end

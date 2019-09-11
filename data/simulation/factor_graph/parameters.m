@@ -23,7 +23,7 @@ I_MA= 1e-8;
 P_MA_max= 1e-4; % maximum allowable miss-association probability for one association
 I_H= 1e-6; % risk allocated to unmonitored fault modes
 P_UA= 1e-3;
-min_n_L_M= 10; % min number of landmarks in preceding horizon
+min_n_L_M= 20; % min number of landmarks in preceding horizon
 preceding_horizon_size= 3;
 continuity_requirement= 1e-5;
 alert_limit= 0.5;
@@ -87,5 +87,5 @@ max_steering= deg2rad( 10 );
 sig_gyro_z= deg2rad(3); % [rad/s]  standard dev of the gyro
 map_limits= [-25, 230, -50, 50]; % [x_min, x_max, y_min,  y_max] 
 optimoptions_display= 'notify'; % display options for the factor graphs optimization 
-landmark_density= 0.001; % [landmarks / m^2]
+landmark_density= 0.0009; % [landmarks / m^2]
 % -------------------------------------------

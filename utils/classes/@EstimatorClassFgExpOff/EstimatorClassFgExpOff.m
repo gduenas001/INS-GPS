@@ -38,6 +38,7 @@ classdef EstimatorClassFgExpOff < handle
         H_k_lidar
         n_gps_k
         n_L_k_ph % number of associations in the ph
+        GPS_L_M=0
     end
     
     

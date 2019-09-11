@@ -27,11 +27,11 @@ void create_clusters (pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
 {
 	
 	// create Voxels
-	//pcl::VoxelGrid<pcl::PointXYZ> vg;
-	//vg.setInputCloud (cloud);
-	//vg.setLeafSize (PARAMS["leafSizeXY"],PARAMS["leafSizeXY"],PARAMS["leafSizeZ"]);
+	pcl::VoxelGrid<pcl::PointXYZ> vg;
+	vg.setInputCloud (cloud);
+	vg.setLeafSize (PARAMS["leafSizeXY"],PARAMS["leafSizeXY"],PARAMS["leafSizeZ"]);
 	// // vg.setMinimumPointsNumberPerVoxel(2);
-	//vg.filter (*cloud);
+	vg.filter (*cloud);
 
 	// Eliminate far points
 	pcl::PassThrough<pcl::PointXYZ> pass;
@@ -67,7 +67,6 @@ void create_clusters (pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
 	rorfilter.filter (*cloud);*/
 
 
-
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 	tree->setInputCloud (cloud);
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
@@ -76,6 +75,5 @@ void create_clusters (pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
 	ec.setSearchMethod (tree);
 	ec.setInputCloud (cloud);
 	ec.extract (cluster_indices);
- 	
 
 }

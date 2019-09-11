@@ -51,10 +51,14 @@ obj.solns= inf*ones(obj.n_L_M); %state of interest estimate for every hypothesis
 obj.test_statistics= inf*ones(obj.n_L_M); %SS RAIM test statistics
 obj.sigma_hat_j= inf*ones(obj.n_L_M); %std dev of every solution (excluding the faulted msmts)
 obj.T_delta_j= inf*ones(obj.n_L_M);  %Thresholds for every test statistic
-
+obj.availability=1;
 % perform the optimization for every hypothesis including the null (full solution)
 % Assuming that only one LM is faulted
 for i= 0:obj.n_L_M
+    
+    if i==1
+        tic
+    end
 
     % create optimization function for hypothesis i
     fun= @(x) obj.optimization_fn(x, params, i);
@@ -85,6 +89,10 @@ for i= 0:obj.n_L_M
         
         obj.T_delta_j(i)= norminv( 1 - params.continuity_requirement/(2*obj.n_L_M) ) * sigma_hat_delta_j;
         
+        if obj.test_statistics(i) > obj.T_delta_j(i)
+            obj.availability=0;
+        end
+        
     else % evaluating the full solution for the null hypothsis (no faults)
         
         hessian_full= hessian;
@@ -113,6 +121,7 @@ for i= 0:obj.n_L_M
 
 end
 
+obj.detector_elapsed_time =toc;
 % from a vector to cells 
 from_vector_to_estimator(obj, x_full, params);
 

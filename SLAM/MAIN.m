@@ -22,7 +22,7 @@ estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
-for epoch= 1:imu.num_readings-1
+for epoch= 1:2500
     disp(strcat('Epoch -> ', num2str(epoch)));
     
     % set the simulation time to the IMU time
@@ -118,7 +118,7 @@ for epoch= 1:imu.num_readings-1
             lidar.get_msmt( epochLIDAR, params );
             
             % Remove people-features for the data set
-            lidar.remove_features_in_areas(estimator.XX(1:9));
+            %lidar.remove_features_in_areas(estimator.XX(1:9));
             
             % NN data association
             association= estimator.nearest_neighbor(lidar.msmt(:,1:2), params);
@@ -147,7 +147,7 @@ for epoch= 1:imu.num_readings-1
         if counters.k_lidar <= length(lidar.time)
             counters.time_lidar= lidar.time(counters.k_lidar,2);
         else
-           counters.k_lidar = counters.k_lidar -1 ;
+           counters.k_lidar = counters.k_lidar-1;
            LIDAR_Index_exceeded = 1;
         end
     end

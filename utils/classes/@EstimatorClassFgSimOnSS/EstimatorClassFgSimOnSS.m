@@ -71,6 +71,9 @@ classdef EstimatorClassFgSimOnSS < handle
         sigma_hat_full %std dev of the full solution (no faults case)
         T_delta_j %Thresholds for every test statistic
         x_hat % state of interest estimate of the full solution (no faults case)
+        detector_elapsed_time=0
+        availability=0
+        b
     end
     
     

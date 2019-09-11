@@ -82,7 +82,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
         
         % Store data
         counters.k_update=...
-            data_obj.store_update_sim(counters.k_update, estimator, counters.time_sim, params);
+            data_obj.store_update_fg(counters.k_update, estimator, counters.time_sim, params);
         
         % increase integrity counter
         counters.increase_integrity_monitoring_counter();

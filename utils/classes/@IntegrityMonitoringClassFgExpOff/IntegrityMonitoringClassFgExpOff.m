@@ -81,6 +81,10 @@ classdef IntegrityMonitoringClassFgExpOff < handle
         f_dir_sig2= cell(10000,1)
         M_dir= cell(10000,1)
         counter_H=0
+        p_hmi_elapsed_time=0
+        GPS_L_M
+        GPS_M
+        f_avg=0
     end
     
     

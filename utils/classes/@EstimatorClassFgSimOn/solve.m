@@ -55,17 +55,29 @@ x_star= obj.from_estimator_to_vector(params);
 % saves the prior separately
 obj.x_prior= obj.x_ph{obj.M};
 
+
 % solve the problem
 [residual, grad, A, b]= obj.optimization_fn(x_star, params);
 
 [x_star, obj.q_d,~,~,~,hessian] = fminunc(fun, x_star, params.optimoptions);
 
+[residual, grad, A, b]= obj.optimization_fn(x_star, params);
+
+
 % multiply by two so that it fits the non-central chi-squared
-obj.q_d= obj.q_d * 2;
+tic
+obj.q_d= obj.b'*obj.b;
+obj.detector_elapsed_time =toc;
+% obj.q_d= obj.q_d * 2;
 
 % compute detector threshold
 obj.T_d= chi2inv( 1- params.continuity_requirement, obj.n_total - obj.m_M );
 
+if obj.q_d>obj.T_d
+    obj.availability=0;
+else
+    obj.availability=1;
+end
 % debuggin points to check jacobian
 % [residual, grad, A, b]= obj.optimization_fn_fg(x_star, params);
 % dif= inv(A'*A) - inv(hessian);

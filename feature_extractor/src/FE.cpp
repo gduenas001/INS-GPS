@@ -54,7 +54,7 @@
 
 #define VERBOSE true
 
-#define Merge_Point_Cloud true
+#define Merge_Point_Cloud false
 
 
 using namespace std;
@@ -265,8 +265,8 @@ threadVector.push_back(thread( read_pcd_file_callback, next_cloud, initial_frame
 
 
 // epoch refers to pointcloud file number (not timestep)
-// for (int epoch= initial_frame; epoch < num_frames; ++epoch) // used in case of having one LiDAR
-for (int epoch= initial_frame; epoch < num_frames; epoch=epoch+2) // used in case of having two LiDARs
+for (int epoch= initial_frame; epoch < num_frames; ++epoch) // used in case of having one LiDAR
+//for (int epoch= initial_frame; epoch < num_frames; epoch=epoch+2) // used in case of having two LiDARs
 {
 
 	//------------------ READING PCD FILE ------------------//
@@ -278,8 +278,8 @@ for (int epoch= initial_frame; epoch < num_frames; epoch=epoch+2) // used in cas
 	// Start next thread
 	next_cloud.reset(new pcl::PointCloud<pcl::PointXYZ>);
 
-	// threadVector.push_back(thread (read_pcd_file_callback, next_cloud, epoch+1)); // used in case of having one LiDAR
-	threadVector.push_back(thread (read_pcd_file_callback, next_cloud, epoch+2)); // used in case of having two LiDARs
+	threadVector.push_back(thread (read_pcd_file_callback, next_cloud, epoch+1)); // used in case of having one LiDAR
+	//threadVector.push_back(thread (read_pcd_file_callback, next_cloud, epoch+2)); // used in case of having two LiDARs
 
 	// Reduce size of vector of threads
 	if (threadVector.size() > 2)
@@ -300,7 +300,6 @@ for (int epoch= initial_frame; epoch < num_frames; epoch=epoch+2) // used in cas
 	// Extraction of clusters
 	vector<pcl::PointIndices> clusters_indices;
 	create_clusters(cloud, clusters_indices, PARAMS);
-	 
 
 	vector <pcl::PointCloud<pcl::PointXYZ> ::Ptr> clusters; // Vector of pointclouds pointers
 	

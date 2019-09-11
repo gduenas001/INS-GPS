@@ -315,5 +315,7 @@ end
 % divide cost by 2 to make Jacobian consistent
 cost= cost / 2;
 
+obj.b=b;
+
 end
 

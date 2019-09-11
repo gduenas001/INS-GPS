@@ -67,8 +67,11 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     % compute the hypotheses (n_H, n_max, inds_H)
     obj.compute_hypotheses(params)
     
+    tic
+    
     % initialization of p_hmi
     obj.p_hmi=0;
+    obj.f_avg=0;
     if obj.n_M < params.m + obj.n_max*params.m_F
         % if we don't have enough landmarks --> P(HMI)= 1
         obj.p_hmi= 1;
@@ -91,7 +94,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             
             % compute P(HMI | H) for the worst-case fault
             p_hmi_H= obj.compute_p_hmi_H(alpha, i, params);
-            
+            obj.f_avg=obj.f_avg+obj.f_M_mag_out;
             % Add P(HMI | H) to the integrity risk
             if i == 0
                 obj.P_H_0= prod( 1 - obj.P_F_M );
@@ -101,7 +104,10 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
             end
         end
+        obj.f_avg=obj.f_avg/(obj.n_H+1);
     end
+    
+    obj.p_hmi_elapsed_time=toc;
     
     % store integrity related data
     data.store_integrity_data(obj, estimator, counters, params) 

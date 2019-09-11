@@ -6,7 +6,7 @@ figure; hold on; grid on;
 
 % for factor graphs --> plot true x instead of estimated
 if params.SWITCH_OFFLINE
-    plot(obj.update.x_true(1,:), obj.update.x_true(2,:), 'g.','markersize', 7);
+    plot(obj.update.x_true(1,:), obj.update.x_true(2,:), 'k.','markersize', 4);
 else 
     plot(obj.pred.XX(1,:), obj.pred.XX(2,:), 'b-');
     plot(obj.update.XX(1,:), obj.update.XX(2,:), 'g.','markersize', 7);
@@ -20,11 +20,14 @@ end
 lm_map= [estimator.landmark_map(:,1),...
     estimator.landmark_map(:,2),...
     zeros(estimator.num_landmarks,1)];
-plot(lm_map(:,1), lm_map(:,2), 'g+', 'markersize',20);
+plot(lm_map(:,1), lm_map(:,2), 'r+', 'markersize',2.5);
 
 if ~isempty(obj.msmts)
     plot(obj.msmts(:,1), obj.msmts(:,2), 'k.');
 end
+
+plot(obj.update.x_true(1,1), obj.update.x_true(2,1), 'x', 'Color',[0.9290 0.6940 0.1250], 'linewidth', 2);
+plot(obj.update.x_true(1,1), obj.update.x_true(2,1), '.', 'Color',[0.9290 0.6940 0.1250], 'linewidth', 3);
 
 % plot attitude every 50 IMU readings
 for i= 1:num_readings
@@ -34,7 +37,8 @@ for i= 1:num_readings
         plot(xyz_N(1,:), xyz_N(2,:), 'g-', 'linewidth', 2);
     end
 end
-xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
-axis equal
+set(gca,'FontSize',15)
+xlabel('X [m]','FontSize',15); ylabel('Y [m]','FontSize',15); zlabel('Z [m]','FontSize',15);
+%axis equal
 
 end

@@ -4,7 +4,6 @@ dbstop if error
 addpath('../utils/functions')
 addpath('../utils/classes')
 
-
 % create objects
 params= ParametersClass("simulation_fg_online");
 estimator= EstimatorClassFgSimOn([], params);

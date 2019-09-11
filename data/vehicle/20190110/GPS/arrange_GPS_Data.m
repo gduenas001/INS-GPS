@@ -14,5 +14,5 @@ data(:,4)=     cell2mat(data_csv(2:end,18));
 data(:,5:7)=   cell2mat(data_csv(2:end,4:6));
 data(:,8:10)=  cell2mat(data_csv(2:end,12:14));
 data(:,11:13)= cell2mat(data_csv(2:end,7:9));
-data(:,14:16)= cell2mat(data_csv(2:end,15:17));
+data(:,14:16)= cell2mzat(data_csv(2:end,15:17));
 

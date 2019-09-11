@@ -11,10 +11,11 @@ classdef IntegrityDataClass < handle
         detector
         detector_threshold
         p_hmi
+        p_hmi_elapsed_time
         n_L_M
         M
         sigma_hat
-        
+        f_avg
         p_eps % prob that the estimate is out of bounds w/out faults
     end
     
@@ -29,15 +30,18 @@ classdef IntegrityDataClass < handle
             obj.detector= zeros(n,1);
             obj.detector_threshold= zeros(n,1);
             obj.p_hmi= zeros(n,1);
+            obj.p_hmi_elapsed_time= zeros(n,1);
             obj.n_L_M= zeros(n,1);
             obj.sigma_hat= zeros(n,1);
             obj.time= zeros(n,1);
             obj.p_eps= zeros(n,1);
             obj.M= zeros(n,1);
+            obj.f_avg= zeros(n,1);
         end
         
         function store(obj, im, estimator, counters, params)
             obj.p_hmi(counters.k_im)= im.p_hmi;
+            obj.p_hmi_elapsed_time(counters.k_im)=im.p_hmi_elapsed_time;
             obj.n_L_M(counters.k_im)= im.n_L_M;
             obj.P_H{counters.k_im}= im.P_H;
             obj.detector_threshold(counters.k_im)= im.T_d^2;
@@ -45,6 +49,8 @@ classdef IntegrityDataClass < handle
             obj.time(counters.k_im)= counters.time_sim;
             obj.p_eps(counters.k_im)= 2* normcdf(-params.alert_limit, 0, im.sigma_hat);
             obj.M(counters.k_im)= im.M;
+            obj.f_avg(counters.k_im)= im.f_avg;
+            
             
             if ~params.SWITCH_FACTOR_GRAPHS      
                 obj.association{counters.k_im}= estimator.association_no_zeros;
@@ -64,11 +70,13 @@ classdef IntegrityDataClass < handle
             obj.detector(counters.k_im:end)= [];
             obj.detector_threshold(counters.k_im:end)= [];
             obj.p_hmi(counters.k_im:end)= [];
+            obj.p_hmi_elapsed_time(counters.k_im:end)= [];
             obj.n_L_M(counters.k_im:end)= [];
             obj.sigma_hat(counters.k_im:end)= [];
             obj.time(counters.k_im:end)= [];
             obj.p_eps(counters.k_im:end)= [];
             obj.M(counters.k_im:end)= [];
+            obj.f_avg(counters.k_im:end)= [];
         end
     end
     

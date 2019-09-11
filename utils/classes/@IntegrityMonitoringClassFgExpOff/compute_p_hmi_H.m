@@ -61,21 +61,31 @@ else
     p_hmi_H_2= 0;
     p_hmi_H_3= 0;
     p_hmi_H_4= 0;
+    f_M_mag_out_1= -10;
+    f_M_mag_out_2= -10;
+    f_M_mag_out_3= -10;
+    f_M_mag_out_4= -10;
     
-    [f_M_mag_out, p_hmi_H_1]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+    [f_M_mag_out_1, p_hmi_H_1]= fminbnd( @(f_M_mag) obj.optimization_fn(...
         f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-        0, 10);
+        -10, 10);
     p_hmi_H_1= -p_hmi_H_1;
-    if p_hmi_H_1 < 1e-10 || f_M_mag_out > 8
-        [f_M_mag_out, p_hmi_H_2]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+    if p_hmi_H_1 < 1e-10 || f_M_mag_out_1 > 8
+        [f_M_mag_out_2, p_hmi_H_2]= fminbnd( @(f_M_mag) obj.optimization_fn(...
             f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-            10, 100);
+            -100, 100);
         p_hmi_H_2= -p_hmi_H_2;
-        if p_hmi_H_2 < 1e-10 || f_M_mag_out > 180
-            [f_M_mag_out, p_hmi_H_3]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+        if p_hmi_H_2 < 1e-10 || f_M_mag_out_2 > 80
+            [f_M_mag_out_3, p_hmi_H_3]= fminbnd( @(f_M_mag) obj.optimization_fn(...
                 f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
-                100, 1000);
+                -1000, 1000);
             p_hmi_H_3= -p_hmi_H_3;
+            if p_hmi_H_2 < 1e-10 || f_M_mag_out_3 > 800
+                [f_M_mag_out_4, p_hmi_H_4]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+                    f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, obj.n_M + obj.n_M_gps ),...
+                    -100000, 100000);
+                p_hmi_H_4= -p_hmi_H_4;
+            end
         end
     end
     p_hmi_H= max( [p_hmi_H_1, p_hmi_H_2, p_hmi_H_3, p_hmi_H_4] );

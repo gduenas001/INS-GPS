@@ -95,6 +95,9 @@ classdef IntegrityMonitoringClassFgSimOff < handle
         f_dir_sig2= cell(10000,1)
         M_dir= cell(10000,1)
         counter_H=0
+        p_hmi_elapsed_time
+        f_avg=0
+        f_M_mag_out=0
     end
     
     

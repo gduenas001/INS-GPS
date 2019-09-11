@@ -17,6 +17,9 @@ classdef UpdateDataClass < handle
         n_L_M % number of associated features in the ph
         num_faults % number of injected faults 
         odometry % [velocity, steering angle]
+        detector_elapsed_time
+        availability
+        GPS_L_M
     end
     
     methods
@@ -38,6 +41,9 @@ classdef UpdateDataClass < handle
             obj.n_L_k= zeros(num_readings, 1);
             obj.num_faults= zeros(num_readings, 1);
             obj.odometry= zeros(2, num_readings);
+            obj.detector_elapsed_time= zeros(num_readings, 1);
+            obj.availability= zeros(num_readings, 1);
+            obj.GPS_L_M= zeros(num_readings, 1);
             
         end
         % ----------------------------------------------
@@ -80,6 +86,10 @@ classdef UpdateDataClass < handle
             if ~params.SWITCH_OFFLINE
                 obj.num_faults(epoch)= estimator.num_faults_k;
                 obj.odometry(:, epoch)= estimator.odometry_k;
+                obj.detector_elapsed_time(epoch)= estimator.detector_elapsed_time;
+                obj.availability(epoch)= estimator.availability;
+            elseif ~params.SWITCH_SIM
+                obj.GPS_L_M(epoch)= estimator.GPS_L_M;
             end
         end
         % ----------------------------------------------
@@ -97,8 +107,11 @@ classdef UpdateDataClass < handle
             obj.T_d(counters.k_update:end)= [];
             obj.n_L_k(counters.k_update:end)= [];
             obj.n_L_M(counters.k_update:end)= [];
+            obj.GPS_L_M(counters.k_update:end)= [];
             obj.num_faults(counters.k_update:end)= [];
             obj.odometry(:, counters.k_update:end)= [];
+            obj.detector_elapsed_time(counters.k_update:end)= [];
+            obj.availability(counters.k_update:end)=[];
         end
         % ----------------------------------------------
         % ----------------------------------------------
