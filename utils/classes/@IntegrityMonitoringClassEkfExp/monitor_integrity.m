@@ -62,6 +62,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     % accounting for the case where there are no landmarks in the FoV at
     % epoch k and the whole preceding horizon
     if obj.n_M == 0
+        obj.gamma_M= [];
         obj.Y_M=   [];
         obj.A_M=   [];
         obj.B_bar= [];
@@ -69,6 +70,9 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         obj.detector_threshold= 0;
         obj.p_hmi= 1;
     else
+        % compute gamma_M
+        obj.compute_gamma_M_vector(estimator);
+        
         % Update the innovation vector covarience matrix for the new PH
         obj.compute_Y_M_matrix(estimator)
 
@@ -104,45 +108,46 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
             
         else % if we don't have enough landmarks --> P(HMI)= 1   
             obj.P_H= ones(obj.n_H, 1) * inf; % initializing P_H vector
+                            
             for i= 0:obj.n_H
                 % build extraction matrix
                 if i == 0
                     obj.compute_E_matrix(0, params.m_F);
+                    
+                    % extract the faulted components from gamma_M and Y_M
+                    gamma_h= obj.gamma_M(end-1:end);
+                    Y_h= obj.Y_M(end-1:end, end-1:end);
+                    
+                    % compute detector for this hypothesis
+                    q_h= gamma_h' * (Y_h \ gamma_h);
+                    n_h= length(gamma_h);
                 else
                     obj.compute_E_matrix(obj.inds_H{i}, params.m_F);
+                    
+                    % extract the faulted components from gamma_M and Y_M
+                    gamma_h= obj.E(1:end-3,1:end-3) * obj.gamma_M;
+                    Y_h= obj.E(1:end-3,1:end-3) * obj.Y_M * obj.E(1:end-3,1:end-3)';
+                    
+                    % compute detector for this hypothesis
+                    q_h= gamma_h' * (Y_h \ gamma_h);
+                    n_h= length(gamma_h);
+                    
                 end
                 
-                % Worst-case fault direction
-                f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A_M' * alpha;
-                f_M_dir= f_M_dir / norm(f_M_dir); % normalize
+                % compute norm on MA non-centrality parameter
+                lambda= ( sqrt(q_h) + sqrt(  chi2inv( 1 - params.I_MA , n_h ) ) )^2;
                 
-                % worst-case fault magnitude
-                fx_hat_dir= alpha' * obj.A_M * f_M_dir;
-                M_dir= f_M_dir' * obj.M_M * f_M_dir;
+                % compute D matrix
+                D= ( sqrtm(obj.E * obj.M_M * obj.E') ) \ obj.E * obj.A_M' * alpha;
                 
-                % worst-case fault magnitude
-                f_mag_min= 0;
-                f_mag_max= 5;
-                f_mag_inc= 5;
-                p_hmi_H_prev= -1;
-                for k= 1:10
-                    [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-                        f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M),...
-                        f_mag_min, f_mag_max);
-                    
-                    % make it a positive number
-                    p_hmi_H= -p_hmi_H;
-                    
-                    % check if the new P(HMI|H) is smaller
-                    if k == 1 || p_hmi_H_prev < p_hmi_H
-                        p_hmi_H_prev= p_hmi_H;
-                        f_mag_min= f_mag_min + f_mag_inc;
-                        f_mag_max= f_mag_max + f_mag_inc;
-                    else
-                        p_hmi_H= p_hmi_H_prev;
-                        break
-                    end
-                end
+                % compute the relation between non-centrality paramters
+                kappa= obj.sigma_hat^(-2) * norm(D)^2;
+                
+                % compute mu
+                mu= lambda * kappa;
+                
+                % compute P(HMI | H)
+                p_hmi_H= 1 - ncx2cdf( params.alert_limit^2 / obj.sigma_hat^2 , 1, mu );
                 
                 % Add P(HMI | H) to the integrity risk
                 if i == 0
@@ -188,5 +193,5 @@ end
 data.im.time(counters.k_im)= counters.time_sim;
 
 % update the preceding horizon
-update_preceding_horizon(obj, estimator, params)
+obj.update_preceding_horizon(estimator, params)
 end
