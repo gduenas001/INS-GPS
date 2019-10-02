@@ -71,12 +71,23 @@ classdef UpdateDataClass < handle
         function store_fg(obj, epoch, estimator, time, params)
             estimator.compute_alpha(params)
             
-            obj.x_true(:,epoch)= estimator.x_true;
-            obj.XX(:,epoch)= estimator.XX;
-            obj.error(:,epoch)= estimator.XX - estimator.x_true;
+            %Osama
+            if(params.path== params.path_gazebo_fg)
+                obj.x_true(:,epoch)= [estimator.x_true;zeros(6,1)];
+                obj.XX(:,epoch)= [estimator.XX;zeros(6,1)];
+                obj.error(:,epoch)= [estimator.XX - estimator.x_true;zeros(6,1)];
+                obj.PX(:, epoch)= [diag( estimator.PX );zeros(6,1)];
+            else
+               obj.x_true(:,epoch)= estimator.x_true;
+               obj.XX(:,epoch)= estimator.XX;
+               obj.error(:,epoch)= estimator.XX - estimator.x_true;
+               obj.PX(:, epoch)= diag( estimator.PX );
+            end
+            
+            
+            
             obj.error_state_interest(epoch)= estimator.alpha'* (estimator.XX - estimator.x_true);
             obj.sig_state_interest(epoch)= sqrt( estimator.alpha'* estimator.PX * estimator.alpha );
-            obj.PX(:, epoch)= diag( estimator.PX );
             obj.time(epoch)= time;
             obj.num_associated_lms(epoch)= estimator.n_L_k;
             obj.q_d(epoch)= estimator.q_d;
