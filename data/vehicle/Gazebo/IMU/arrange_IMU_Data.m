@@ -3,7 +3,7 @@
 filename= 'STIM_message.csv';
 test_year= 2019;
 test_month= 10;
-test_day= 1;
+test_day= 2;
 
 Data = csvimport(filename);
 FileSize=size(Data);

@@ -1,5 +1,5 @@
 
-clear; format short; clc; %close all;
+clear; format short; clc; close all;
 dbstop if error
 
 addpath('../utils/functions')
@@ -40,14 +40,11 @@ for epoch= 1:length(FG.imu) - 1
     [FG.lidar{epoch},FG.associations{epoch}]= estimator.nearest_neighbor(FG.lidar{epoch}, params);
     estimator.compute_lidar_H_k( params, FG, epoch );
     
-    % build the whiten jacobian for GPS msmt
-    % estimator.compute_gps_H_k( params, FG, epoch );
-    
     % main function for factor graphs integrity monitoring
     im.monitor_integrity( estimator, counters, data_obj,  params );
     
     % Store data
-    counters.k_update= data_obj.store_update_fg(counters.k_update, estimator, counters.time_sim, params);
+    counters.k_update= data_obj.store_update_fg_Gazebo(counters.k_update, estimator, counters.time_sim, params);
 
     % increase integrity counter
     counters.increase_integrity_monitoring_counter();

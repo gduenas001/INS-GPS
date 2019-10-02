@@ -23,6 +23,8 @@ landmark_map= (R_LM_map_2D*landmark_map')';
 ang_deg= -1.5;
 rot_offset= [cos(ang_deg*pi/180),sin(ang_deg*pi/180);-sin(ang_deg*pi/180),cos(ang_deg*pi/180)];
 landmark_map= (rot_offset*landmark_map')';
+landmark_map(:,1)= landmark_map(:,1)+6;
+landmark_map(:,2)= landmark_map(:,2)-73;
 landmark_map(:,2)=-landmark_map(:,2);
 %save('landmark_map.mat','landmark_map')
 R_psi_2D= [cos(psi_offset),-sin(psi_offset);sin(psi_offset),cos(psi_offset)];

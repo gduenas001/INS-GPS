@@ -70,22 +70,39 @@ classdef UpdateDataClass < handle
         % ----------------------------------------------
         function store_fg(obj, epoch, estimator, time, params)
             estimator.compute_alpha(params)
-            
-            %Osama
-            if(params.path== params.path_gazebo_fg)
-                obj.x_true(:,epoch)= [estimator.x_true;zeros(6,1)];
-                obj.XX(:,epoch)= [estimator.XX;zeros(6,1)];
-                obj.error(:,epoch)= [estimator.XX - estimator.x_true;zeros(6,1)];
-                obj.PX(:, epoch)= [diag( estimator.PX );zeros(6,1)];
-            else
-               obj.x_true(:,epoch)= estimator.x_true;
-               obj.XX(:,epoch)= estimator.XX;
-               obj.error(:,epoch)= estimator.XX - estimator.x_true;
-               obj.PX(:, epoch)= diag( estimator.PX );
+            obj.x_true(:,epoch)= estimator.x_true;
+            obj.XX(:,epoch)= estimator.XX;
+            obj.error(:,epoch)= [estimator.XX - estimator.x_true];
+            obj.PX(:, epoch)= [diag( estimator.PX )];
+            obj.x_true(:,epoch)= estimator.x_true;
+            obj.XX(:,epoch)= estimator.XX;
+            obj.error(:,epoch)= estimator.XX - estimator.x_true;
+            obj.PX(:, epoch)= diag( estimator.PX );
+            obj.error_state_interest(epoch)= estimator.alpha'* (estimator.XX - estimator.x_true);
+            obj.sig_state_interest(epoch)= sqrt( estimator.alpha'* estimator.PX * estimator.alpha );
+            obj.time(epoch)= time;
+            obj.num_associated_lms(epoch)= estimator.n_L_k;
+            obj.q_d(epoch)= estimator.q_d;
+            obj.T_d(epoch)= estimator.T_d;
+            obj.n_L_k(epoch)= estimator.n_L_k;
+            obj.n_L_M(epoch)= estimator.n_L_M;
+            if ~params.SWITCH_OFFLINE
+                obj.num_faults(epoch)= estimator.num_faults_k;
+                obj.odometry(:, epoch)= estimator.odometry_k;
+                obj.detector_elapsed_time(epoch)= estimator.detector_elapsed_time;
+                obj.availability(epoch)= estimator.availability;
+            elseif ~params.SWITCH_SIM
+                obj.GPS_L_M(epoch)= estimator.GPS_L_M;
             end
-            
-            
-            
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function store_fg_Gazebo(obj, epoch, estimator, time, params)
+            estimator.compute_alpha(params)
+            obj.x_true(:,epoch)= [estimator.x_true;zeros(6,1)];
+            obj.XX(:,epoch)= [estimator.XX;zeros(6,1)];
+            obj.error(:,epoch)= [estimator.XX - estimator.x_true;zeros(6,1)];
+            obj.PX(:, epoch)= [diag( estimator.PX );zeros(6,1)];
             obj.error_state_interest(epoch)= estimator.alpha'* (estimator.XX - estimator.x_true);
             obj.sig_state_interest(epoch)= sqrt( estimator.alpha'* estimator.PX * estimator.alpha );
             obj.time(epoch)= time;

@@ -1,6 +1,6 @@
 % function convert_LIDAR_data_from_txt_to_mat(num_of_LIDAR_frames)
 
-num_of_LIDAR_frames= 885;
+num_of_LIDAR_frames= 496;
 
 for i=0:num_of_LIDAR_frames
     

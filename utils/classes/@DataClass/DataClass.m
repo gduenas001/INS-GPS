@@ -44,6 +44,12 @@ classdef DataClass < handle
             % increase counter
             epoch= epoch + 1;
         end
+        function epoch= store_update_fg_Gazebo(obj, epoch, estimator, time, params)
+            obj.update.store_fg_Gazebo(epoch, estimator, time, params);
+            
+            % increase counter
+            epoch= epoch + 1;
+        end
         function epoch= store_update_sim(obj, epoch, estimator, time, params)
             obj.update.store_sim(epoch, estimator, time, params);
             

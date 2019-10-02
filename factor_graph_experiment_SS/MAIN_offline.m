@@ -35,7 +35,7 @@ for epoch= 1:length(FG.imu) - 1
     estimator.compute_lidar_H_k( params, FG, epoch );
     
     % build the whiten jacobian for GPS msmt
-    estimator.compute_gps_H_k( params, FG, epoch );
+    % estimator.compute_gps_H_k( params, FG, epoch );
     
     % main function for factor graphs integrity monitoring
     im.monitor_integrity( estimator, counters, data_obj,  params );
