@@ -22,7 +22,7 @@ estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
-for epoch= 1:2500
+for epoch= 1:imu.num_readings - 1
     disp(strcat('Epoch -> ', num2str(epoch)));
     
     % set the simulation time to the IMU time

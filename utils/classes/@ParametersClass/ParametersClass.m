@@ -32,8 +32,9 @@ classdef ParametersClass < handle
     
     properties (Constant)
 %         path_test= '../data/cart/20180725/';
-%        path_test= '../data/vehicle/20190110/';
-        path_test= '../data/vehicle/20190828/';
+        %path_test= '../data/vehicle/20191116_1/';
+        path_test= '../data/vehicle/20190110/';
+        %path_test= '../data/vehicle/20190828/';
         path_sim_kf= '../data/simulation/factor_graph/';
 %         path_sim_kf= '../data/simulation/straight/';
 %         path_sim= '../data/simulation/square/';
@@ -116,6 +117,7 @@ classdef ParametersClass < handle
         path
         file_name_imu
         file_name_gps
+        file_name_SM
         file_name_lidar_path
         file_name_calibration
         
@@ -346,6 +348,7 @@ classdef ParametersClass < handle
             obj.file_name_imu=  strcat(obj.path, 'IMU/IMU.mat');
             obj.file_name_gps=  strcat(obj.path, 'GPS/GPS.mat');
             obj.file_name_lidar_path= strcat(obj.path, 'LIDAR/');
+            obj.file_name_SM = strcat(obj.path, 'SM/SM.mat');
             obj.file_name_calibration= strcat( obj.path, 'IMU/calibration.mat');
 
             

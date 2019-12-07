@@ -95,6 +95,8 @@ classdef IntegrityMonitoringClassEkfExp < handle
         f_dir_sig2= cell(10000,1)
         M_dir= cell(10000,1)
         counter_H=0
+        p_hmi_elapsed_time=0
+        f_avg=0
     end
     
     

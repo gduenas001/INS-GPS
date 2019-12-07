@@ -85,6 +85,8 @@ classdef IntegrityMonitoringClassFgExpOff < handle
         GPS_L_M
         GPS_M
         f_avg=0
+        P_MA_k=0
+        P_MA_ph
     end
     
     
@@ -117,6 +119,7 @@ classdef IntegrityMonitoringClassFgExpOff < handle
             obj.H_ph=     cell( 1, params.M );
             obj.gamma_ph= cell(1, params.M);
             obj.q_ph=     ones(params.M, 1) * (-1);
+            obj.P_MA_ph= cell( 1, params.M );
             
         end
         % ----------------------------------------------
@@ -188,6 +191,9 @@ classdef IntegrityMonitoringClassFgExpOff < handle
         p_hmi_H= compute_p_hmi_H(obj, alpha, fault_ind, params)
         % ----------------------------------------------
         % ----------------------------------------------
+        prob_of_MA(obj, estimator, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
         function update_preceding_horizon(obj, estimator)
                 obj.Phi_ph=   {inf, estimator.Phi_k, obj.Phi_ph{2:obj.M}};
                 obj.H_ph=     {estimator.H_k,   obj.H_ph{1:obj.M-1}};
@@ -197,6 +203,7 @@ classdef IntegrityMonitoringClassFgExpOff < handle
                 obj.H_gps_ph=     {estimator.H_k_gps,   obj.H_gps_ph{1:obj.M-1}};
                 obj.H_lidar_ph=     {estimator.H_k_lidar,   obj.H_lidar_ph{1:obj.M-1}};
                 obj.n_gps_ph= [estimator.n_gps_k,   obj.n_gps_ph(1:obj.M-1)];
+                obj.P_MA_ph= {obj.P_MA_k,obj.P_MA_ph{1:obj.M-1}};
         end 
     end
 end

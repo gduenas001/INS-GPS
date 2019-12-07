@@ -61,8 +61,15 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     obj.PX_prior= obj.PX_M( params.m + 1 : 2*params.m, params.m + 1 : 2*params.m );
     obj.Gamma_prior= inv(obj.PX_prior);
     
+    % set detector threshold from the continuity req
+    obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M );
+    
+    obj.prob_of_MA(estimator, params);
+    
+    obj.P_MA_M = [ obj.P_MA_k ; cell2mat(obj.P_MA_ph(1:obj.M-1)') ];
+    
     % fault probability of each association in the preceding horizon
-    obj.P_F_M= ones(obj.n_L_M, 1) * params.P_UA;
+    obj.P_F_M= ones(obj.n_L_M, 1) * params.P_UA + obj.P_MA_M;
     
     % compute the hypotheses (n_H, n_max, inds_H)
     obj.compute_hypotheses(params)
@@ -83,9 +90,6 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         
         % standard deviation in the state of interest
         obj.sigma_hat= sqrt( (alpha' / obj.Gamma_fg) * alpha );
-
-        % set detector threshold from the continuity req
-        obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M );
         
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;
@@ -110,7 +114,12 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     obj.p_hmi_elapsed_time=toc;
     
     % store integrity related data
-    data.store_integrity_data(obj, estimator, counters, params) 
+    data.store_integrity_data(obj, estimator, counters, params)
+    
+else
+    
+    obj.prob_of_MA(estimator, params);
+    
 end
 
 % update the preceding horizon

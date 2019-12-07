@@ -68,6 +68,11 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH ...
     obj.PX_prior= obj.PX_M( params.m + 1 : 2*params.m, params.m + 1 : 2*params.m );
     obj.Gamma_prior= inv(obj.PX_prior);
     
+    % set detector threshold from the continuity req
+    obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M + obj.n_M_gps );
+    
+    %obj.prob_of_MA( estimator, params)
+    
     % fault probability of each association in the preceding horizon
     obj.P_F_M= ones(obj.n_L_M + (obj.n_M_gps/6) , 1) * params.P_UA;
     
@@ -95,9 +100,6 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH ...
         
         % standard deviation in the state of interest
         obj.sigma_hat= sqrt( (alpha' * obj.PX_M) * alpha );
-
-        % set detector threshold from the continuity req
-        obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M + obj.n_M_gps );
         
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;

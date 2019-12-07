@@ -221,7 +221,7 @@ void read_pcd_file_callback(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int epoch
 		stringstream sa;
 		sa << setw(6) << setfill('0') << epoch;
 		filename= sa.str();
-		reader.read ("../point_cloud_data/" + filename + ".pcd", *cloud);
+		reader.read ("/home/robolab/Documents/2019_11_06/ouster/" + filename + ".pcd", *cloud);
 	}
 
 	if (VERBOSE)

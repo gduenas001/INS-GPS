@@ -55,7 +55,7 @@ taua_calibration= 100; % 200 acc tau value during initial calibration
 tauw_calibration= 100; % 200 gyro tau value during initial calibration
 g_val= 9.80279; % value of g [m/s2] at the IIT
 r_IMU2rearAxis= 0.9; % distance from IMU to rear axis
-alpha_NN= 0.01; % prob of discard good features in NN (inv-proportional to size of gate)
+alpha_NN= 0.01; %(0.01 Osama) prob of discard good features in NN (inv-proportional to size of gate)
 threshold_new_landmark= 15; % Threshold in NIS to create a new landmark
 sig_minLM= 0.1; % minimum SD for the landmarks
 mult_factor_acc_imu= 10; % multiplicative factor for the accel SD
@@ -86,6 +86,6 @@ max_delta_steering= deg2rad( 20 ); % maximum change in steering angle during one
 max_steering= deg2rad( 10 );
 sig_gyro_z= deg2rad(3); % [rad/s]  standard dev of the gyro
 map_limits= [-25, 230, -50, 50]; % [x_min, x_max, y_min,  y_max] 
-optimoptions_display= 'notify'; % display options for the factor graphs optimization 
+optimoptions_display= 'notify'; % display options for the factor graphs optimization
 landmark_density= 0.0009; % [landmarks / m^2]
 % -------------------------------------------

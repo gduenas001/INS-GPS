@@ -28,6 +28,7 @@ obj.n_k= obj.n_L_k * params.m_F;
 
 % build Jacobian
 obj.H_k= inf * ones( obj.n_k , params.m );
+
 for i= 1:obj.n_L_k
     % Indexes
     indz= 2*i + (-1:0);

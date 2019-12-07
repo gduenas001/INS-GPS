@@ -1,6 +1,6 @@
 plot(estimator.landmark_map(:,1),estimator.landmark_map(:,2),'b.')
 hold on
-for i = 1:length(FG.lidar)
+for i = 1:1221
     if isempty(FG.lidar{i})
         continue;
     end

@@ -181,6 +181,9 @@ classdef IntegrityMonitoringClassFgSimOff < handle
         p_hmi_H= compute_p_hmi_H(obj, alpha, fault_ind, params)
         % ----------------------------------------------
         % ----------------------------------------------
+        prob_of_MA(obj, estimator, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
         function update_preceding_horizon(obj, estimator)
             
                 obj.Phi_ph=   {inf, estimator.Phi_k, obj.Phi_ph{2:obj.M}};
@@ -188,6 +191,7 @@ classdef IntegrityMonitoringClassFgSimOff < handle
                 obj.n_ph=     [estimator.n_k;   obj.n_ph(1:obj.M-1)];
                 obj.XX_ph=    {estimator.XX,    obj.XX_ph{1:obj.M}};
                 obj.D_bar_ph= {inf, estimator.D_bar, obj.D_bar_ph{2:obj.M}};
+                obj.P_MA_ph= {obj.P_MA_k,obj.P_MA_ph{1:obj.M-1}};
         end 
     end
 end

@@ -9,7 +9,7 @@ figure; hold on; grid on;
 plot(params.way_points(1,:), params.way_points(2,:), 'bo', 'markersize', 5);
 
 % plot true path
-%plot(obj.update.x_true(1,:), obj.update.x_true(2,:), 'k-','markersize', 7);
+plot(obj.update.x_true(1,:), obj.update.x_true(2,:), 'k-','markersize', 7);
 
 % if online --> plot estimated path as well
 if ~params.SWITCH_OFFLINE

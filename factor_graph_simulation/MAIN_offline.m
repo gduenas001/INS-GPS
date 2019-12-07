@@ -36,7 +36,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
 
          % build the jacobian landmarks in the field of view
          estimator.compute_lidar_H_k( params );
-            
+         
          % main function for factor graphs integrity monitoring
          im.monitor_integrity(estimator, counters, data_obj,  params);
 

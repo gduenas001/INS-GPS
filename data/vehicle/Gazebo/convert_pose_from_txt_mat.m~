@@ -1,0 +1,9 @@
+clear
+close all
+clc
+
+% open and read the text file
+data= table2array(readtable('pose.txt'));
+data(:,12) = 
+data(:,1) = data(:,1)-3e5;
+save('pose.mat','data');

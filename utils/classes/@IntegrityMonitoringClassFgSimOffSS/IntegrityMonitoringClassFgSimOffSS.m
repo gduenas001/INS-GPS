@@ -102,6 +102,7 @@ classdef IntegrityMonitoringClassFgSimOffSS < handle
         sigma_hat_delta_j % std dev of the test statistic for the jth fault hypothesis (exculding faulted LMs)
         T_delta_j % threshold for the jth fault hypothesis (exculding faulted LMs) 
         p_hmi_elapsed_time
+        f_avg=0
     end
     
     
