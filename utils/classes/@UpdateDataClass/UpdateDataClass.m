@@ -20,6 +20,7 @@ classdef UpdateDataClass < handle
         detector_elapsed_time
         availability
         GPS_L_M
+        M
     end
     
     methods
@@ -44,6 +45,7 @@ classdef UpdateDataClass < handle
             obj.detector_elapsed_time= zeros(num_readings, 1);
             obj.availability= zeros(num_readings, 1);
             obj.GPS_L_M= zeros(num_readings, 1);
+            obj.M= zeros(num_readings, 1);
             
         end
         % ----------------------------------------------
@@ -86,6 +88,7 @@ classdef UpdateDataClass < handle
             obj.T_d(epoch)= estimator.T_d;
             obj.n_L_k(epoch)= estimator.n_L_k;
             obj.n_L_M(epoch)= estimator.n_L_M;
+            obj.M(epoch)= estimator.M;
             if ~params.SWITCH_OFFLINE
                 obj.num_faults(epoch)= estimator.num_faults_k;
                 obj.odometry(:, epoch)= estimator.odometry_k;
@@ -140,6 +143,7 @@ classdef UpdateDataClass < handle
             obj.odometry(:, counters.k_update:end)= [];
             obj.detector_elapsed_time(counters.k_update:end)= [];
             obj.availability(counters.k_update:end)=[];
+            obj.M(counters.k_update:end)=[];
         end
         % ----------------------------------------------
         % ----------------------------------------------

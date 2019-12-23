@@ -11,7 +11,7 @@ if params.SWITCH_FIXED_LM_SIZE_PH && isempty(obj.p_hmi)
     obj.n_L_M= obj.n_M / params.m_F;
     estimator.n_L_M= obj.n_L_M;
     % update the length of PH
-    obj.M= obj.M +1; 
+    obj.M= obj.M +1;
     
 end
 
@@ -63,18 +63,18 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     
     % fault probability of each association in the preceding horizon
     obj.P_F_M= ones(obj.n_L_M, 1) * params.P_UA;
-    
+
     % compute the hypotheses (n_H, n_max, inds_H)
-    obj.compute_hypotheses(params)
-    
+    obj.compute_hypotheses(params);
+
     tic
-    
+
     % initialization of p_hmi
     obj.p_hmi=0;
     if obj.n_M < params.m + obj.n_max*params.m_F
         % if we don't have enough landmarks --> P(HMI)= 1
         obj.p_hmi= 1;
-        
+
     else % we have enough msmts
 
         % standard deviation in the state of interest
@@ -82,12 +82,12 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
 
         % initializing P_H vector
         obj.P_H= ones(obj.n_H, 1) * inf;
-        
+
         for i= 0:obj.n_H   
-            
+
             % compute P(HMI | H) for the worst-case fault
             p_hmi_H= obj.compute_p_hmi_H(alpha, i, params);
-            
+
             % Add P(HMI | H) to the integrity risk
             if i == 0
                 obj.P_H_0= prod( 1 - obj.P_F_M );

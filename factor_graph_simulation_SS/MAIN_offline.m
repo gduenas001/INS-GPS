@@ -1,18 +1,24 @@
 
-clear; format short; clc; %close all;
+clear; format short; clc; close all;
 dbstop if error
 
 addpath('../utils/functions')
 addpath('../utils/classes')
 
-
-for map_i= 10:10
+%lm_dens=0.005:0.005:0.025;%[0.001,0.005,0.009,0.013,0.017,0.021,0.025,0.029];%,0.033,0.037];
+lm_dens=linspace(0.002,0.025,10);
+computational_time = zeros(1,length(lm_dens));
+avg_n_L_M = zeros(1,length(lm_dens));
+avg_epoch = zeros(1,length(lm_dens));
+%for map_i= 10:10
+for ind_lm_dens= 1:length(lm_dens)
     
-% seed the randomness
+    
+map_i= 8
 rng(map_i)
     
 % create objects
-params= ParametersClass("simulation_fg_offline_SS");
+params= ParametersClass("simulation_fg_offline_SS",lm_dens(ind_lm_dens));
 estimator= EstimatorClassFgSimOffSS(params);
 im= IntegrityMonitoringClassFgSimOffSS(params, estimator);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
@@ -39,7 +45,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
             
          % main function for factor graphs integrity monitoring
          im.monitor_integrity(estimator, counters, data_obj,  params);
-
+         estimator.M = im.M;
          % Store data
          counters.k_update=...
              data_obj.store_update_fg(counters.k_update, estimator, counters.time_sim, params);
@@ -60,7 +66,9 @@ end
 % Store data for last epoch
 data_obj.delete_extra_allocated_memory(counters)
 
-
+computational_time(ind_lm_dens)=median(data_obj.im.p_hmi_elapsed_time(data_obj.im.p_hmi_elapsed_time~=0));
+avg_n_L_M(ind_lm_dens)=mean(data_obj.im.n_L_M(data_obj.im.n_L_M~=0));
+avg_epoch(ind_lm_dens)=mean(data_obj.update.M(data_obj.update.M~=0)+1);
 % save workspace
 save(strcat( params.path_sim_fg, 'results/density_001/map_', num2str(map_i), '/offline' ));
 

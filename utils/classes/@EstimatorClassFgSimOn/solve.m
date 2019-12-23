@@ -55,7 +55,6 @@ x_star= obj.from_estimator_to_vector(params);
 % saves the prior separately
 obj.x_prior= obj.x_ph{obj.M};
 
-
 % solve the problem
 [residual, grad, A, b]= obj.optimization_fn(x_star, params);
 
@@ -63,10 +62,12 @@ obj.x_prior= obj.x_ph{obj.M};
 
 [residual, grad, A, b]= obj.optimization_fn(x_star, params);
 
-
 % multiply by two so that it fits the non-central chi-squared
 tic
-obj.q_d= obj.b'*obj.b;
+obj.q_d=0;
+for i=1:length(obj.b)
+    obj.q_d= obj.q_d+obj.b(i)*obj.b(i);
+end
 obj.detector_elapsed_time =toc;
 % obj.q_d= obj.q_d * 2;
 

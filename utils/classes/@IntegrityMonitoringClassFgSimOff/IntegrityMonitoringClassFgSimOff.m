@@ -98,6 +98,7 @@ classdef IntegrityMonitoringClassFgSimOff < handle
         p_hmi_elapsed_time
         f_avg=0
         f_M_mag_out=0
+        G_l_t=0
     end
     
     

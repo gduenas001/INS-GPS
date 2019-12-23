@@ -175,7 +175,6 @@ classdef ParametersClass < handle
         optimoptions % optimoptions for the fg optimization
         landmark_density % landmarks / m^2
         landmark_map
-        
         % -------------------------------------------
         % -------------------------------------------
     end
@@ -183,7 +182,7 @@ classdef ParametersClass < handle
     methods
         % ----------------------------------------------
         % ----------------------------------------------
-        function obj = ParametersClass(navigation_type)
+        function obj = ParametersClass(navigation_type,lm_dens)
             
             % differenciate between slam and localization
             switch navigation_type 
@@ -338,7 +337,8 @@ classdef ParametersClass < handle
                 obj.max_steering= max_steering;
                 obj.sig_gyro_z= sig_gyro_z;
                 obj.map_limits= map_limits;
-                obj.landmark_density= landmark_density; 
+                %obj.landmark_density= landmark_density;
+                obj.landmark_density= lm_dens;
 %                end
             end
             % -------------------------------------------
