@@ -1,0 +1,177 @@
+
+function monitor_integrity(obj, estimator, counters, data,  params)
+
+
+% calculate the current number of LMs in PH; only before starting integrity monitoring
+if params.SWITCH_FIXED_LM_SIZE_PH && isempty(obj.p_hmi)
+    
+    % current horizon measurements
+    obj.n_M= sum( obj.n_ph(1:obj.M) ) + estimator.n_k;
+    % current horizon LMs
+    obj.n_L_M= obj.n_M / params.m_F;
+    estimator.n_L_M= obj.n_L_M;
+    % update the length of PH
+    obj.M= obj.M +1; 
+    
+end
+
+% monitor integrity if the number of LMs in the preceding horizon is more than threshold
+if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
+    obj.n_L_M >= params.min_n_L_M ) ||...
+    ( ~params.SWITCH_FIXED_LM_SIZE_PH && counters.k_im > obj.M )
+
+    % Modify preceding horizon to have enough landmarks
+    if params.SWITCH_FIXED_LM_SIZE_PH
+        
+        obj.compute_required_epochs_for_min_LMs(params, estimator)
+        
+    else
+        
+        % number of absolute msmts over the horizon
+        obj.n_M= estimator.n_k + sum( obj.n_ph(1:obj.M - 1) );
+
+        % number of landmarks over the horizon
+        obj.n_L_M= obj.n_M / params.m_F;
+        estimator.n_L_M= obj.n_L_M;
+    end
+    
+    % compute extraction vector
+    alpha= obj.build_state_of_interest_extraction_matrix(params, estimator.x_true);
+       
+    % total number of msmts (prior + relative + abs)
+    obj.n_total= obj.n_M + (obj.M + 1) * (params.m);
+    
+    % number of states to estimate
+    obj.m_M= (obj.M + 1) * params.m;
+    
+    % compute the H whiten Jacobian A
+    obj.compute_whiten_jacobian_A(estimator, params);% TODO: use the new function, remove this one
+    
+    % construct the information matrix
+    obj.Gamma_fg= obj.A' * obj.A;
+    
+    % full covarince matrix 
+%     TODO: use shur complement to ge the covariance
+    obj.PX_M= inv(obj.Gamma_fg);
+    
+    % extract covarince matrix at time k
+    estimator.PX= obj.PX_M( end - params.m + 1 : end, end - params.m + 1 : end );
+    
+    % find the prior covarince matrix for time k+1
+    obj.PX_prior= obj.PX_M( params.m + 1 : 2*params.m, params.m + 1 : 2*params.m );
+    obj.Gamma_prior= inv(obj.PX_prior);
+    
+    % set detector threshold from the continuity req
+    obj.T_d= chi2inv( 1 - obj.C_req, obj.n_M );
+    
+    obj.n_max= 2;%estimator.n_L_k-1;
+    fprintf('n_max: %d\n', obj.n_max);
+    
+    obj.prob_of_MA(estimator, params);
+    
+    obj.P_MA_M = [ obj.P_MA_k ; cell2mat(obj.P_MA_ph(1:obj.M-1)') ];
+    
+    % fault probability of each association in the preceding horizon
+    obj.P_F_M= ones(obj.n_L_M, 1) * params.P_UA + obj.P_MA_M;
+    
+    obj.P_F_M(obj.P_F_M>=1)=0.99999999999999*ones(sum(obj.P_F_M>=1),1);
+    
+    obj.I_H= sum(obj.P_F_M)^obj.n_max  / factorial(obj.n_max);
+    
+    if obj.I_H>1
+        obj.I_H=1;
+    end
+    
+    % compute the hypotheses (n_H, n_max, inds_H)
+    obj.compute_hypotheses(params)
+    
+    tic
+    
+    % initialization of p_hmi
+    obj.p_hmi= obj.I_H;
+    
+    obj.f_avg=0;
+    
+    % Least squares residual matrix
+    obj.M_M= eye( obj.n_total ) - (obj.A / (obj.A'*obj.A)) * obj.A';
+
+    % standard deviation in the state of interest
+    obj.sigma_hat= sqrt( (alpha' / obj.Gamma_fg) * alpha );
+
+    % initializing P_H vector
+    obj.P_H= ones(obj.n_H, 1) * inf;
+
+
+    for i= 0:obj.n_H   
+
+        if i == 0
+            if obj.n_M < params.m
+                % compute P(HMI | H) for the worst-case fault
+                p_hmi_H= 1;
+                % Add P(HMI | H0) to the integrity risk
+                obj.P_H_0= prod( 1 - obj.P_F_M );
+                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
+                if obj.p_hmi>=1
+                    obj.p_hmi=1;
+                    break;
+                end
+            else
+                % compute P(HMI | H) for the worst-case fault
+                p_hmi_H= obj.compute_p_hmi_H(alpha, 0, params);
+                obj.f_avg=obj.f_avg+obj.f_M_mag_out;
+                % Add P(HMI | H0) to the integrity risk
+                obj.P_H_0= prod( 1 - obj.P_F_M );
+                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
+                if obj.p_hmi>=1
+                    obj.p_hmi=1;
+                    break;
+                end
+            end
+        else
+            if obj.n_M < params.m + length(obj.inds_H{i})*params.m_F
+                % if we don't have enough landmarks --> P(HMI)= 1
+                p_hmi_H= 1;
+                % Add P(HMI | H) to the integrity risk
+                obj.P_H(i)= obj.P_H_0* prod( obj.P_F_M( obj.inds_H{i} ) ) / prod( 1 - obj.P_F_M( obj.inds_H{i} ) );
+                if isnan(obj.P_H(i))
+                    obj.P_H(i)=0;
+                end
+                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
+                if obj.p_hmi>=1
+                    obj.p_hmi=1;
+                    break;
+                end
+            else
+                % compute P(HMI | H) for the worst-case fault
+                p_hmi_H= obj.compute_p_hmi_H(alpha, obj.inds_H{i}, params);
+                obj.f_avg=obj.f_avg+obj.f_M_mag_out;
+                % Add P(HMI | H) to the integrity risk
+                obj.P_H(i)= obj.P_H_0* prod( obj.P_F_M( obj.inds_H{i} ) ) / prod( 1 - obj.P_F_M( obj.inds_H{i} ) );
+                if isnan(obj.P_H(i))
+                    obj.P_H(i)=0;
+                end
+                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
+                if obj.p_hmi>=1
+                    obj.p_hmi=1;
+                    break;
+                end
+            end
+        end
+    end
+    obj.f_avg=obj.f_avg/(obj.n_H+1);
+    
+    obj.p_hmi_elapsed_time=toc;
+    
+    % store integrity related data
+    data.store_integrity_data(obj, estimator, counters, params)
+    
+else
+    
+    obj.prob_of_MA(estimator, params);
+    
+end
+
+% update the preceding horizon
+update_preceding_horizon(obj, estimator)
+
+end

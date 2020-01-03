@@ -50,6 +50,10 @@ classdef IntegrityDataClass < handle
             obj.p_eps(counters.k_im)= 2* normcdf(-params.alert_limit, 0, im.sigma_hat);
             obj.M(counters.k_im)= im.M;
             obj.f_avg(counters.k_im)= im.f_avg;
+            %----------Osama--------
+            obj.P_MA_k{counters.k_im}= im.P_MA_k;
+            obj.P_MA_k_full{counters.k_im}= im.P_MA_k_full;
+            %------------------------
             
             
             if ~params.SWITCH_FACTOR_GRAPHS      
