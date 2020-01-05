@@ -48,7 +48,7 @@ for t= 1:estimator.n_L_k
         R_it= (E_i-A_t*obj.PX_M*obj.A')*(E_i-A_t*obj.PX_M*obj.A')';
         Q= obj.A * obj.PX_M *((A_t')/R_it)*A_t* obj.PX_M *obj.A';
         for j= 1:(obj.n_max)%(obj.n_L_M-3)
-            C = nchoosek(1:estimator.n_L_k,j); %set of possible fault indices for n_max simultanous faults
+            C = nchoosek(1:obj.n_L_M,j); %set of possible fault indices for n_max simultanous faults
             for i= 1:size(C,1)
                 % build extraction matrix
                 obj.compute_E_matrix_fg(C(i,:), params.m_F);

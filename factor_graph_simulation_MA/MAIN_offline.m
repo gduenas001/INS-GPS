@@ -18,7 +18,7 @@ avg_epoch = zeros(1,length(lm_dens));
 for ind_lm_dens= 1:1%length(lm_dens)
     
 % seed the randomness
-map_i= 8
+map_i= 6
 rng(map_i)
     
 % create objects
