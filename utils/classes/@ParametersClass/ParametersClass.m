@@ -21,7 +21,6 @@ classdef ParametersClass < handle
         SWITCH_LIDAR_FAULTS
         SWITCH_GPS_FG
         SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt
-        SWITCH_NO_ASSUMPTIONS_ON_HYPOTHESES=0
         
         % switches set by the simulation name
         SWITCH_SLAM= 0
@@ -226,6 +225,11 @@ classdef ParametersClass < handle
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.SWITCH_OFFLINE= 1;
                     obj.path= obj.path_exp_fg;
+                case 'experiment_fg_offline_MA'
+                    obj.SWITCH_SIM= 0;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.SWITCH_OFFLINE= 1;
+                    obj.path= obj.path_exp_fg;
                 case 'experiment_fg_offline_SS'
                     obj.SWITCH_SIM= 0;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
@@ -267,7 +271,6 @@ classdef ParametersClass < handle
             if obj.SWITCH_FACTOR_GRAPHS
                 obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
                 obj.SWITCH_LIDAR_FAULTS= SWITCH_LIDAR_FAULTS;
-                obj.SWITCH_NO_ASSUMPTIONS_ON_HYPOTHESES= SWITCH_NO_ASSUMPTIONS_ON_HYPOTHESES;
                 if (~obj.SWITCH_SIM)
                     obj.SWITCH_GPS_FG= SWITCH_GPS_FG;
                     obj.SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt;

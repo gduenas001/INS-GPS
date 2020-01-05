@@ -9,7 +9,7 @@ addpath('../utils/classes')
 %lm_dens=0.003:0.006:0.025;
 %lm_dens=linspace(0.002,0.025,10);
 %lm_dens=[0.002,0.011,0.02];
-lm_dens=[0.002,0.004,0.008];
+lm_dens=[0.008,0.004,0.008];
 computational_time = zeros(1,length(lm_dens));
 avg_n_L_M = zeros(1,length(lm_dens));
 avg_f_mag = zeros(1,length(lm_dens));
@@ -75,7 +75,7 @@ avg_n_L_M(ind_lm_dens)=mean(data_obj.im.n_L_M(data_obj.im.n_L_M~=0));
 avg_f_mag(ind_lm_dens)=mean(data_obj.im.f_avg(data_obj.im.f_avg~=0));
 avg_epoch(ind_lm_dens)=mean(data_obj.update.M(data_obj.update.M~=0)+1);
 
-save(['PLANS_P_MA_example_',num2str(lm_dens(ind_lm_dens)),'_two_simult_faults.mat']);
+save(['PLANS_P_MA_example_',num2str(lm_dens(ind_lm_dens)),'_two_simult_faults_new.mat']);
 % save workspace
 %save(strcat( params.path_sim_fg, 'results/density_001/map_', num2str(map_i), '/offline' ));
 

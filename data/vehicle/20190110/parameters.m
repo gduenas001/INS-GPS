@@ -8,7 +8,7 @@
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 0; % initial calibration to obtain moving biases
- SWITCH_FIXED_LM_SIZE_PH= 1;
+ SWITCH_FIXED_LM_SIZE_PH= 0;
  SWITCH_LM_SELECTION= 1; % landmark selection activation
  SWITCH_SEED= 1; 
  SWITCH_GENERATE_RANDOM_MAP= 0;
