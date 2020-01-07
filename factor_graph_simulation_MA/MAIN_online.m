@@ -12,15 +12,15 @@ computational_time = zeros(1,length(lm_dens));
 avg_n_L_M = zeros(1,length(lm_dens));
 avg_epoch = zeros(1,length(lm_dens));
 avg_q_d = zeros(1,length(lm_dens));
-for ind_lm_dens= 1:length(lm_dens)
+for ind_lm_dens= 1:1%length(lm_dens)
 
 % seed the randomness
 map_i= 8
 rng(map_i)
     
 % create objects
-params= ParametersClass("simulation_fg_online",lm_dens(ind_lm_dens));
-estimator= EstimatorClassFgSimOn([], params);
+params= ParametersClass("simulation_fg_online_MA",lm_dens(ind_lm_dens));
+estimator= EstimatorClassFgSimOnMA([], params);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
 counters= CountersClass([], [], params);
 
