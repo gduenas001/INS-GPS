@@ -36,6 +36,7 @@ classdef ParametersClass < handle
         path_test= '../data/vehicle/20190110/';
         %path_test= '../data/vehicle/20190828/';
         path_sim_kf= '../data/simulation/factor_graph/';
+        path_sim_pf= '../data/simulation/particle_filter/';
 %         path_sim_kf= '../data/simulation/straight/';
 %         path_sim= '../data/simulation/square/';
         path_sim_fg= '../data/simulation/factor_graph/';
@@ -197,6 +198,10 @@ classdef ParametersClass < handle
                 case 'simulation_kf'
                     obj.SWITCH_SIM= 1;
                     obj.path= obj.path_sim_kf;
+                case 'simulation_Particle_filter'
+                    obj.SWITCH_SIM= 1;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.path= obj.path_sim_pf;
                 case 'simulation_fg_offline'
                     obj.SWITCH_SIM= 1;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
@@ -213,6 +218,10 @@ classdef ParametersClass < handle
                     obj.SWITCH_OFFLINE= 1;
                     obj.path= obj.path_sim_fg;
                 case 'simulation_fg_online'
+                    obj.SWITCH_SIM= 1;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.path= obj.path_sim_fg;
+                case 'simulation_fg_online_MA'
                     obj.SWITCH_SIM= 1;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.path= obj.path_sim_fg;
