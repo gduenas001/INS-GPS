@@ -67,9 +67,11 @@ classdef EstimatorClassParticleSim < handle
         detector_elapsed_time=0
         availability=0
         XX_particles
-        number_of_particles=1000
+        number_of_particles=2000
+        number_of_particles_to_add=2000
         m
         weight_vector
+        gen_estimate_cov=[0.25,0,0;0,0.25,0;0,0,0.1]
     end
     
     
@@ -83,7 +85,8 @@ classdef EstimatorClassParticleSim < handle
                 obj.XX= zeros(obj.m,1);
                 obj.XX(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
                 obj.x_true(params.ind_yaw)= deg2rad(params.initial_yaw_angle);
-                obj.PX= eye(obj.m)*0.2;
+                % obj.PX= obj.gen_estimate_cov;
+                obj.PX= obj.gen_estimate_cov;
                 obj.XX_particles = mvnrnd(obj.XX,obj.PX,obj.number_of_particles);
                 for i=1:obj.number_of_particles
                     obj.XX_particles(i,params.ind_yaw)= pi_to_pi(obj.XX_particles(i,params.ind_yaw));

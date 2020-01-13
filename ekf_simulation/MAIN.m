@@ -5,9 +5,10 @@ dbstop if error
 addpath('../utils/functions')
 addpath('../utils/classes')
 
+lm_dens= 0.002;
 
 % create objects
-params= ParametersClass("simulation_kf");
+params= ParametersClass("simulation_kf",lm_dens);
 im= IntegrityMonitoringClassEkfSim(params);
 estimator= EstimatorClassEkfSim(params);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);

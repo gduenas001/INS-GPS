@@ -181,10 +181,10 @@ classdef DataClass < handle
             plot(obj.update.time * params.velocity_sim, obj.update.error(2,:), 'r-', 'linewidth', 2)
 %             plot(obj.update.time * params.velocity_sim, standard_dev_x,'b--','linewidth',2);
 %             plot(obj.update.time * params.velocity_sim, -standard_dev_x,'b--','linewidth',2);
-            plot(obj.update.time * params.velocity_sim, standard_dev_y,'r--','linewidth',2);
-            plot(obj.update.time * params.velocity_sim, -standard_dev_y,'r--','linewidth',2);
+            plot(obj.update.time * params.velocity_sim, 3*standard_dev_y,'r--','linewidth',2);
+            plot(obj.update.time * params.velocity_sim, -3*standard_dev_y,'r--','linewidth',2);
             
-            legend({'$\delta \hat{x}$', '$\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
+            legend({'$\delta \hat{x}$', '$3\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
             xlabel('x [m]','interpreter', 'latex','fontsize', 15)
             ylabel('error [m]','interpreter', 'latex','fontsize', 15)
         end

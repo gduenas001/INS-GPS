@@ -27,11 +27,10 @@ R= kron( params.R_lidar, eye( obj.n_k / params.m_F ) );
 zVector= z';
 zVector= zVector(:);
 
-obj.weight_vector= zeros(obj.number_of_particles,1);
+obj.weight_vector= zeros(size(obj.XX_particles,1),1);
 
-for j=1:obj.number_of_particles
+for j=1:size(obj.XX_particles,1)
     %Build Jacobian H
-    obj.H_k= zeros(obj.n_k, obj.m);
     spsi= sin(obj.XX_particles(j,params.ind_yaw));
     cpsi= cos(obj.XX_particles(j,params.ind_yaw));
     zHat= zeros(obj.n_k,1);
@@ -45,19 +44,13 @@ for j=1:obj.number_of_particles
         % Predicted measurement
         zHat(indz)= [dx*cpsi + dy*spsi;
                     -dx*spsi + dy*cpsi];
-
-        % Jacobian -- H
-        obj.H_k(indz,1)= [-cpsi; spsi];
-        obj.H_k(indz,2)= [-spsi; -cpsi];
-        obj.H_k(indz,params.ind_yaw)= [-dx * spsi + dy * cpsi;
-                                       -dx * cpsi - dy * spsi];
     end
     obj.weight_vector(j)=mvnpdf(zVector,zHat,R);
 end
 
 obj.weight_vector = obj.weight_vector/sum(obj.weight_vector);
 
-XX_particles_new=ones(size(obj.XX_particles));
+XX_particles_new=ones(obj.number_of_particles,params.m);
 
 for j=1:obj.number_of_particles
     ind = find( mnrnd(1,obj.weight_vector) );

@@ -14,7 +14,7 @@ obj.x_true= [obj.x_true(1) + vel * params.dt_sim * cos(phi + obj.x_true(3));
 vel= vel + normrnd(0, params.sig_velocity_sim);
 phi= phi + normrnd(0, params.sig_steering_angle_sim);
 
-for i=1:obj.number_of_particles
+for i=1:size(obj.XX_particles,1)
     obj.XX_particles(i,:)= obj.return_odometry_update(obj.XX_particles(i,:), [vel; phi], params);
 end
 

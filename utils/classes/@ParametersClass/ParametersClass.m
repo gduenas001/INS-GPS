@@ -276,9 +276,9 @@ classdef ParametersClass < handle
             obj.SWITCH_LM_SELECTION= SWITCH_LM_SELECTION;
             obj.SWITCH_SEED= SWITCH_SEED;
             obj.SWITCH_ONLY_ONE_LM_FAULT= SWITCH_ONLY_ONE_LM_FAULT;
+            obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
             
             if obj.SWITCH_FACTOR_GRAPHS
-                obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
                 obj.SWITCH_LIDAR_FAULTS= SWITCH_LIDAR_FAULTS;
                 if (~obj.SWITCH_SIM)
                     obj.SWITCH_GPS_FG= SWITCH_GPS_FG;
