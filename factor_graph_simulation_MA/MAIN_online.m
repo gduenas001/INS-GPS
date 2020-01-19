@@ -7,7 +7,7 @@ pause on
 
 %lm_dens=[0.001,0.005,0.009,0.013,0.017,0.021,0.025,0.029,0.033,0.037];
 %lm_dens=0.005:0.005:0.025;
-lm_dens=linspace(0.002,0.025,10);
+lm_dens=linspace(0.008,0.025,10);
 computational_time = zeros(1,length(lm_dens));
 avg_n_L_M = zeros(1,length(lm_dens));
 avg_epoch = zeros(1,length(lm_dens));

@@ -13,7 +13,7 @@ plot(obj.update.x_true(1,:), obj.update.x_true(2,:), 'k-','markersize', 7);
 
 % if online --> plot estimated path as well
 if ~params.SWITCH_OFFLINE
-    plot(obj.update.XX(1,:), obj.update.XX(2,:), 'k.','markersize', 4);
+    plot(obj.update.XX(1,:), obj.update.XX(2,:), 'r.','markersize', 4);
     %plot(obj.update.XX(1,:), obj.update.XX(2,:), '.-','markersize', 7);
 end
 

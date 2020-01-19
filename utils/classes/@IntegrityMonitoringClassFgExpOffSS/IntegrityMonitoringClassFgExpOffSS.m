@@ -205,7 +205,7 @@ classdef IntegrityMonitoringClassFgExpOffSS < handle
                 obj.D_bar_ph= {inf, estimator.D_bar, obj.D_bar_ph{2:obj.M}};
                 obj.H_gps_ph=     {estimator.H_k_gps,   obj.H_gps_ph{1:obj.M-1}};
                 obj.H_lidar_ph=     {estimator.H_k_lidar,   obj.H_lidar_ph{1:obj.M-1}};
-                obj.n_gps_ph= [estimator.n_gps_k,   obj.n_gps_ph(1:obj.M-1)];
+                obj.n_gps_ph= [estimator.n_gps_k;   obj.n_gps_ph(1:obj.M-1)];
         end 
     end
 end

@@ -38,7 +38,7 @@ function compute_hypotheses(obj, params)
 obj.n_H= 0;
 obj.inds_H= cell(200,1);
 start_ind= 1;
-for num_faults= 1:obj.n_max
+for num_faults= 1:min(obj.n_max,obj.n_L_M)
     
     if params.SWITCH_FACTOR_GRAPHS && (~params.SWITCH_SIM)
         

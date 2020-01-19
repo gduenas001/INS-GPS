@@ -114,40 +114,144 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 if i == 0
                     obj.compute_E_matrix(0, params.m_F);
                     
-                    % extract the faulted components from gamma_M and Y_M
-                    gamma_h= obj.gamma_M(end-1:end);
-                    Y_h= obj.Y_M(end-1:end, end-1:end);
-                    
-                    % compute detector for this hypothesis
-                    q_h= gamma_h' * (Y_h \ gamma_h);
-                    n_h= length(gamma_h);
+%                     % extract the faulted components from gamma_M and Y_M
+%                     gamma_h= obj.gamma_M(end-1:end);
+%                     Y_h= obj.Y_M(end-1:end, end-1:end);
+%                     
+%                     % compute detector for this hypothesis
+%                     q_h= gamma_h' * (Y_h \ gamma_h);
+%                     n_h= length(gamma_h);
                 else
                     obj.compute_E_matrix(obj.inds_H{i}, params.m_F);
                     
-                    % extract the faulted components from gamma_M and Y_M
-                    gamma_h= obj.E(1:end-3,1:end-3) * obj.gamma_M;
-                    Y_h= obj.E(1:end-3,1:end-3) * obj.Y_M * obj.E(1:end-3,1:end-3)';
-                    
-                    % compute detector for this hypothesis
-                    q_h= gamma_h' * (Y_h \ gamma_h);
-                    n_h= length(gamma_h);
+%                     % extract the faulted components from gamma_M and Y_M
+%                     gamma_h= obj.E(1:end-3,1:end-3) * obj.gamma_M;
+%                     Y_h= obj.E(1:end-3,1:end-3) * obj.Y_M * obj.E(1:end-3,1:end-3)';
+%                     
+%                     % compute detector for this hypothesis
+%                     q_h= gamma_h' * (Y_h \ gamma_h);
+%                     n_h= length(gamma_h);
                     
                 end
                 
-                % compute norm on MA non-centrality parameter
-                lambda= ( sqrt(q_h) + sqrt(  chi2inv( 1 - params.I_MA , n_h ) ) )^2;
+                % Worst-case fault direction
+                f_M_dir= obj.E' / (obj.E * obj.M_M * obj.E') * obj.E * obj.A_M' * alpha;
+                f_M_dir= f_M_dir / norm(f_M_dir); % normalize
                 
-                % compute D matrix
-                D= ( sqrtm(obj.E * obj.M_M * obj.E') ) \ obj.E * obj.A_M' * alpha;
+                % worst-case fault magnitude
+                fx_hat_dir= alpha' * obj.A_M * f_M_dir;
+                M_dir= f_M_dir' * obj.M_M * f_M_dir;
                 
-                % compute the relation between non-centrality paramters
-                kappa= obj.sigma_hat^(-2) * norm(D)^2;
+                % check if we should start evaluating f mag at zero
+                if abs(obj.optimization_fn(...
+                        0, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M )) > 1e-10
+                    % worst-case fault magnitude
+                    f_mag_min= 0;
+                    f_mag_max= 5;
+                    f_mag_inc= 5;
+                    p_hmi_H_prev= -1;
+                    for k= 1:10
+                        [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+                            f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+                            f_mag_min, f_mag_max);
+
+                        % make it a positive number
+                        p_hmi_H= -p_hmi_H;
+
+                        % check if the new P(HMI|H) is smaller
+                        if k == 1 || p_hmi_H_prev < p_hmi_H
+                            p_hmi_H_prev= p_hmi_H;
+                            f_mag_min= f_mag_min + f_mag_inc;
+                            f_mag_max= f_mag_max + f_mag_inc;
+                        else
+                            p_hmi_H= p_hmi_H_prev;
+                            break
+                        end
+                    end
+                    % make a general optimization first
+                else
+                    p_hmi_H_1= 0;
+                    p_hmi_H_2= 0;
+                    p_hmi_H_3= 0;
+                    p_hmi_H_4= 0;
+                    f_M_mag_out_1= -10;
+                    f_M_mag_out_2= -10;
+                    f_M_mag_out_3= -10;
+                    f_M_mag_out_4= -10;
+
+                    [f_M_mag_out_1, p_hmi_H_1]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+                        f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+                        -10, 10);
+                    p_hmi_H_1= -p_hmi_H_1;
+                    if p_hmi_H_1 < 1e-10 || f_M_mag_out_1 > 8
+                        [f_M_mag_out_2, p_hmi_H_2]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+                            f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+                            -100, 100);
+                        p_hmi_H_2= -p_hmi_H_2;
+                        if p_hmi_H_2 < 1e-10 || f_M_mag_out_2 > 80
+                            [f_M_mag_out_3, p_hmi_H_3]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+                                f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+                                -1000, 1000);
+                            p_hmi_H_3= -p_hmi_H_3;
+                            if p_hmi_H_2 < 1e-10 || f_M_mag_out_3 > 800
+                                [f_M_mag_out_4, p_hmi_H_4]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+                                    f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+                                    -100000, 100000);
+                                p_hmi_H_4= -p_hmi_H_4;
+                            end
+                        end
+                    end
+                    [p_hmi_H,ind]= max( [p_hmi_H_1, p_hmi_H_2, p_hmi_H_3, p_hmi_H_4] );
+                end
+
+                if ind==1
+                    f_M_mag_out= abs(f_M_mag_out_1);
+                elseif ind==2
+                    f_M_mag_out= abs(f_M_mag_out_2);
+                elseif ind==3
+                    f_M_mag_out= abs(f_M_mag_out_3);
+                else
+                    f_M_mag_out= abs(f_M_mag_out_4);
+                end
                 
-                % compute mu
-                mu= lambda * kappa;
+%                 % worst-case fault magnitude
+%                 f_mag_min= 0;
+%                 f_mag_max= 5;
+%                 f_mag_inc= 5;
+%                 p_hmi_H_prev= -1;
+%                 for k= 1:10
+%                     [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+%                         f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M),...
+%                         f_mag_min, f_mag_max);
+%                     
+%                     % make it a positive number
+%                     p_hmi_H= -p_hmi_H;
+%                     
+%                     % check if the new P(HMI|H) is smaller
+%                     if k == 1 || p_hmi_H_prev < p_hmi_H
+%                         p_hmi_H_prev= p_hmi_H;
+%                         f_mag_min= f_mag_min + f_mag_inc;
+%                         f_mag_max= f_mag_max + f_mag_inc;
+%                     else
+%                         p_hmi_H= p_hmi_H_prev;
+%                         break
+%                     end
+%                 end
                 
-                % compute P(HMI | H)
-                p_hmi_H= 1 - ncx2cdf( params.alert_limit^2 / obj.sigma_hat^2 , 1, mu );
+%                 % compute norm on MA non-centrality parameter
+%                 lambda= ( sqrt(q_h) + sqrt(  chi2inv( 1 - params.I_MA , n_h ) ) )^2;
+%                 
+%                 % compute D matrix
+%                 D= ( sqrtm(obj.E * obj.M_M * obj.E') ) \ obj.E * obj.A_M' * alpha;
+%                 
+%                 % compute the relation between non-centrality paramters
+%                 kappa= obj.sigma_hat^(-2) * norm(D)^2;
+%                 
+%                 % compute mu
+%                 mu= lambda * kappa;
+%                 
+%                 % compute P(HMI | H)
+%                 p_hmi_H= 1 - ncx2cdf( params.alert_limit^2 / obj.sigma_hat^2 , 1, mu );
                 
                 % Add P(HMI | H) to the integrity risk
                 if i == 0
