@@ -90,6 +90,8 @@ classdef IntegrityMonitoringClassFgExpOffSS < handle
         p_hmi_elapsed_time=0
         GPS_L_M
         GPS_M
+        P_MA_k=0
+        P_MA_k_full=0
         f_avg=0
     end
     

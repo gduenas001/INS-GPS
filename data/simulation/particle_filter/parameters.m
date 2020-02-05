@@ -15,6 +15,7 @@ SWITCH_ONLY_ONE_LM_FAULT= 0; % if only one simultaneous landmark fault
 SWITCH_GENERATE_RANDOM_MAP= 1; % if the map is randomly generate at initialization
 SWITCH_LIDAR_FAULTS= 1; % if we want to inject faults in the lidar msmts
 SWITCH_NO_ASSUMPTIONS_ON_HYPOTHESES= 1;
+SWITCH_SM=0;
 % --------------------------------------------------
 
 

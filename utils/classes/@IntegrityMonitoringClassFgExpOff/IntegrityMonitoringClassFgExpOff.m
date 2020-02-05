@@ -86,6 +86,7 @@ classdef IntegrityMonitoringClassFgExpOff < handle
         GPS_M
         f_avg=0
         P_MA_k=0
+        P_MA_k_full=0;
         P_MA_ph
     end
     

@@ -16,6 +16,7 @@
  SWITCH_ONLY_ONE_LM_FAULT= 1; % only monitor one simultaneous landmark failing
  SWITCH_GPS_FG= 1;
  SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 0;
+ SWITCH_SM=0
  % --------------------------------------------------
 
 
