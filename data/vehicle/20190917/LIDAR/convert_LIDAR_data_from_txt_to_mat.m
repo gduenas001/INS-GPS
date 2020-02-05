@@ -9,7 +9,8 @@ for i=0:(num_of_LIDAR_frames-1)
     fclose(fileID);
     % TODO: this two tranformations will be done in the ROS code directly
     if ~isempty(z)
-        z= [-(z(:,2)+0.335),-(z(:,1))]; % for the vehicle dataset
+        %z= [-(z(:,2)+0.335),-(z(:,1))]; % for the vehicle dataset
+        z= [(z(:,1)),-(z(:,2))]; % for the vehicle dataset
     end
     
     % save as mat files

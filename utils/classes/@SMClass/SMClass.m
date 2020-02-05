@@ -38,15 +38,15 @@ classdef SMClass < handle %This is a Scan Matching Substitution to GPS Class
             posX=     data(:,2);
             posY=     data(:,3);
             posZ=     data(:,4);
-            roll =    data(:,8);
-            pitch=    data(:,9);
+            roll =    data(:,9);
+            pitch=    -data(:,8);
             yaw  =    data(:,10);
-            sigPosX = 0.02+zeros(obj.num_readings,1);
-            sigPosY = 0.02+zeros(obj.num_readings,1);
-            sigPosZ = 0.02+zeros(obj.num_readings,1);
-            sigroll = 0.01+zeros(obj.num_readings,1);
-            sigpitch = 0.01+zeros(obj.num_readings,1);
-            sigyaw = 0.01+zeros(obj.num_readings,1);
+            sigPosX = 0.05+zeros(obj.num_readings,1);
+            sigPosY = 0.05+zeros(obj.num_readings,1);
+            sigPosZ = 0.05+zeros(obj.num_readings,1);
+            sigroll = deg2rad(0.005)+zeros(obj.num_readings,1);
+            sigpitch = deg2rad(0.005)+zeros(obj.num_readings,1);
+            sigyaw = deg2rad(0.005)+zeros(obj.num_readings,1);
             % Save the initial time as reference for other sensors
             obj.timeInit= obj.time(1);
             
@@ -64,7 +64,9 @@ classdef SMClass < handle %This is a Scan Matching Substitution to GPS Class
             muroll  = mean(roll(1:numEpochStaticSM));
             mupitch = mean(pitch(1:numEpochStaticSM));
             muyaw   = mean(yaw(1:numEpochStaticSM));
-            obj.msmt(1:6,:)= obj.msmt(1:6,:) - [muX;muY;muZ;muroll;mupitch;muyaw];  
+            %obj.msmt(1:6,:)= obj.msmt(1:6,:) - [muX;muY;muZ;muroll;mupitch;muyaw];  
+            obj.msmt(1:3,:)= obj.msmt(1:3,:) - [muX;muY;muZ];  
+            obj.msmt(6,:)= obj.msmt(6,:);%-90/180*pi;
         end
         % ----------------------------------------------
         % ----------------------------------------------

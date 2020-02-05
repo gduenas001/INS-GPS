@@ -15,10 +15,12 @@ SWITCH_ONLY_ONE_LM_FAULT= 0; % if only one simultaneous landmark fault
 SWITCH_GENERATE_RANDOM_MAP= 1; % if the map is randomly generate at initialization
 SWITCH_LIDAR_FAULTS= 1; % if we want to inject faults in the lidar msmts
 SWITCH_NO_ASSUMPTIONS_ON_HYPOTHESES= 1;
+SWITCH_SM=0;
 % --------------------------------------------------
 
 
 % --------------- Parameters ---------------
+range_req= 1e-40;
 m= 3; % number of states in the state vector
 I_MA= 1e-8; 
 P_MA_max= 1e-4; % maximum allowable miss-association probability for one association
@@ -83,8 +85,9 @@ wheelbase_sim= 1; % for the simulated car
 % way_points= [ [50;-20], [100;-20], [100;20], [50; 20], [0;0]];
 % way_points= [ [40;-20], [80;20], [120;-20], [160;20], [200;0]];
 % way_points= [ [30;20], [60;-20], [90;20], [120;-20], [150;0]];
-way_points= [ [75;40], [150;0], [75;-40], [0;0] ];
-% way_points= [ [150;0]];
+%way_points= [ [75;40], [150;0], [75;-40], [0;0] ];
+% way_points= [ [70;5],[90;-8],[150;0]];
+way_points= [ [100;0]];
 min_distance_to_way_point= 2;
 max_delta_steering= deg2rad( 20 ); % maximum change in steering angle during one second
 max_steering= deg2rad( 10 );

@@ -18,8 +18,10 @@ classdef CountersClass < handle
         function obj= CountersClass(gps, lidar, params)
             
             % if it's a simulation --> time is not read from files
-            if ~params.SWITCH_SIM && ~params.SWITCH_FACTOR_GRAPHS
+            if ~params.SWITCH_SIM && ~params.SWITCH_FACTOR_GRAPHS && ~params.SWITCH_SM
                 obj.time_gps= gps.time(1); % this is zero, as the GPS time is the reference
+                obj.time_lidar= lidar.time(1,2);
+            elseif (~params.SWITCH_SIM && ~params.SWITCH_FACTOR_GRAPHS && params.SWITCH_SM)
                 obj.time_lidar= lidar.time(1,2);
             end
         end

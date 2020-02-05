@@ -95,6 +95,7 @@ classdef IntegrityMonitoringClassFgExpOffMA < handle
         I_H
         P_MA_k_full
         P_MA_M
+        f_M_mag_out=0
     end
     
     

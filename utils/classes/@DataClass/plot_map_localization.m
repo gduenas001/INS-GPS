@@ -7,7 +7,10 @@ figure; hold on; grid on;
 plot3(obj.pred.XX(1,:), obj.pred.XX(2,:), obj.pred.XX(3,:), 'b.');
 plot3(obj.update.XX(1,:), obj.update.XX(2,:), obj.update.XX(3,:),...
     'b.','markersize', 7);
-plot3(gps.msmt(1,:),gps.msmt(2,:),gps.msmt(3,:),'r*');
+
+if (~params.SWITCH_SM)
+    plot3(gps.msmt(1,:),gps.msmt(2,:),gps.msmt(3,:),'r*');
+end
 
 % create a map of landmarks
 lm_map= [estimator.landmark_map(:,1),...

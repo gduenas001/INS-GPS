@@ -53,3 +53,4 @@ data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
 data_obj.plot_number_of_landmarks_fg_sim(params);
 data_obj.plot_integrity_risk(params);
 %------------------------------------------------------------
+save('03_02_2020_corrected_paper.mat');

@@ -6,8 +6,8 @@ addpath('../utils/functions')
 addpath('../utils/classes')
 
 % create objects
-params= ParametersClass('slam');
-SM= SMClass(params.num_epochs_static * params.dt_imu, params);
+params= ParametersClass('slam_SM');
+SM= SMClass(750, params);
 
 
 lidar= LidarClass(params, SM.timeInit);
@@ -15,6 +15,7 @@ imu= IMUClass(params, SM.timeInit);
 estimator= EstimatorClassSlam_SM(imu.inc_msmt(1:3, 1:params.num_epochs_static), params);
 data_obj= DataClass(imu.num_readings, SM.num_readings, params);
 counters= CountersClass(SM, lidar, params);
+FG= FGDataInputClass(imu.num_readings);%2063);
 
 GPS_Index_exceeded = 0;   % TODO: osama is this needeed?
 LIDAR_Index_exceeded = 0; % TODO: osama is this needeed?
@@ -24,7 +25,7 @@ estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
-for epoch= 1:length(imu.time)
+for epoch= 1:imu.num_readings - 1%27000
     disp(strcat('Epoch -> ', num2str(epoch)));
     
     % set the simulation time to the IMU time
@@ -62,8 +63,9 @@ for epoch= 1:length(imu.time)
     
     % ------------- virtual msmt update >> Z vel  -------------  
     if counters.time_sum_virt_z >= params.dt_virt_z && params.SWITCH_VIRT_UPDATE_Z && ~params.SWITCH_CALIBRATION
-        zVelocityUpdate( params.R_virt_Z );
+        estimator.vel_update_z(params.R_virt_Z);
         counters.reset_time_sum_virt_z();
+        
     end
     % ---------------------------------------------------------
     
@@ -114,7 +116,7 @@ for epoch= 1:length(imu.time)
     % ------------- LIDAR -------------
     if (counters.time_sim + params.dt_imu) > counters.time_lidar && params.SWITCH_LIDAR_UPDATE
         
-        if epoch > 2000 %params.num_epochs_static - 3000
+        if params.num_epochs_static-3000
             % Read the lidar features
             epochLIDAR= lidar.time(counters.k_lidar,1);
             lidar.get_msmt( epochLIDAR, params );
@@ -136,6 +138,14 @@ for epoch= 1:length(imu.time)
             
             % Lineariza and discretize
             estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);
+            
+            % Store the required data for Factor Graph
+            z= lidar.msmt(:,1:2);
+            z(estimator.association == 0, :)= [];
+            FG.lidar{counters.k_lidar}= z;
+            FG.associations{counters.k_lidar}= estimator.association_no_zeros;
+            FG.imu{counters.k_lidar}= imu.msmt(:,epoch);
+            FG.pose{counters.k_lidar}= estimator.XX;
             
             % Store data
             data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame

@@ -91,6 +91,15 @@ else
     [p_hmi_H,ind]= max( [p_hmi_H_1, p_hmi_H_2, p_hmi_H_3, p_hmi_H_4] );
 end
 
+if ind==1
+    obj.f_M_mag_out= abs(f_M_mag_out_1);
+elseif ind==2
+    obj.f_M_mag_out= abs(f_M_mag_out_2);
+elseif ind==3
+    obj.f_M_mag_out= abs(f_M_mag_out_3);
+else
+    obj.f_M_mag_out= abs(f_M_mag_out_4);
+end
 % worst-case fault magnitude
 %f_mag_min= 0;
 %f_mag_max= 5;

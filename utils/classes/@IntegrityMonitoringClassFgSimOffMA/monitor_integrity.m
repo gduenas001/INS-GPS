@@ -76,7 +76,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
     
     obj.P_F_M(obj.P_F_M>=1)=0.99999999999999*ones(sum(obj.P_F_M>=1),1);
     
-    obj.I_H= sum(obj.P_F_M)^obj.n_max  / factorial(obj.n_max);
+    obj.I_H= sum(obj.P_F_M)^(obj.n_max+1)  / factorial(obj.n_max+1);
     
     if obj.I_H>1
         obj.I_H=1;
@@ -110,7 +110,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 p_hmi_H= 1;
                 % Add P(HMI | H0) to the integrity risk
                 obj.P_H_0= prod( 1 - obj.P_F_M );
-                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
+                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0 * (1-obj.I_H);
                 if obj.p_hmi>=1
                     obj.p_hmi=1;
                     break;
@@ -121,7 +121,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 obj.f_avg=obj.f_avg+obj.f_M_mag_out;
                 % Add P(HMI | H0) to the integrity risk
                 obj.P_H_0= prod( 1 - obj.P_F_M );
-                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0;
+                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H_0 * (1-obj.I_H);
                 if obj.p_hmi>=1
                     obj.p_hmi=1;
                     break;
@@ -132,11 +132,11 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 % if we don't have enough landmarks --> P(HMI)= 1
                 p_hmi_H= 1;
                 % Add P(HMI | H) to the integrity risk
-                obj.P_H(i)= obj.P_H_0* prod( obj.P_F_M( obj.inds_H{i} ) ) / prod( 1 - obj.P_F_M( obj.inds_H{i} ) );
+                obj.P_H(i)= prod( obj.P_F_M( obj.inds_H{i} ) );%obj.P_H_0* prod( obj.P_F_M( obj.inds_H{i} ) ) / prod( 1 - obj.P_F_M( obj.inds_H{i} ) );
                 if isnan(obj.P_H(i))
                     obj.P_H(i)=0;
                 end
-                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
+                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i) * (1-obj.I_H);
                 if obj.p_hmi>=1
                     obj.p_hmi=1;
                     break;
@@ -146,11 +146,11 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 p_hmi_H= obj.compute_p_hmi_H(alpha, obj.inds_H{i}, params);
                 obj.f_avg=obj.f_avg+obj.f_M_mag_out;
                 % Add P(HMI | H) to the integrity risk
-                obj.P_H(i)= obj.P_H_0* prod( obj.P_F_M( obj.inds_H{i} ) ) / prod( 1 - obj.P_F_M( obj.inds_H{i} ) );
+                obj.P_H(i)= prod( obj.P_F_M( obj.inds_H{i} ) );%obj.P_H_0* prod( obj.P_F_M( obj.inds_H{i} ) ) / prod( 1 - obj.P_F_M( obj.inds_H{i} ) );
                 if isnan(obj.P_H(i))
                     obj.P_H(i)=0;
                 end
-                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
+                obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i) * (1-obj.I_H);
                 if obj.p_hmi>=1
                     obj.p_hmi=1;
                     break;

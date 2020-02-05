@@ -20,7 +20,7 @@ end
 lm_map= [estimator.landmark_map(:,1),...
     estimator.landmark_map(:,2),...
     zeros(estimator.num_landmarks,1)];
-plot(lm_map(:,1), lm_map(:,2), 'r+', 'markersize',2.5);
+plot(lm_map(:,1), lm_map(:,2), 'b+', 'markersize',2.5);
 
 if ~isempty(obj.msmts)
     plot(obj.msmts(:,1), obj.msmts(:,2), 'k.');
@@ -37,8 +37,8 @@ for i= 1:num_readings
         plot(xyz_N(1,:), xyz_N(2,:), 'g-', 'linewidth', 2);
     end
 end
-set(gca,'FontSize',15)
-xlabel('X [m]','FontSize',15); ylabel('Y [m]','FontSize',15); zlabel('Z [m]','FontSize',15);
+set(gca,'FontSize',10)
+xlabel('X [m]','FontSize',10); ylabel('Y [m]','FontSize',10); zlabel('Z [m]','FontSize',10);
 %axis equal
 
 end

@@ -12,11 +12,11 @@ computational_time = zeros(1,length(lm_dens));
 avg_n_L_M = zeros(1,length(lm_dens));
 avg_epoch = zeros(1,length(lm_dens));
 avg_q_d = zeros(1,length(lm_dens));
-for ind_lm_dens= 1:length(lm_dens)
+for ind_lm_dens= 1:1%length(lm_dens)
 
 % seed the randomness
-map_i= 8
-rng(map_i)
+map_i= 5
+%rng(map_i)
     
 % create objects
 params= ParametersClass("simulation_fg_online",lm_dens(ind_lm_dens));
@@ -90,7 +90,7 @@ end
 data_obj.plot_map_localization_sim_fg(estimator, params)
 data_obj.plot_number_of_landmarks_fg_sim(params);
 data_obj.plot_detector_fg(params);
-data_obj.plot_error_fg(params);
+data_obj.plot_error(params);
 % ------------------------------------------------------------
 
 data_obj.find_HMI_sim(params)

@@ -68,7 +68,7 @@ tmp=obj.association;
 [residual, grad, A, b]= obj.optimization_fn(x_star, params);
 
 if sum(tmp == obj.association) ~= length(obj.association)
-    fprintf('Wait...Wait...Wait')
+    fprintf('Wait...Wait...Wait\n')
 end
 % multiply by two so that it fits the non-central chi-squared
 tic

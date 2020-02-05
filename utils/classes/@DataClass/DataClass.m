@@ -115,16 +115,19 @@ classdef DataClass < handle
             % an alarm has been triggered
             
             figure; hold on; grid on;
+            set(gca,'FontSize',12)
             if params.SWITCH_SIM
-                plot(obj.im.time * params.velocity_sim, obj.im.detector, 'linewidth', 2)
-                plot(obj.im.time * params.velocity_sim, obj.im.detector_threshold, 'linewidth', 2)
-                xlabel('x [m]')
+                %plot(obj.im.time * params.velocity_sim, obj.im.detector, 'linewidth', 2)
+                %plot(obj.im.time * params.velocity_sim, obj.im.detector_threshold, 'linewidth', 2)
+                plot(obj.update.XX(1,:), obj.update.q_d, 'b-', 'linewidth', 2)
+                plot(obj.update.XX(1,:), obj.update.T_d, 'r-','linewidth', 2)
+                xlabel('X [m]','Fontsize', 12)
             else
                 plot(obj.im.time, obj.im.detector, 'linewidth', 2)
                 plot(obj.im.time, obj.im.detector_threshold, 'linewidth', 2)
                 xlabel('time [s]')
             end
-            legend('detector', 'threshold')
+            legend({'Fault detector', 'Detector threshold'},'Fontsize', 12)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -132,7 +135,7 @@ classdef DataClass < handle
             figure; hold on; grid on;
             plot(obj.update.time, obj.update.q_d, 'linewidth', 2)
             plot(obj.update.time, obj.update.T_d, 'linewidth', 2)
-            legend('detector', 'threshold')
+            legend({'detector', 'threshold'},'Fontsize', 10)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -177,16 +180,23 @@ classdef DataClass < handle
             standard_dev_y= sqrt( obj.update.PX(2,:) );
             
             figure; hold on; grid on;
+            set(gca,'FontSize',12)
 %             plot(obj.update.time * params.velocity_sim, obj.update.error(1,:), 'b-', 'linewidth', 2)
-            plot(obj.update.time * params.velocity_sim, obj.update.error(2,:), 'r-', 'linewidth', 2)
+            %plot(obj.update.time * params.velocity_sim, obj.update.error(2,:), 'b-', 'linewidth', 2)
+            plot(obj.update.XX(1,:), obj.update.error(2,:), 'b-', 'linewidth', 2)
 %             plot(obj.update.time * params.velocity_sim, standard_dev_x,'b--','linewidth',2);
 %             plot(obj.update.time * params.velocity_sim, -standard_dev_x,'b--','linewidth',2);
-            plot(obj.update.time * params.velocity_sim, 3*standard_dev_y,'r--','linewidth',2);
-            plot(obj.update.time * params.velocity_sim, -3*standard_dev_y,'r--','linewidth',2);
+            plot(obj.update.XX(1,:), 3*standard_dev_y,'r--','linewidth',2);
+            plot(obj.update.XX(1,:), -3*standard_dev_y,'r--','linewidth',2);
             
-            legend({'$\delta \hat{x}$', '$3\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
-            xlabel('x [m]','interpreter', 'latex','fontsize', 15)
-            ylabel('error [m]','interpreter', 'latex','fontsize', 15)
+            %legend({'$\delta \hat{x}$', '$3\hat{\sigma}$'},'interpreter', 'latex','fontsize', 10)
+            %xlabel('x [m]','interpreter', 'latex','fontsize', 10)
+            %ylabel('error [m]','interpreter', 'latex','fontsize', 10)
+            legend({'$\alpha^T \hat{\delta}_{k,M}$', '$3\sigma_{\alpha^T \hat{\delta}_{k,M}}$'},'interpreter', 'latex','Fontsize', 12)
+            %xlabel('X [m]','interpreter', 'latex','Fontsize', 10)
+            xlabel('X [m]','Fontsize', 12)
+            %ylabel('State-of-interest estimate error [m]','interpreter', 'latex','Fontsize', 10)
+            ylabel('State-of-interest estimate error [m]','Fontsize', 12)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -254,7 +264,10 @@ classdef DataClass < handle
             figure; hold on; grid on;
             if params.SWITCH_SIM
                 plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
-                xlabel('Time [s]','interpreter', 'latex','fontsize', 15)
+                %plot(obj.update.x_true(1,:), obj.im.p_hmi, 'b-', 'linewidth', 2)
+                %xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
+                %xlabel('X [m]','Fontsize', 12)
+                xlabel('Time [s]','Fontsize', 12)
                 xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
             else
                 if params.SWITCH_FACTOR_GRAPHS
@@ -268,9 +281,10 @@ classdef DataClass < handle
                 end
             end
             % plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
-            ylabel('P(HMI)','interpreter', 'latex','fontsize', 15)
-            set(gca, 'YScale', 'log')
-            ylim([1e-50,max(obj.im.p_hmi)]);
+            %ylabel('P(HMI)','interpreter', 'latex','fontsize', 10)
+            ylabel('Integrity risk','Fontsize', 12)
+            set(gca, 'YScale', 'log','FontSize',12)
+            ylim([1e-25,1]);
         end
         % ----------------------------------------------
         % ----------------------------------------------

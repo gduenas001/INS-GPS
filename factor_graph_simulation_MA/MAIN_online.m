@@ -7,15 +7,15 @@ pause on
 
 %lm_dens=[0.001,0.005,0.009,0.013,0.017,0.021,0.025,0.029,0.033,0.037];
 %lm_dens=0.005:0.005:0.025;
-lm_dens=linspace(0.008,0.025,10);
+lm_dens=[0.001,0.0025,0.0065];
 computational_time = zeros(1,length(lm_dens));
 avg_n_L_M = zeros(1,length(lm_dens));
 avg_epoch = zeros(1,length(lm_dens));
 avg_q_d = zeros(1,length(lm_dens));
-for ind_lm_dens= 1:1%length(lm_dens)
+for ind_lm_dens= 1:length(lm_dens)
 
 % seed the randomness
-map_i= 8
+map_i= 6;
 rng(map_i)
     
 % create objects
@@ -84,13 +84,15 @@ avg_q_d(ind_lm_dens)=mean(data_obj.update.q_d(data_obj.update.q_d~=0));
 % Store data for last epoch
 data_obj.delete_extra_allocated_memory(counters)
 
+save(['PLANS_online_P_MA_example_',num2str(lm_dens(ind_lm_dens)),'_two_simult_faults_n_max_2_corrected_scratch_new.mat']);
+
 end
 
 % -------------------------- PLOTS --------------------------
 data_obj.plot_map_localization_sim_fg(estimator, params)
 data_obj.plot_number_of_landmarks_fg_sim(params);
-data_obj.plot_detector_fg(params);
-data_obj.plot_error_fg(params);
+data_obj.plot_detector(params);
+data_obj.plot_error(params);
 % ------------------------------------------------------------
 
 data_obj.find_HMI_sim(params)

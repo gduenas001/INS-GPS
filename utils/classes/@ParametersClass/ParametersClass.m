@@ -27,6 +27,7 @@ classdef ParametersClass < handle
         SWITCH_SIM= 0
         SWITCH_FACTOR_GRAPHS= 0
         SWITCH_OFFLINE= 0
+        SWITCH_SM=0;
         % --------------------------------------------------
     end
     
@@ -34,6 +35,7 @@ classdef ParametersClass < handle
 %         path_test= '../data/cart/20180725/';
         %path_test= '../data/vehicle/20191116_1/';
         path_test= '../data/vehicle/20190110/';
+        path_test_SM= '../data/vehicle/2019_EXP0/';
         %path_test= '../data/vehicle/20190828/';
         path_sim_kf= '../data/simulation/factor_graph/';
         path_sim_pf= '../data/simulation/particle_filter/';
@@ -41,6 +43,7 @@ classdef ParametersClass < handle
 %         path_sim= '../data/simulation/square/';
         path_sim_fg= '../data/simulation/factor_graph/';
         path_exp_fg= '../data/vehicle/20190110/';
+        path_exp_fg_SM='../data/vehicle/2019_EXP0/';
         path_gazebo_fg= '../data/vehicle/Gazebo/';
     end
     
@@ -176,6 +179,7 @@ classdef ParametersClass < handle
         optimoptions % optimoptions for the fg optimization
         landmark_density % landmarks / m^2
         landmark_map
+        range_req
         % -------------------------------------------
         % -------------------------------------------
     end
@@ -190,8 +194,13 @@ classdef ParametersClass < handle
                 case 'slam'
                     obj.SWITCH_SLAM= 1;
                     obj.path= obj.path_test;
+                case 'slam_SM'
+                    obj.SWITCH_SLAM= 1;
+                    obj.path= obj.path_test_SM;
                 case 'localization_kf'
                     obj.path= obj.path_test;
+                case 'localization_kf_SM'
+                    obj.path= obj.path_test_SM;
                 case 'localization_fg'
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.path= obj.path_test;
@@ -239,11 +248,16 @@ classdef ParametersClass < handle
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.SWITCH_OFFLINE= 1;
                     obj.path= obj.path_exp_fg;
+                case 'experiment_fg_offline_MA_SM'
+                    obj.SWITCH_SIM= 0;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.SWITCH_OFFLINE= 1;
+                    obj.path= obj.path_exp_fg_SM;
                 case 'experiment_fg_offline_SS'
                     obj.SWITCH_SIM= 0;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.SWITCH_OFFLINE= 1;
-                    obj.path= obj.path_exp_fg;
+                    obj.path= obj.path_exp_fg_SM;
                 case 'gazebo_fg_offline_SS'
                     obj.SWITCH_SIM= 0;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
@@ -277,7 +291,7 @@ classdef ParametersClass < handle
             obj.SWITCH_SEED= SWITCH_SEED;
             obj.SWITCH_ONLY_ONE_LM_FAULT= SWITCH_ONLY_ONE_LM_FAULT;
             obj.SWITCH_GENERATE_RANDOM_MAP= SWITCH_GENERATE_RANDOM_MAP;
-            
+            obj.SWITCH_SM=SWITCH_SM;
             if obj.SWITCH_FACTOR_GRAPHS
                 obj.SWITCH_LIDAR_FAULTS= SWITCH_LIDAR_FAULTS;
                 if (~obj.SWITCH_SIM)
@@ -464,7 +478,11 @@ classdef ParametersClass < handle
             %obj.landmark_map=[-10,0,10,20,30,40,50,60,70,70,70,60,60,60,60,70,70,80,81.5,90,90,100,100,100,100,90,90,90,100,110,120,130,140,150,160;-15,15,-15,15,-15,15,-15,15,-15,10,-10,10,-10,5,-5,5,-5,15,15,5,-5,5,-5,10,-10,10,-10,-15,15,-15,15,-15,15,-15,15]';
             %obj.landmark_map=[-10,0,10,20,30,40,50,60,70,80,81.5,90,100,110,120,130,140,150,160;-15,15,-15,15,-15,15,-15,15,-15,15,15,-15,15,-15,15,-15,15,-15,15]';
             %obj.landmark_map=[-10,-5,0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,72,80,82,80,88,90,95,100,105,110,115,120,125,130,135,140,145,150,155;-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15]';
-            %obj.landmark_map=[0,0,20,20,40,40,60,60,80,80,80.25,80.25,100,100,120,120,140,140,160,160;15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15]';
+            %obj.landmark_map=[0,0,30,30,60,60,30.0,30.0,90,90;15,-15,15,-15,15,-15,15.7,-14.3,15,-15]';
+            %obj.landmark_map=[0,0,30,30,60,60,60.0,60.0,90,90,120,120;15,-15,15,-15,15,-15,16,-14,15,-15,15,-15]';
+            %obj.landmark_map=[0,0,30,30,60,60,60.0,60.0,90,90,120,120;16,-16,16,-16,16,-16,16.2,-15,16,-16,16,-16]';
+            %obj.landmark_map=[0,0,15,15,30,30,45,45,60,60,30.0,30.0,75,75,90,90;15,-15,15,-15,15,-15,15,-15,15,-15,15.7,-14.3,15,-15,15,-15]';
+            %obj.landmark_map = [69.5,10.0;80.2,10.0;0,10;10,10;20,10;30,10;40,10;50,10;60,10;70,10;80,10;90,10;100,10;110,10;120,10;130,10;140,10;150,10;0,-10;10,-10;20,-10;30,-10;40,-10;50,-10;60,-10;70,-10;80,-10;90,-10;100,-10;110,-10;120,-10;130,-10;140,-10;150,-10;70.3,-10.0;80.1,-9.98;90.1,-10.3;99.99,-10.2];
         end
         
         

@@ -14,6 +14,11 @@ h_l= zeros(2,1);
 obj.P_MA_k= ones(estimator.n_L_k,1) * (-1);
 obj.P_MA_k_full= obj.P_MA_k;
 
+%---------------Osama---------------------
+obj.P_MA_k = obj.P_MA_k*0;
+obj.P_MA_k_full = obj.P_MA_k_full*0;
+return;
+%-----------------------------------------
 
 % loop through each associated landmark
 for t= 1:estimator.n_L_k
@@ -21,7 +26,7 @@ for t= 1:estimator.n_L_k
     lm_id_t= estimator.lm_ind_fov(t);
     
     % initialize the P(MA)
-    obj.P_MA_k(t)= params.I_MA + length(estimator.lm_ind_fov) - 1;
+    obj.P_MA_k(t)= params.I_MA + (length(estimator.lm_ind_fov) - 1)*(1-params.I_MA);
     
     % build the necessary parameters
     landmark= estimator.landmark_map( lm_id_t ,: );
@@ -93,7 +98,7 @@ for t= 1:estimator.n_L_k
                 break
             else
                 obj.P_MA_k(t)= obj.P_MA_k(t) -...
-                    ncx2cdf( ( IIN_l_t - sqrt(params.T_NN) )^2 , chi_dof, obj.G_l_t );
+                    (ncx2cdf( ( IIN_l_t - sqrt(params.T_NN) )^2 , chi_dof, obj.G_l_t ))*(1-params.I_MA);
             end            
         end
     end
