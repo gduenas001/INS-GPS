@@ -36,6 +36,7 @@ classdef ParametersClass < handle
         %path_test= '../data/vehicle/20191116_1/';
         path_test= '../data/vehicle/20190110/';
         path_test_SM= '../data/vehicle/2019_EXP0/';
+        path_test_SM_2020_03_10= '../data/vehicle/20200310/';
         %path_test= '../data/vehicle/20190828/';
         path_sim_kf= '../data/simulation/factor_graph/';
         path_sim_pf= '../data/simulation/particle_filter/';
@@ -197,10 +198,15 @@ classdef ParametersClass < handle
                 case 'slam_SM'
                     obj.SWITCH_SLAM= 1;
                     obj.path= obj.path_test_SM;
+                case 'slam_SM_2020_03_10'
+                    obj.SWITCH_SLAM= 1;
+                    obj.path= obj.path_test_SM_2020_03_10;
                 case 'localization_kf'
                     obj.path= obj.path_test;
                 case 'localization_kf_SM'
                     obj.path= obj.path_test_SM;
+                case 'localization_kf_SM_2020_03_10'
+                    obj.path= obj.path_test_SM_2020_03_10;
                 case 'localization_fg'
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.path= obj.path_test;
@@ -249,6 +255,11 @@ classdef ParametersClass < handle
                     obj.SWITCH_OFFLINE= 1;
                     obj.path= obj.path_exp_fg;
                 case 'experiment_fg_offline_MA_SM'
+                    obj.SWITCH_SIM= 0;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.SWITCH_OFFLINE= 1;
+                    obj.path= obj.path_exp_fg_SM;
+                case 'experiment_fg_offline_SM'
                     obj.SWITCH_SIM= 0;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.SWITCH_OFFLINE= 1;

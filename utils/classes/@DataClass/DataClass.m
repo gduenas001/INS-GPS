@@ -288,6 +288,18 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function plot_integrity_risk_3D(obj, params)
+            figure; hold on; grid on;
+            plot3(obj.update.x_true(1,:),obj.update.x_true(2,:),(1e-40)*ones(1,size(obj.update.x_true,2)), 'r-', 'linewidth', 2)
+            plot3(obj.update.x_true(1,:),obj.update.x_true(2,:),obj.im.p_hmi, 'b-', 'linewidth', 2)
+            xlabel('X [m]','Fontsize', 12)
+            ylabel('Y [m]','Fontsize', 12)
+            zlabel('Integrity risk','Fontsize', 12)
+            set(gca, 'ZScale', 'log','FontSize',12)
+            ylim([1e-40,1]);
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function plot_alert_limit_over_sig_hat(obj, params)
             figure; hold on; grid on;
             plot(obj.im.time * params.velocity_sim, obj.im.sigma_hat/params.alert_limit, 'b-', 'linewidth', 2)

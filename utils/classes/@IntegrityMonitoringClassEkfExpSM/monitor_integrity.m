@@ -102,7 +102,7 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         
         % initialization of p_hmi
         obj.p_hmi= 0;
-        if obj.n_L_M - obj.n_max < 2 % need at least 5 msmts (3 landmarks) to monitor one landmark fault
+        if 1%obj.n_L_M - obj.n_max < 2 % need at least 5 msmts (3 landmarks) to monitor one landmark fault
             fprintf('Not enough redundancy: n_L_M = %d, n_max = %d\n', obj.n_L_M, obj.n_max)
             obj.p_hmi= 1;
             

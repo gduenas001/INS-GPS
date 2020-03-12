@@ -6,7 +6,7 @@ addpath('../utils/functions')
 addpath('../utils/classes')
 
 % create objects
-params= ParametersClass('slam_SM');
+params= ParametersClass('slam_SM_2020_03_10');
 SM= SMClass(750, params);
 
 

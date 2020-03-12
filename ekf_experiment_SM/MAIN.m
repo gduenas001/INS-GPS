@@ -7,7 +7,7 @@ addpath('../utils/classes')
 
 
 % create objects
-params= ParametersClass("localization_kf_SM");
+params= ParametersClass("localization_kf_SM_2020_03_10");
 lidar= LidarClass(params, 0);
 imu= IMUClass(params, 0);
 estimator= EstimatorClassEkfExpSM(imu.msmt(1:3, 1:params.num_epochs_static), params);
@@ -21,7 +21,7 @@ estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
 
 % ----------------------------------------------------------
 % -------------------------- LOOP --------------------------
-for epoch= 1:40292%imu.num_readings - 1
+for epoch= 1:imu.num_readings - 1%40292
     disp(strcat('Epoch -> ', num2str(epoch)));
     
     % set the simulation time to the IMU time
