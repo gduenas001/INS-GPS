@@ -6,7 +6,7 @@ addpath('../utils/functions')
 addpath('../utils/classes')
 
 % create objects
-params= ParametersClass('slam_SM_2020_03_10');
+params= ParametersClass('slam_SM_2020_03_19');
 SM= SMClass(750, params);
 
 
@@ -124,31 +124,33 @@ for epoch= 1:imu.num_readings - 1%27000
             % Remove people-features for the data set
             %lidar.remove_features_in_areas(estimator.XX(1:9));
             
-            % NN data association
-            association= estimator.nearest_neighbor(lidar.msmt(:,1:2), params);
-            
-            % Lidar update
-            estimator.lidar_update(lidar.msmt(:,1:2), association, params);
+            if ~isempty(lidar.msmt)
+                % NN data association
+                association= estimator.nearest_neighbor(lidar.msmt(:,1:2), params);
+                
+                % Lidar update
+                estimator.lidar_update(lidar.msmt(:,1:2), association, params);
+                
+                % Increase landmark covariance to the minimum
+                estimator.increase_landmarks_cov(params.R_minLM);
 
-            % Increase landmark covariance to the minimum
-            estimator.increase_landmarks_cov(params.R_minLM);
-            
-            % Add new landmarks
-            estimator.addNewLM( lidar.msmt(association' == -1,:), params.R_lidar );
-            
-            % Lineariza and discretize
-            estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);
-            
-            % Store the required data for Factor Graph
-            z= lidar.msmt(:,1:2);
-            z(estimator.association == 0, :)= [];
-            FG.lidar{counters.k_lidar}= z;
-            FG.associations{counters.k_lidar}= estimator.association_no_zeros;
-            FG.imu{counters.k_lidar}= imu.msmt(:,epoch);
-            FG.pose{counters.k_lidar}= estimator.XX;
-            
-            % Store data
-            data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
+                % Add new landmarks
+                estimator.addNewLM( lidar.msmt(association' == -1,:), params.R_lidar );
+
+                % Lineariza and discretize
+                estimator.linearize_discretize( imu.msmt(:,epoch), params.dt_imu, params);
+                
+                % Store the required data for Factor Graph
+                z= lidar.msmt(:,1:2);
+                z(estimator.association == 0, :)= [];
+                FG.lidar{counters.k_lidar}= z;
+                FG.associations{counters.k_lidar}= estimator.association_no_zeros;
+                FG.imu{counters.k_lidar}= imu.msmt(:,epoch);
+                FG.pose{counters.k_lidar}= estimator.XX;
+                
+                % Store data
+                data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
+            end
             counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
         end
         
