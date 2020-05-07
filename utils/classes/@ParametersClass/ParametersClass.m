@@ -97,7 +97,6 @@ classdef ParametersClass < handle
         initial_yaw_angle
         preceding_horizon_size
         M % same as preceding_horizon_size
-        min_n_L_M
         continuity_requirement
         alert_limit
         VRW
@@ -184,6 +183,10 @@ classdef ParametersClass < handle
         range_req
         % -------------------------------------------
         % -------------------------------------------
+    end
+    
+    properties
+        min_n_L_M
     end
         
     methods

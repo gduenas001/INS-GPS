@@ -97,6 +97,7 @@ classdef IntegrityMonitoringClassEkfExp < handle
         counter_H=0
         p_hmi_elapsed_time=0
         f_avg=0
+        f_M_mag_out=0;
     end
     
     

@@ -69,7 +69,9 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
         obj.q_M= 0;
         obj.detector_threshold= 0;
         obj.p_hmi= 1;
+        obj.p_hmi_elapsed_time=0;
     else
+        tic
         % compute gamma_M
         obj.compute_gamma_M_vector(estimator);
         
@@ -142,76 +144,78 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                 fx_hat_dir= alpha' * obj.A_M * f_M_dir;
                 M_dir= f_M_dir' * obj.M_M * f_M_dir;
                 
-                % check if we should start evaluating f mag at zero
-                if abs(obj.optimization_fn(...
-                        0, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M )) > 1e-10
+%                 % check if we should start evaluating f mag at zero
+%                 if abs(obj.optimization_fn(...
+%                         0, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M )) > 1e-10
                     % worst-case fault magnitude
-                    f_mag_min= 0;
-                    f_mag_max= 5;
-                    f_mag_inc= 5;
-                    p_hmi_H_prev= -1;
-                    for k= 1:10
-                        [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-                            f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
-                            f_mag_min, f_mag_max);
-
-                        % make it a positive number
-                        p_hmi_H= -p_hmi_H;
-
-                        % check if the new P(HMI|H) is smaller
-                        if k == 1 || p_hmi_H_prev < p_hmi_H
-                            p_hmi_H_prev= p_hmi_H;
-                            f_mag_min= f_mag_min + f_mag_inc;
-                            f_mag_max= f_mag_max + f_mag_inc;
-                        else
-                            p_hmi_H= p_hmi_H_prev;
-                            break
-                        end
-                    end
-                    % make a general optimization first
-                else
-                    p_hmi_H_1= 0;
-                    p_hmi_H_2= 0;
-                    p_hmi_H_3= 0;
-                    p_hmi_H_4= 0;
-                    f_M_mag_out_1= -10;
-                    f_M_mag_out_2= -10;
-                    f_M_mag_out_3= -10;
-                    f_M_mag_out_4= -10;
-
-                    [f_M_mag_out_1, p_hmi_H_1]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+                f_mag_min= 0;
+                f_mag_max= 5;
+                f_mag_inc= 5;
+                p_hmi_H_prev= -1;
+                for k= 1:10
+                    [f_M_mag_out, p_hmi_H]= fminbnd( @(f_M_mag) obj.optimization_fn(...
                         f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
-                        -10, 10);
-                    p_hmi_H_1= -p_hmi_H_1;
-                    if p_hmi_H_1 < 1e-10 || f_M_mag_out_1 > 8
-                        [f_M_mag_out_2, p_hmi_H_2]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-                            f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
-                            -100, 100);
-                        p_hmi_H_2= -p_hmi_H_2;
-                        if p_hmi_H_2 < 1e-10 || f_M_mag_out_2 > 80
-                            [f_M_mag_out_3, p_hmi_H_3]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-                                f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
-                                -1000, 1000);
-                            p_hmi_H_3= -p_hmi_H_3;
-                            if p_hmi_H_2 < 1e-10 || f_M_mag_out_3 > 800
-                                [f_M_mag_out_4, p_hmi_H_4]= fminbnd( @(f_M_mag) obj.optimization_fn(...
-                                    f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
-                                    -100000, 100000);
-                                p_hmi_H_4= -p_hmi_H_4;
-                            end
-                        end
-                    end
-                    [p_hmi_H,ind]= max( [p_hmi_H_1, p_hmi_H_2, p_hmi_H_3, p_hmi_H_4] );
-                    if ind==1
-                        f_M_mag_out= abs(f_M_mag_out_1);
-                    elseif ind==2
-                        f_M_mag_out= abs(f_M_mag_out_2);
-                    elseif ind==3
-                        f_M_mag_out= abs(f_M_mag_out_3);
+                        f_mag_min, f_mag_max);
+
+                    % make it a positive number
+                    p_hmi_H= -p_hmi_H;
+
+                    % check if the new P(HMI|H) is smaller
+                    if k == 1 || p_hmi_H_prev < p_hmi_H
+                        p_hmi_H_prev= p_hmi_H;
+                        f_mag_min= f_mag_min + f_mag_inc;
+                        f_mag_max= f_mag_max + f_mag_inc;
+                        obj.f_M_mag_out= f_M_mag_out;
                     else
-                        f_M_mag_out= abs(f_M_mag_out_4);
+                        p_hmi_H= p_hmi_H_prev;
+                        break
                     end
                 end
+                obj.f_avg=obj.f_avg+obj.f_M_mag_out;
+                    % make a general optimization first
+%                 else
+%                     p_hmi_H_1= 0;
+%                     p_hmi_H_2= 0;
+%                     p_hmi_H_3= 0;
+%                     p_hmi_H_4= 0;
+%                     f_M_mag_out_1= -10;
+%                     f_M_mag_out_2= -10;
+%                     f_M_mag_out_3= -10;
+%                     f_M_mag_out_4= -10;
+% 
+%                     [f_M_mag_out_1, p_hmi_H_1]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+%                         f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+%                         -10, 10);
+%                     p_hmi_H_1= -p_hmi_H_1;
+%                     if p_hmi_H_1 < 1e-10 || f_M_mag_out_1 > 8
+%                         [f_M_mag_out_2, p_hmi_H_2]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+%                             f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+%                             -100, 100);
+%                         p_hmi_H_2= -p_hmi_H_2;
+%                         if p_hmi_H_2 < 1e-10 || f_M_mag_out_2 > 80
+%                             [f_M_mag_out_3, p_hmi_H_3]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+%                                 f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+%                                 -1000, 1000);
+%                             p_hmi_H_3= -p_hmi_H_3;
+%                             if p_hmi_H_2 < 1e-10 || f_M_mag_out_3 > 800
+%                                 [f_M_mag_out_4, p_hmi_H_4]= fminbnd( @(f_M_mag) obj.optimization_fn(...
+%                                     f_M_mag, fx_hat_dir, M_dir, obj.sigma_hat, params.alert_limit, params.m_F * obj.n_L_M ),...
+%                                     -100000, 100000);
+%                                 p_hmi_H_4= -p_hmi_H_4;
+%                             end
+%                         end
+%                     end
+%                     [p_hmi_H,ind]= max( [p_hmi_H_1, p_hmi_H_2, p_hmi_H_3, p_hmi_H_4] );
+%                     if ind==1
+%                         f_M_mag_out= abs(f_M_mag_out_1);
+%                     elseif ind==2
+%                         f_M_mag_out= abs(f_M_mag_out_2);
+%                     elseif ind==3
+%                         f_M_mag_out= abs(f_M_mag_out_3);
+%                     else
+%                         f_M_mag_out= abs(f_M_mag_out_4);
+%                     end
+%                 end
                 
 %                 % worst-case fault magnitude
 %                 f_mag_min= 0;
@@ -263,8 +267,11 @@ if  ( params.SWITCH_FIXED_LM_SIZE_PH &&...
                     obj.p_hmi= obj.p_hmi + p_hmi_H * obj.P_H(i);
                 end
             end
-        end
+            obj.f_avg=obj.f_avg/(obj.n_H+1);
+         end
+        obj.p_hmi_elapsed_time=toc;
     end
+    
     % store integrity related data
     data.store_integrity_data(obj, estimator, counters, params)
 
