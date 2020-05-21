@@ -24,7 +24,8 @@ estimator= EstimatorClassEkfExp(imu.msmt(1:3, 1:params.num_epochs_static), param
 im= IntegrityMonitoringClassEkfExp(params, estimator);
 data_obj= DataClass(imu.num_readings, lidar.num_readings, params);
 counters= CountersClass(gps, lidar, params);
-FG= FGDataInputClass(lidar.num_readings);
+% Uncomment for FG
+% FG= FGDataInputClass(lidar.num_readings);
 
 % Initial discretization for cov. propagation
 estimator.linearize_discretize( imu.msmt(:,1), params.dt_imu, params );
@@ -146,13 +147,16 @@ for epoch= 1:imu.num_readings - 1
             % Store the required data for Factor Graph
             z= lidar.msmt(:,1:2);
             z(estimator.association == 0, :)= [];
-            FG.lidar{counters.k_lidar}= z;
-            FG.associations{counters.k_lidar}= estimator.association_no_zeros;
-            FG.imu{counters.k_lidar}= imu.msmt(:,epoch);
-            FG.pose{counters.k_lidar}= estimator.XX;
+
+            % Uncomment for FG
+            %FG.lidar{counters.k_lidar}= z;
+            %FG.associations{counters.k_lidar}= estimator.association_no_zeros;
+            %FG.imu{counters.k_lidar}= imu.msmt(:,epoch);
+            %FG.pose{counters.k_lidar}= estimator.XX;
             if gps.IS_GPS_AVAILABLE
-                FG.gps_msmt{counters.k_lidar}= current_gps_msmt;
-                FG.gps_R{counters.k_lidar}= current_gps_R;
+                % Uncomment for FG
+                %FG.gps_msmt{counters.k_lidar}= current_gps_msmt;
+                %FG.gps_R{counters.k_lidar}= current_gps_R;
                 gps.IS_GPS_AVAILABLE= 0; % mark the current gps reading as stored
             end
 
@@ -198,8 +202,9 @@ for epoch= 1:imu.num_readings - 1
 data_obj.store_update(counters.k_update, estimator, counters.time_sim);
 data_obj.delete_extra_allocated_memory(counters)
 
+% Uncomment for FG
 % delete fields corresponding to static epochs
-FG.delete_fields_corresponding_to_static_epochs(lidar)
+%FG.delete_fields_corresponding_to_static_epochs(lidar)
 
 % Uncomment for IJRR revised manuscript
 %end 
