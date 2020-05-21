@@ -7,13 +7,13 @@
  SWITCH_GPS_VEL_UPDATE= 1; % update of the GPS
  SWITCH_LIDAR_UPDATE= 1;
  SWITCH_REMOVE_FAR_FEATURES= 1;
- SWITCH_CALIBRATION= 0; % initial calibration to obtain moving biases
+ SWITCH_CALIBRATION= 1; % (Osama 0) initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
  SWITCH_LM_SELECTION= 1; % landmark selection activation
  SWITCH_SEED= 1; 
  SWITCH_GENERATE_RANDOM_MAP= 0;
  SWITCH_LIDAR_FAULTS= 0;
- SWITCH_ONLY_ONE_LM_FAULT= 0; % only monitor one simultaneous landmark failing
+ SWITCH_ONLY_ONE_LM_FAULT= 1; % only monitor one simultaneous landmark failing
  SWITCH_GPS_FG= 1;
  SWITCH_FIXED_ABS_MSMT_PH_WITH_min_GPS_msmt= 0;
  SWITCH_SM=0;

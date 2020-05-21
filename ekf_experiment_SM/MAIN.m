@@ -7,7 +7,7 @@ addpath('../utils/classes')
 
 
 % create objects
-params= ParametersClass("localization_kf_SM_2020_03_19");
+params= ParametersClass("localization_kf_SM");%localization_kf_SM_2020_03_19");
 lidar= LidarClass(params, 0);
 imu= IMUClass(params, 0);
 estimator= EstimatorClassEkfExpSM(imu.msmt(1:3, 1:params.num_epochs_static), params);

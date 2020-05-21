@@ -9,7 +9,7 @@
  SWITCH_REMOVE_FAR_FEATURES= 1;
  SWITCH_CALIBRATION= 1; % initial calibration to obtain moving biases
  SWITCH_FIXED_LM_SIZE_PH= 1;
- SWITCH_LM_SELECTION= 0; % landmark selection activation
+ SWITCH_LM_SELECTION= 1; % landmark selection activation
  SWITCH_SEED= 1; 
  SWITCH_GENERATE_RANDOM_MAP= 0;
  SWITCH_LIDAR_FAULTS= 0;
@@ -22,10 +22,10 @@
 
 % --------------- Parameters ---------------
 m= 15; % number of states in the state vector
-P_MA_max= 1e-4; % maximum alloable miss-association probability
-P_UA= 1e-9;
-I_H= 1e-12;
-min_n_L_M= 30; % min number of landmarks in the preceding horizon + current time
+P_MA_max= 1e-2; % (1e-4 Osama) maximum alloable miss-association probability
+P_UA= 1e-3;% (1e-9 Osama)
+I_H= 1e-7;% (1e-12 Osama)
+min_n_L_M= 15; % (30 Osama) min number of landmarks in the preceding horizon + current time
 min_appearances= 2; % only update estimate landmarks detected more than this number
 num_epochs_reduce_testing= 6000;
 num_epochs_static= 10000; % default (10000) --Osama-- Number of epochs the cart is static initially 20000
@@ -69,5 +69,5 @@ VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
-I_MA= 1e-12;
+I_MA= 1e-8; % (1e-12 Osama)
 % -------------------------------------------

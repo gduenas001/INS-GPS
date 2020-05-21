@@ -8,17 +8,17 @@ ma0= load('no_MA');
 
 %% plot integrity risk
 figure; hold on; grid on;
-plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.p_hmi, 'b-', 'linewidth', 2)
-plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ma0.data_obj.im.p_hmi, 'r-', 'linewidth', 2)
-plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ones(length(ma0.data_obj.im.time),1) * ma0.params.I_H, 'g.', 'linewidth', 2)
+plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.p_hmi, 'linewidth', 2)
+plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ma0.data_obj.im.p_hmi, 'linewidth', 2)
+plot(ma0.data_obj.im.time * ma0.params.velocity_sim, ones(length(ma0.data_obj.im.time),1) * ma0.params.I_H, 'linewidth', 2)
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 
 legend({'Assuming no MA','Actual integrity risk'}, 'interpreter', 'latex','fontsize', 10)
 xlabel('x [m]','interpreter', 'latex','fontsize', 10)
-xlim([0,116])
-ylabel('P(HMI)','interpreter', 'latex','fontsize', 10)
+xlim([0,120])
+ylabel('$P(HMI)-I_H$','interpreter', 'latex','fontsize', 10)
 set(gca, 'YScale', 'log')
-xlim([0,116])
+xlim([0,120])
 ylim([1e-20,1]);
 
 % fig= gcf;
@@ -41,17 +41,17 @@ for i= 1:length(pma0.data_obj.pred.time)
 end
 
 % create a map of landmarks
-lm_map= [pma0.estimator.landmark_map(:,1),...
-         pma0.estimator.landmark_map(:,2),...
-         zeros(pma0.estimator.num_landmarks,1)];
+% lm_map= [pma0.estimator.landmark_map(:,1),...
+%          pma0.estimator.landmark_map(:,2),...
+%          zeros(pma0.estimator.num_landmarks,1)];
 
 % plots
 figure; hold on; grid on;
-plot( pma0.poses(1,:), pma0.poses(2,:), 'r-', 'linewidth', 2);
-plot( ma0.poses(1,:), ma0.poses(2,:), 'b-', 'linewidth', 2);
-plot(lm_map(:,1), lm_map(:,2), 'k.', 'markersize',7, 'linewidth', 1);
+plot( pma0.poses(1,:), pma0.poses(2,:), 'linewidth', 2);
+plot( ma0.poses(1,:), ma0.poses(2,:), 'linewidth', 2);
+% plot(lm_map(:,1), lm_map(:,2), 'k.', 'markersize',7, 'linewidth', 1);
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
-% legend({'With injected MA','Without injected MA'}, 'interpreter', 'latex','fontsize', 10)
+legend({'With injected MA','Without injected MA'}, 'interpreter', 'latex','fontsize', 10)
 
 
 % set axis
@@ -75,26 +75,28 @@ xlim([0,120])
 %% plot error and variance envelope
 pma0.standard_dev_y= sqrt( pma0.data_obj.update.PX(2,:) );
 ma0.standard_dev_y= sqrt( pma0.data_obj.update.PX(2,:) );
+pma1.standard_dev_y= sqrt( pma1.data_obj.update.PX(2,:) );
+ma1.standard_dev_y= sqrt( pma1.data_obj.update.PX(2,:) );
 
 figure; hold on; grid on;
-plot(pma0.data_obj.update.time * pma0.params.velocity_sim, pma0.data_obj.update.error(2,:), 'r-', 'linewidth', 2)
-plot(ma0.data_obj.update.time * ma0.params.velocity_sim,  ma0.data_obj.update.error(2,:), 'b-', 'linewidth', 2)
-plot(pma0.data_obj.update.time * pma0.params.velocity_sim, 3*pma0.standard_dev_y,'k--','linewidth',2);
+plot(ma0.data_obj.update.time * ma0.params.velocity_sim,  ma0.data_obj.update.error(2,:), 'linewidth', 2)
+plot(pma1.data_obj.update.time * pma1.params.velocity_sim, pma1.data_obj.update.error(2,:), 'linewidth', 2)
+plot(pma1.data_obj.update.time * pma1.params.velocity_sim, 3*pma1.standard_dev_y,'k--','linewidth',2);
 plot(0,-1,'g--')
 plot(pma0.data_obj.update.time * pma0.params.velocity_sim,...
-    ones(length(pma0.data_obj.update.time),1)*0.9, 'g.', 'linewidth',2)
-plot(pma0.data_obj.update.time * pma0.params.velocity_sim, -3*pma0.standard_dev_y,'k--','linewidth',2);
+    ones(length(pma0.data_obj.update.time),1)*0.9, 'y.', 'linewidth',1)
+plot(pma1.data_obj.update.time * pma1.params.velocity_sim, -3*pma1.standard_dev_y,'k--','linewidth',2);
 plot(pma0.data_obj.update.time * pma0.params.velocity_sim,...
-    ones(length(pma0.data_obj.update.time),1)*(-0.9), 'g.', 'linewidth',2)
+    ones(length(pma0.data_obj.update.time),1)*(-0.9), 'y.', 'linewidth',1)
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 
-legend({'$\delta \hat{x}$ with injected MA',...
-        '$\delta \hat{x}$ without injeced faults',...
+legend({'$\delta \hat{x}$ without injeced faults',...
+        '$\delta \hat{x}$ with injected MA',...
         '$3 \hat{\sigma}$'},...
         'interpreter', 'latex','fontsize', 10)
 xlabel('x [m]','interpreter', 'latex','fontsize', 10)
 ylabel('error [m]','interpreter', 'latex','fontsize', 10)
-xlim([0,116])
+xlim([0,120])
 ylim([-1.1, 1.2])
 
 % fig= gcf;
@@ -105,11 +107,11 @@ ylim([-1.1, 1.2])
 %% plot detector and detector threshold
 
 figure; hold on; grid on;
-plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.detector, 'linewidth', 2)
-plot(pma0.data_obj.im.time * pma0.params.velocity_sim, pma0.data_obj.im.detector_threshold, 'linewidth', 2)
+plot(pma1.data_obj.im.time * pma1.params.velocity_sim, pma1.data_obj.im.detector, 'linewidth', 2)
+plot(pma1.data_obj.im.time * pma1.params.velocity_sim, pma1.data_obj.im.detector_threshold, 'linewidth', 2)
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 xlabel('x [m]','interpreter', 'latex','fontsize', 10)
-xlim([0,116])
+xlim([0,120])
 ylim([0, 70])
 
 legend({'$q_{D}$', '$T_D$'},'interpreter', 'latex','fontsize', 10)

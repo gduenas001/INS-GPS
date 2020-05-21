@@ -12,6 +12,8 @@
  SWITCH_LM_SELECTION= 0; % activate landmarks selection
  SWITCH_SEED= 6; % seed for random (zero for deactivate)
  SWITCH_ONLY_ONE_LM_FAULT= 1; % if only one simultaneous landmark fault
+ SWITCH_GENERATE_RANDOM_MAP=0;
+ SWITCH_SM=0;
  % --------------------------------------------------
 
 

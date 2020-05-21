@@ -39,9 +39,9 @@ classdef ParametersClass < handle
         path_test_SM_2020_03_10= '../data/vehicle/20200310/';
         path_test_SM_2020_03_19= '../data/vehicle/20200319/';
         %path_test= '../data/vehicle/20190828/';
-        path_sim_kf= '../data/simulation/factor_graph/';
+        %path_sim_kf= '../data/simulation/factor_graph/';
         path_sim_pf= '../data/simulation/particle_filter/';
-%         path_sim_kf= '../data/simulation/straight/';
+        path_sim_kf= '../data/simulation/straight/';
 %         path_sim= '../data/simulation/square/';
         path_sim_fg= '../data/simulation/factor_graph/';
         path_exp_fg= '../data/vehicle/20190110/';
@@ -383,16 +383,16 @@ classdef ParametersClass < handle
                 obj.sig_steering_angle_sim= sig_steering_angle_sim;
                 obj.wheelbase_sim= wheelbase_sim;
                 % if using factor graphs that needs controller
-%                if obj.SWITCH_FACTOR_GRAPHS
-                obj.way_points= way_points;
-                obj.min_distance_to_way_point= min_distance_to_way_point;
-                obj.max_delta_steering= max_delta_steering;
-                obj.max_steering= max_steering;
-                obj.sig_gyro_z= sig_gyro_z;
-                obj.map_limits= map_limits;
-                %obj.landmark_density= landmark_density;
-                obj.landmark_density= lm_dens;
-%                end
+                if obj.SWITCH_FACTOR_GRAPHS
+                    obj.way_points= way_points;
+                    obj.min_distance_to_way_point= min_distance_to_way_point;
+                    obj.max_delta_steering= max_delta_steering;
+                    obj.max_steering= max_steering;
+                    obj.sig_gyro_z= sig_gyro_z;
+                    obj.map_limits= map_limits;
+                    %obj.landmark_density= landmark_density;
+                    obj.landmark_density= lm_dens;
+                end
             end
             % -------------------------------------------
             % -------------------------------------------

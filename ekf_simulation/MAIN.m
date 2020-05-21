@@ -23,7 +23,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
     disp(strcat('Epoch -> ', num2str(epoch)));
      
     % ------------- Odometry -------------
-    estimator.compute_steering(params)
+    %estimator.compute_steering(params)
     estimator.odometry_update( params );
     % -------------------------------
     
@@ -106,8 +106,8 @@ data_obj.delete_extra_allocated_memory(counters)
 
 
 % ------------- PLOTS -------------
-% data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
-data_obj.plot_map_localization_sim_fg(estimator, params)
+data_obj.plot_map_localization_sim(estimator, params.num_epochs_sim, params)
+% data_obj.plot_map_localization_sim_fg(estimator, params)
 data_obj.plot_number_of_landmarks(params);
 % data_obj.plot_number_epochs_in_preceding_horizon(params);
 % data_obj.plot_estimates();
