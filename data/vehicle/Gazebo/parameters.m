@@ -69,5 +69,5 @@ VRW= 0.07; % vel random walk
 ARW= 0.15; % angular random walk [deg]
 sn_f= ( 0.05 * 9.80279 / 1000 )^2; % bias acc white noise PSD
 sn_w= ( deg2rad(0.3/3600) )^2;    % bias gyro white noise PSD
-I_MA= 1e-7;
+I_MA= 1e-15;
 % -------------------------------------------
