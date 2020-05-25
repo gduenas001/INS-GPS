@@ -46,7 +46,7 @@ classdef ParametersClass < handle
         path_sim_fg= '../data/simulation/factor_graph/';
         path_exp_fg= '../data/vehicle/20190110/';
         path_exp_fg_SM='../data/vehicle/2019_EXP0/';
-        path_gazebo_fg= '../data/vehicle/Gazebo/';
+        path_gazebo_fg= '../data/vehicle/Gazebo_makeup_2.7/';
     end
     
     properties (SetAccess = immutable) % parameters to be built with constructor
