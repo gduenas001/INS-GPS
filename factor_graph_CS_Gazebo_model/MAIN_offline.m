@@ -8,15 +8,15 @@ addpath('../utils/classes')
 
 
 % create objects
-params= ParametersClass("gazebo_fg_offline_SS");
+params= ParametersClass("gazebo_fg_offline_CS");
 load([params.path, 'FG.mat']); % organized experimental data (preprocessing using KF)
 FG= FGDataInputClass(length(data.lidar));
 FG.imu= data.imu';
 FG.lidar= data.lidar';
 FG.pose= data.pose';
 clear data
-estimator= EstimatorClassFgGazeboOffSS(params);
-im= IntegrityMonitoringClassFgGazeboOffSS(params, estimator);
+estimator= EstimatorClassFgGazeboOffCS(params);
+im= IntegrityMonitoringClassFgGazeboOffCS(params, estimator);
 data_obj= DataClass(length(FG.imu), length(FG.lidar), params);
 counters= CountersClass([], [], params);
 

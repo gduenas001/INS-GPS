@@ -288,6 +288,11 @@ classdef ParametersClass < handle
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.SWITCH_OFFLINE= 1;
                     obj.path= obj.path_gazebo_fg;
+                case 'gazebo_fg_offline_CS'
+                    obj.SWITCH_SIM= 0;
+                    obj.SWITCH_FACTOR_GRAPHS= 1;
+                    obj.SWITCH_OFFLINE= 1;
+                    obj.path= obj.path_gazebo_fg;
                 case 'simulation_fg'
                     obj.SWITCH_SIM= 1;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
