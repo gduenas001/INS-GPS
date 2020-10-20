@@ -25,6 +25,12 @@ classdef PredictionDataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function store_sim_pf(obj, epoch, estimator, time)
+            obj.time(epoch)= time;
+            obj.XX(:,epoch)= estimator.XX_predict;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         
     end
 end

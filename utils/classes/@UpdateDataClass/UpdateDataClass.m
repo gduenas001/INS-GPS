@@ -100,6 +100,23 @@ classdef UpdateDataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function store_sim_pf(obj, epoch, estimator, time, params)
+            estimator.compute_alpha(params)
+            obj.x_true(:,epoch)= estimator.x_true;
+            obj.XX(:,epoch)= estimator.XX_update;
+            obj.error(:,epoch)= [estimator.XX_update - estimator.x_true];
+            obj.PX(:, epoch)= [diag( estimator.SX_update )];
+            obj.x_true(:,epoch)= estimator.x_true;
+            obj.error_state_interest(epoch)= estimator.alpha'* (estimator.XX_update - estimator.x_true);
+            obj.sig_state_interest(epoch)= sqrt( estimator.alpha'* estimator.SX_update * estimator.alpha );
+            obj.time(epoch)= time;
+            obj.num_associated_lms(epoch)= estimator.n_L_k;
+            obj.q_d(epoch)= estimator.q_d;
+            obj.T_d(epoch)= estimator.T_d;
+            obj.n_L_k(epoch)= estimator.n_L_k;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function store_fg_Gazebo(obj, epoch, estimator, time, params)
             estimator.compute_alpha(params)
             obj.x_true(:,epoch)= [estimator.x_true;zeros(6,1)];

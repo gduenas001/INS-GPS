@@ -30,6 +30,11 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
+        function store_prediction_sim_pf(obj, epoch, estimator, time)
+            obj.pred.store_sim_pf(epoch, estimator, time);
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
         function epoch= store_update(obj, epoch, estimator, time)
             obj.update.store(epoch, estimator, time);
             
@@ -40,6 +45,14 @@ classdef DataClass < handle
         % ----------------------------------------------
         function epoch= store_update_fg(obj, epoch, estimator, time, params)
             obj.update.store_fg(epoch, estimator, time, params);
+            
+            % increase counter
+            epoch= epoch + 1;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function epoch= store_update_sim_pf(obj, epoch, estimator, time, params)
+            obj.update.store_sim_pf(epoch, estimator, time, params);
             
             % increase counter
             epoch= epoch + 1;
@@ -136,6 +149,15 @@ classdef DataClass < handle
             plot(obj.update.time, obj.update.q_d, 'linewidth', 2)
             plot(obj.update.time, obj.update.T_d, 'linewidth', 2)
             legend({'detector', 'threshold'},'Fontsize', 10)
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function plot_detector_pf(obj, params)
+            figure; hold on; grid on;
+            set(gca,'FontSize',12)
+            plot(obj.im.time, obj.im.detector, 'linewidth', 2)
+            plot(obj.im.time, obj.im.detector_threshold, 'linewidth', 2)
+            legend({'detector', 'threshold'},'Fontsize', 12)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -262,13 +284,26 @@ classdef DataClass < handle
         % ----------------------------------------------
         function plot_integrity_risk(obj, params)
             figure; hold on; grid on;
-            if params.SWITCH_SIM
+            if params.SWITCH_PF
+                plot(obj.im.time, obj.im.p_hmi+params.I_H, 'b-', 'linewidth', 2)
+                %plot(obj.update.x_true(1,:), obj.im.p_hmi, 'b-', 'linewidth', 2)
+                %xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
+                %xlabel('X [m]','Fontsize', 12)
+                xlabel('Time [s]','Fontsize', 12)
+                xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+                ylabel('Integrity risk','Fontsize', 12)
+                set(gca, 'YScale', 'log','FontSize',12)
+                ylim([params.I_H*1e-1,1]);
+            elseif params.SWITCH_SIM
                 plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
                 %plot(obj.update.x_true(1,:), obj.im.p_hmi, 'b-', 'linewidth', 2)
                 %xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
                 %xlabel('X [m]','Fontsize', 12)
                 xlabel('Time [s]','Fontsize', 12)
                 xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+                ylabel('Integrity risk','Fontsize', 12)
+                set(gca, 'YScale', 'log','FontSize',12)
+                ylim([1e-25,1]);
             else
                 if params.SWITCH_FACTOR_GRAPHS
                     plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
@@ -279,12 +314,15 @@ classdef DataClass < handle
                     xlabel('Time [s]','interpreter', 'latex','fontsize', 15)
                     xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
                 end
+                ylabel('Integrity risk','Fontsize', 12)
+                set(gca, 'YScale', 'log','FontSize',12)
+                ylim([1e-25,1]);    
             end
             % plot(obj.im.time, obj.im.p_eps, 'r-', 'linewidth', 2)
             %ylabel('P(HMI)','interpreter', 'latex','fontsize', 10)
-            ylabel('Integrity risk','Fontsize', 12)
-            set(gca, 'YScale', 'log','FontSize',12)
-            ylim([1e-25,1]);
+            %ylabel('Integrity risk','Fontsize', 12)
+            %set(gca, 'YScale', 'log','FontSize',12)
+            %ylim([1e-25,1]);
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -311,13 +349,14 @@ classdef DataClass < handle
         function plot_number_of_landmarks(obj, params)
             figure; hold on; grid on;
             if params.SWITCH_SIM
-                plot(obj.im.time * params.velocity_sim, obj.im.n_L_M, 'b-', 'linewidth', 2)
-                plot(obj.update.time * params.velocity_sim, obj.update.num_associated_lms, 'g-', 'linewidth', 2)
+                %plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
+                plot(obj.update.time, obj.update.num_associated_lms, 'g-', 'linewidth', 2)
+                %plot(obj.update.time * params.velocity_sim, obj.update.num_associated_lms, 'g-', 'linewidth', 2)
 %                 plot(obj.im.time * params.velocity_sim, obj.update.miss_associations, 'r*')
 %                 plot(obj.update.time * params.velocity_sim, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
                 xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
-                legend({'$n^{F^(M)}$', '$n^F$'},...
-                    'interpreter', 'latex','fontsize', 15);
+                %legend({'$n^{F^(M)}$', '$n^F$'},...
+                %    'interpreter', 'latex','fontsize', 15);
             else
                 plot(obj.im.time, obj.im.n_L_M, 'b-', 'linewidth', 2)
                 plot(obj.update.time, obj.update.num_associated_lms, 'g-', 'linewidth', 2)

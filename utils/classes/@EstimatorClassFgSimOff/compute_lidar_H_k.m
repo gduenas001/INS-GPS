@@ -3,8 +3,8 @@ function compute_lidar_H_k(obj, params) % TODO: osama - change this name, this c
 % this funcion builds the Jacobian H for the factor graphs case without
 % mesaurements. It uses all the landmarks in the field of view of the lidar
 
-spsi= sin(obj.x_true(3));
-cpsi= cos(obj.x_true(3));
+spsi= sin(obj.XX_update(3));
+cpsi= cos(obj.XX_update(3));
 
 % find the landmarks in the field of view
 obj.lm_ind_fov= [];

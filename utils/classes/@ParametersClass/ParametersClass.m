@@ -28,6 +28,7 @@ classdef ParametersClass < handle
         SWITCH_FACTOR_GRAPHS= 0
         SWITCH_OFFLINE= 0
         SWITCH_SM=0;
+        SWITCH_PF=0;
         % --------------------------------------------------
     end
     
@@ -181,6 +182,7 @@ classdef ParametersClass < handle
         landmark_density % landmarks / m^2
         landmark_map
         range_req
+        size_of_control_vector
         % -------------------------------------------
         % -------------------------------------------
     end
@@ -226,6 +228,7 @@ classdef ParametersClass < handle
                     obj.SWITCH_SIM= 1;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
                     obj.path= obj.path_sim_pf;
+                    obj.SWITCH_PF =1;
                 case 'simulation_fg_offline'
                     obj.SWITCH_SIM= 1;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
@@ -402,6 +405,9 @@ classdef ParametersClass < handle
                     obj.map_limits= map_limits;
                     %obj.landmark_density= landmark_density;
                     obj.landmark_density= lm_dens;
+                end
+                if obj.SWITCH_PF
+                    obj.size_of_control_vector=size_of_control_vector;
                 end
             end
             % -------------------------------------------

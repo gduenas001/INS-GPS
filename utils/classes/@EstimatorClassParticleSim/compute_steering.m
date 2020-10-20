@@ -3,7 +3,7 @@ function compute_steering(obj, params)
 % determine if current waypoint reached
 while 1
     current_wp= params.way_points(:, obj.current_wp_ind);
-    d= sqrt( ( current_wp(1)-  obj.XX(1) )^2 + ( current_wp(2) - obj.XX(2) )^2 );
+    d= sqrt( ( current_wp(1)-  obj.XX_predict(1) )^2 + ( current_wp(2) - obj.XX_predict(2) )^2 );
     
     % check current distance to the waypoint
     if d < params.min_distance_to_way_point
@@ -20,7 +20,7 @@ while 1
 end
 
 % compute change in G to point towards current waypoint
-delta_steering= pi_to_pi(atan2( current_wp(2) - obj.XX(2), current_wp(1) - obj.XX(1) ) - obj.XX(3));
+delta_steering= pi_to_pi(atan2( current_wp(2) - obj.XX_predict(2), current_wp(1) - obj.XX_predict(1) ) - obj.XX_predict(3));
 delta_steering= pi_to_pi(delta_steering - obj.steering_angle);
 
 % % weighting factor for the delta steering

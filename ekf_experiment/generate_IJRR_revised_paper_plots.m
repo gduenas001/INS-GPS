@@ -40,7 +40,7 @@ figure; grid on;
 set(gca, 'FontSize',10)
 plot(set_of_min_n_L_M, computational_time, 'k-', 'linewidth', 2)
 xlabel({'Min. assoc. in the horizon, $n_{\textit{min}}^{\textit{A}^{\textit{(M)}}}$'},'interpreter', 'latex','fontsize', 10)
-ylabel({'time (Seconds)'},'interpreter', 'latex','fontsize', 10)
+ylabel({'Time [s]'},'interpreter', 'latex','fontsize', 10)
 legend({'Avg. time to monitor integrity'},'interpreter', 'latex','fontsize', 10)
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
 grid on;

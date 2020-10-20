@@ -1,5 +1,5 @@
 
-clear; format short; clc; % close all;
+clear; format short; clc; close all;
 dbstop if error
 
 addpath('../utils/functions')
@@ -7,11 +7,15 @@ addpath('../utils/classes')
 
 figure; hold on; grid on;
 
-lm_dens= 0.002;
+lm_dens= 0.002; % 0.002;
+
+seed= 7;
+rng(seed);
 
 % create objects
 params= ParametersClass("simulation_Particle_filter",lm_dens);
 estimator= EstimatorClassParticleSim(params);
+im= IntegrityMonitoringClassPfSim(params, estimator);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
 counters= CountersClass([], [], params);
 
@@ -33,7 +37,31 @@ pause(.1)
 epoch= 1;
 
 while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
-%for epoch= 1:params.num_epochs_sim
+    
+    % Generate more particles if the percentage of distinct particles is very low
+    if (length(unique(estimator.particles_indices_update))/length(estimator.particles_indices_update) < estimator.threshold_add_particles)%0.01%0.5
+       XX_particles_new = mvnrnd(estimator.XX_update,estimator.gen_estimate_cov,estimator.number_of_particles_to_add);%XX_particles_new = mvnrnd(estimator.XX,estimator.gen_estimate_cov*5,estimator.number_of_particles_to_add);
+       for i=1:estimator.number_of_particles_to_add
+       	XX_particles_new(i,params.ind_yaw)= pi_to_pi(estimator.XX_particles_update(i,params.ind_yaw));
+       end
+       %estimator.XX_particles_update=[estimator.XX_particles_update;XX_particles_new];
+       estimator.XX_particles_update=XX_particles_new;
+       %estimator.particles_indices_update = [estimator.particles_indices_update; transpose(max(estimator.particles_indices_update)+1:max(estimator.particles_indices_update)+estimator.number_of_particles_to_add) ];
+       estimator.particles_indices_update = transpose( 1:size(obj.XX_particles_predict,1) );
+       estimator.XX_update = mean(estimator.XX_particles_update)';
+       %[~, indices_of_unique_particles, ~] = unique(estimator.particles_indices_update);
+       %estimator.SX_update = cov(estimator.XX_particles_update(indices_of_unique_particles,:));
+       estimator.SX_update = cov(estimator.XX_particles_update);
+    end
+    estimator.XX_particles_prior = estimator.XX_particles_update;
+    estimator.particles_indices_prior = estimator.particles_indices_update;
+    estimator.XX_prior = estimator.XX_update;
+    estimator.SX_prior = estimator.SX_update;
+    estimator.XX_particles_predict = estimator.XX_particles_update;
+    estimator.particles_indices_predict = estimator.particles_indices_update;
+    estimator.XX_predict = estimator.XX_update;
+    estimator.SX_predict = estimator.SX_update;
+    %estimator.prior_estimate_cov = estimator.SX_update;
     disp(strcat('Epoch -> ', num2str(epoch)));
      
     % ------------- Odometry -------------
@@ -46,22 +74,17 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
     end
     
     plot(estimator.x_true(1), estimator.x_true(2), 'r.','markersize', 7);
-    plot(estimator.XX(1), estimator.XX(2), 'g.','markersize', 7);
-    XX_particles= plot( estimator.XX_particles(:,1) , estimator.XX_particles(:,2), 'b.','markersize',3 );
+    plot(estimator.XX_predict(1), estimator.XX_predict(2), 'g.','markersize', 7);
+    XX_particles= plot( estimator.XX_particles_predict(:,1) , estimator.XX_particles_predict(:,2), 'b.','markersize',3 );
     pause(.1)
     
     % Store data
-    data_obj.store_prediction_sim(epoch, estimator, counters.time_sim);
+    data_obj.store_prediction_sim_pf(epoch, estimator, counters.time_sim);
     
-    if (trace(estimator.PX) < 0.5)
-        XX_particles_new = mvnrnd(estimator.XX,estimator.gen_estimate_cov*5,estimator.number_of_particles_to_add);
-        for i=1:estimator.number_of_particles_to_add
-        	XX_particles_new(i,params.ind_yaw)= pi_to_pi(estimator.XX_particles(i,params.ind_yaw));
-        end
-        estimator.XX_particles=[estimator.XX_particles;XX_particles_new];
-        estimator.XX = mean(estimator.XX_particles)';
-        estimator.PX = cov(estimator.XX_particles);
-    end
+    estimator.XX_particles_update = estimator.XX_particles_predict;
+    estimator.particles_indices_update = estimator.particles_indices_predict;
+    estimator.XX_update = estimator.XX_predict;
+    estimator.SX_update = estimator.SX_predict;
     
     % ----------------- LIDAR ----------------
     if params.SWITCH_LIDAR_UPDATE
@@ -77,12 +100,17 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
         % Lidar update
         estimator.lidar_update(z_lidar, params);
         
+        im.monitor_integrity(estimator, counters, data_obj,  params);
+        
         % Add current msmts in Nav-frame
-        data_obj.store_msmts( body2nav_2D(z_lidar, estimator.XX, estimator.XX(3)) ); 
+        data_obj.store_msmts( body2nav_2D(z_lidar, estimator.XX_update, estimator.XX_update(3)) ); 
         
         % Store data
         counters.k_update=...
-            data_obj.store_update_fg(counters.k_update, estimator, counters.time_sim, params);
+            data_obj.store_update_sim_pf(counters.k_update, estimator, counters.time_sim, params);
+        
+        % increase integrity counter
+        counters.increase_integrity_monitoring_counter();
         
         if epoch > 1
             delete(msmts);
@@ -104,8 +132,8 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
         delete(XX_particles);
     end
     
-    XX_particles= plot( estimator.XX_particles(:,1) , estimator.XX_particles(:,2), 'b.','markersize',3 );
-    plot(estimator.XX(1), estimator.XX(2), 'k.','markersize', 7);
+    XX_particles= plot( estimator.XX_particles_update(:,1) , estimator.XX_particles_update(:,2), 'b.','markersize',3 );
+    plot(estimator.XX_update(1), estimator.XX_update(2), 'k.','markersize', 7);
     pause(.1)
     
     
@@ -132,6 +160,5 @@ data_obj.plot_error(params);
 % data_obj.plot_P_H();
 %data_obj.plot_detector(params);
 % ------------------------------------------------------------
-
 
 

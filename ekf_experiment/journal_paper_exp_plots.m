@@ -131,12 +131,12 @@ for j= 1:length(lm_ids)
     end
 end
 set(gca,'TickLabelInterpreter','latex','fontsize', 10)
-plot(Distance_1(1:skip(1)), P_MA_1(1:skip(1)),'Color',[0, 0.4470, 0.7410], 'linewidth', 2)
-plot(Distance_2(1:skip(2)), P_MA_2(1:skip(2)),'Color',[0.8500, 0.3250, 0.0980], 'linewidth', 2)
-plot(Distance_3(1:skip(3)), P_MA_3(1:skip(3)),'Color',[0.9290, 0.6940, 0.1250], 'linewidth', 2)
-plot(Distance_1(skip(1)+1:end), P_MA_1(skip(1)+1:end),'Color',[0, 0.4470, 0.7410], 'linewidth', 2)
-plot(Distance_2(skip(2)+1:end), P_MA_2(skip(2)+1:end),'Color',[0.8500, 0.3250, 0.0980], 'linewidth', 2)
-plot(Distance_3(skip(3)+1:end), P_MA_3(skip(3)+1:end),'Color',[0.9290, 0.6940, 0.1250], 'linewidth', 2)
+plot(Distance_1(1:skip(1)), P_MA_1(1:skip(1)),'Color',[0.4940    0.1840    0.5560], 'linewidth', 2)
+plot(Distance_2(1:skip(2)), P_MA_2(1:skip(2)),'Color',[0.4660    0.6740    0.1880], 'linewidth', 2)
+plot(Distance_3(1:skip(3)), P_MA_3(1:skip(3)),'Color',[0.3010    0.7450    0.9330], 'linewidth', 2)
+plot(Distance_1(skip(1)+1:end), P_MA_1(skip(1)+1:end),'Color',[0.4940    0.1840    0.5560], 'linewidth', 2)
+plot(Distance_2(skip(2)+1:end), P_MA_2(skip(2)+1:end),'Color',[0.4660    0.6740    0.1880], 'linewidth', 2)
+plot(Distance_3(skip(3)+1:end), P_MA_3(skip(3)+1:end),'Color',[0.3010    0.7450    0.9330], 'linewidth', 2)
 %xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
 leg= legend({'$LM1$', '$LM2$', '$LM3$'},'interpreter', 'latex','fontsize', 10);
 xlabel('Distance travelled [m]','interpreter', 'latex','fontsize', 10)

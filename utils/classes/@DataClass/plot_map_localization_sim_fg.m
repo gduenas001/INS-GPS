@@ -44,8 +44,9 @@ plot(obj.update.XX(1,1), obj.update.XX(2,1), '.', 'Color',[0.9290 0.6940 0.1250]
 %        plot(xyz_N(1,:), xyz_N(2,:), 'g.', 'linewidth', 40);
 %    end
 %end
-set(gca,'FontSize',12)
-xlabel('X [m]','FontSize',12); ylabel('Y [m]','FontSize',12); zlabel('Z [m]','FontSize',12);
+    
+
+
 %axis equal
 
 end

@@ -17,6 +17,13 @@ classdef IntegrityDataClass < handle
         sigma_hat
         f_avg
         p_eps % prob that the estimate is out of bounds w/out faults
+        N_k_prior
+        N_k_update
+        M_k_prior
+        M_k_update
+        N_r_2_prior
+        N_r_2_update
+        n_k
     end
     
     methods
@@ -37,6 +44,13 @@ classdef IntegrityDataClass < handle
             obj.p_eps= zeros(n,1);
             obj.M= zeros(n,1);
             obj.f_avg= zeros(n,1);
+            obj.N_k_prior= zeros(n,1);
+            obj.N_k_update= zeros(n,1);
+            obj.M_k_prior= zeros(n,1);
+            obj.M_k_update= zeros(n,1);
+            obj.N_r_2_prior= zeros(n,1);
+            obj.N_r_2_update= zeros(n,1);
+            obj.n_k= zeros(n,1);
         end
         
         function store(obj, im, estimator, counters, params)
@@ -62,6 +76,17 @@ classdef IntegrityDataClass < handle
                 obj.P_MA_k{counters.k_im}= im.P_MA_k;
                 obj.P_MA_k_full{counters.k_im}= im.P_MA_k_full;    
                 obj.detector(counters.k_im)= im.q_M;
+            end
+            
+            if params.SWITCH_PF
+                obj.N_k_prior(counters.k_im) = im.N_k_prior;
+                obj.M_k_prior(counters.k_im) = im.M_k_prior;
+                obj.N_r_2_prior(counters.k_im) = im.N_r_2_prior;
+                obj.N_k_update(counters.k_im) = im.N_k_update;
+                obj.M_k_update(counters.k_im) = im.M_k_update;
+                obj.N_r_2_update(counters.k_im) = im.N_r_2_update;
+                obj.n_k(counters.k_im) = estimator.n_k;
+                obj.detector(counters.k_im) = im.q_k;
             end
         end
         
