@@ -43,6 +43,7 @@ classdef ParametersClass < handle
         %path_sim_kf= '../data/simulation/factor_graph/';
         path_sim_pf= '../data/simulation/particle_filter/';
         path_sim_kf= '../data/simulation/straight/';
+        path_sim_kf_SLAM=  '../data/simulation/factor_graph/';;
 %         path_sim= '../data/simulation/square/';
         path_sim_fg= '../data/simulation/factor_graph/';
         path_exp_fg= '../data/vehicle/20190110/';
@@ -224,6 +225,9 @@ classdef ParametersClass < handle
                 case 'simulation_kf'
                     obj.SWITCH_SIM= 1;
                     obj.path= obj.path_sim_kf;
+                case 'simulation_kf_SLAM'
+                    obj.SWITCH_SIM= 1;
+                    obj.path= obj.path_sim_kf_SLAM;
                 case 'simulation_Particle_filter'
                     obj.SWITCH_SIM= 1;
                     obj.SWITCH_FACTOR_GRAPHS= 1;
@@ -395,17 +399,14 @@ classdef ParametersClass < handle
                 obj.sig_velocity_sim= sig_velocity_sim;
                 obj.sig_steering_angle_sim= sig_steering_angle_sim;
                 obj.wheelbase_sim= wheelbase_sim;
-                % if using factor graphs that needs controller
-                if obj.SWITCH_FACTOR_GRAPHS
-                    obj.way_points= way_points;
-                    obj.min_distance_to_way_point= min_distance_to_way_point;
-                    obj.max_delta_steering= max_delta_steering;
-                    obj.max_steering= max_steering;
-                    obj.sig_gyro_z= sig_gyro_z;
-                    obj.map_limits= map_limits;
-                    %obj.landmark_density= landmark_density;
-                    obj.landmark_density= lm_dens;
-                end
+                obj.map_limits= map_limits;
+                obj.way_points= way_points;
+                obj.min_distance_to_way_point= min_distance_to_way_point;
+                obj.max_delta_steering= max_delta_steering;
+                obj.max_steering= max_steering;
+                obj.sig_gyro_z= sig_gyro_z;
+                %obj.landmark_density= landmark_density;
+                obj.landmark_density= lm_dens;
                 if obj.SWITCH_PF
                     obj.size_of_control_vector=size_of_control_vector;
                 end

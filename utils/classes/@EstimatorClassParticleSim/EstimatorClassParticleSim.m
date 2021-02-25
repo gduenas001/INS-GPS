@@ -77,8 +77,8 @@ classdef EstimatorClassParticleSim < handle
         XX_particles_predict
         XX_particles_update
         Control_for_each_particle
-        number_of_particles=100%4000
-        number_of_particles_to_add=100
+        number_of_particles=200%4000
+        number_of_particles_to_add=200
          m
         weight_vector
         %gen_estimate_cov=[0.2^2,0,0;0,0.2^2,0;0,0,deg2rad(10)^2]

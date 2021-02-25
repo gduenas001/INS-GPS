@@ -137,7 +137,7 @@ for epoch= 1:imu.num_readings - 1
             
             % Store data
             data_obj.store_msmts( body2nav_3D(lidar.msmt, estimator.XX(1:9)) );% Add current msmts in Nav-frame
-            counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim);
+            counters.k_update= data_obj.store_update(counters.k_update, estimator, counters.time_sim, params);
         end
         
         % Increase counters

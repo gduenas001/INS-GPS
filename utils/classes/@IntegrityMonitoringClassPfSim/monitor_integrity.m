@@ -71,8 +71,8 @@ function monitor_integrity(obj, estimator, counters, data,  params)
     %    obj.N_r_2_predict = obj.N_r_2_predict + ( sum( estimator.particles_indices_predict == Unique_particles_indices_predict(i) ) )^2;
     %end
     
-    %obj.N_k_prior = length(estimator.particles_indices_prior);
-    obj.N_k_predict = length(estimator.particles_indices_predict);
+    obj.N_k_prior = length(estimator.particles_indices_prior);
+    %obj.N_k_predict = length(estimator.particles_indices_predict);
     %obj.Unique_particles_indices_prior = unique(estimator.particles_indices_prior);
     %obj.M_k_prior = length(obj.Unique_particles_indices_prior);
     %obj.N_k_prior = length(estimator.particles_indices_prior);
@@ -82,13 +82,15 @@ function monitor_integrity(obj, estimator, counters, data,  params)
     %obj.H_G_particles=inf*ones(estimator.n_k,params.m*obj.M_k_prior);
     Sum_H_F = 0;
     %for i = 1 : obj.M_k_prior
-    for i = 1 : obj.N_k_predict
+    %for i = 1 : obj.N_k_predict
+    for i = 1 : obj.N_k_prior
         %N_r_2_prior_i= ( sum( estimator.particles_indices_prior == obj.Unique_particles_indices_prior(i) ) )^2;
         %obj.N_r_2_prior = obj.N_r_2_prior + N_r_2_prior_i;
         %ind= find(estimator.particles_indices_prior == obj.Unique_particles_indices_prior(i),1);
         %H_G_i = estimator.H_k_particles(:,params.m*(ind-1)+1:params.m*ind)*estimator.G_k_particles(:,params.m*(ind-1)+1:params.m*ind);
         %obj.Y_k = obj.Y_k + ( N_r_2_prior_i/(obj.N_k_prior^2) * H_G_i * estimator.SX_prior * H_G_i');
-        obj.Y_k = obj.Y_k + ( 1/(obj.N_k_predict^2) * estimator.H_k_particles(:,params.m*(i-1)+1:params.m*i) * estimator.SX_predict * estimator.H_k_particles(:,params.m*(i-1)+1:params.m*i)');
+        %obj.Y_k = obj.Y_k + ( 1/(obj.N_k_predict^2) * estimator.H_k_particles(:,params.m*(i-1)+1:params.m*i) * estimator.SX_predict * estimator.H_k_particles(:,params.m*(i-1)+1:params.m*i)');
+        obj.Y_k = obj.Y_k + ( 1/(obj.N_k_prior^2) * estimator.H_k_particles(:,params.m*(i-1)+1:params.m*i) * ( estimator.G_k_particles(:,params.m*(i-1)+1:params.m*i) * estimator.SX_prior * estimator.G_k_particles(:,params.m*(i-1)+1:params.m*i)' + estimator.F_k_particles(params.m*(i-1)+1:params.m*i,:) * params.W_odometry_sim * estimator.F_k_particles(params.m*(i-1)+1:params.m*i,:)' ) * estimator.H_k_particles(:,params.m*(i-1)+1:params.m*i)');
         %Sum_H_F = Sum_H_F + sqrt(N_r_2_prior_i)*estimator.H_k_particles(:,params.m*(ind-1)+1:params.m*ind)*estimator.F_k_particles(params.m*(ind-1)+1:params.m*ind,:);
     end
     %obj.U_k = Sum_H_F *params.W_odometry_sim* Sum_H_F'/(obj.N_k_prior^2);
@@ -106,27 +108,32 @@ function monitor_integrity(obj, estimator, counters, data,  params)
     
     % set detector threshold from the continuity req
     %obj.T_d = finv(1 - obj.C_req,estimator.n_k,obj.M_k_prior-params.m);
-    obj.T_d = finv(1 - obj.C_req,estimator.n_k,obj.N_k_predict-params.m);
+    %obj.T_d = finv(1 - obj.C_req,estimator.n_k,obj.N_k_predict-params.m);
+    obj.T_d = finv(1 - obj.C_req,estimator.n_k,obj.N_k_prior-params.m);
     
     %obj.Y_k = estimator.H_k*( obj.N_r_2_predict*estimator.SX_predict/(obj.N_k_predict^2) )*estimator.H_k'+estimator.V_k;
     inv_Y_k = inv(obj.Y_k);
     inv_V_k = inv(estimator.V_k);
     % Detector
     %obj.q_k = (obj.M_k_predict-params.m)/(estimator.n_k * (obj.M_k_predict-1)) * (estimator.z_k-estimator.h_k)'*inv_Y_k*(estimator.z_k-estimator.h_k);
-    obj.q_k = (obj.M_k_prior-params.m)/(estimator.n_k * (obj.M_k_prior-1)) * ( estimator.z_k - transpose(mean(estimator.h_k_i')) )' * inv_Y_k * ( estimator.z_k - transpose(mean(estimator.h_k_i')) );
-
+    %obj.q_k = (obj.M_k_prior-params.m)/(estimator.n_k * (obj.M_k_prior-1)) * ( estimator.z_k - transpose(mean(estimator.h_k_i')) )' * inv_Y_k * ( estimator.z_k - transpose(mean(estimator.h_k_i')) );
+    %obj.q_k = (obj.N_k_predict-params.m)/(estimator.n_k * (obj.N_k_predict-1)) * ( estimator.z_k - transpose(mean(estimator.h_k_i')) )' * inv_Y_k * ( estimator.z_k - transpose(mean(estimator.h_k_i')) );
+    obj.q_k = (obj.N_k_prior-params.m)/(estimator.n_k * (obj.N_k_prior-1)) * ( estimator.z_k - transpose(mean(estimator.h_k_i')) )' * inv_Y_k * ( estimator.z_k - transpose(mean(estimator.h_k_i')) );
+    
 % %     obj.beta_k = max(eig( sqrtm(inv_Y_k)*(obj.Y_k*inv_V_k)*obj.Y_k*sqrtm(inv_Y_k) ));
-% %     
+% % % %     
 % %     obj.eta_k_min = 0;
-% %     for i=1:obj.N_k_prior
+% %     for i=1:obj.N_k_predict
 % %         %obj.eta_k_min = obj.eta_k_min + (2*pi)^(-0.5*estimator.n_k) * det(estimator.V_k)^(-0.5) * exp( -0.5*obj.beta_k*( sqrt(estimator.n_k * (obj.M_k_prior-1) * obj.T_d /(obj.M_k_prior-params.m) )+ sqrt( (transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i))'*inv_Y_k*(transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i)) ) )^2 );
-% %         obj.eta_k_min = obj.eta_k_min + (2*pi)^(-0.5*estimator.n_k) * det(estimator.V_k)^(-0.5) * exp( -0.5*( sqrt(obj.beta_k*estimator.n_k * (obj.M_k_prior-1) * obj.T_d /(obj.M_k_prior-params.m) )+ sqrt( (transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i))'*inv_V_k*(transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i)) ) )^2 );
+% %         %obj.eta_k_min = obj.eta_k_min + (2*pi)^(-0.5*estimator.n_k) * det(estimator.V_k)^(-0.5) * exp( -0.5*( sqrt(obj.beta_k*estimator.n_k * (obj.M_k_prior-1) * obj.T_d /(obj.M_k_prior-params.m) )+ sqrt( (transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i))'*inv_V_k*(transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i)) ) )^2 );
+% %         obj.eta_k_min = obj.eta_k_min + (2*pi)^(-0.5*estimator.n_k) * det(estimator.V_k)^(-0.5) * exp( -0.5*( sqrt(obj.beta_k*estimator.n_k * (obj.N_k_predict-1) * obj.T_d /(obj.N_k_predict-params.m) )+ sqrt( (transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i))'*inv_V_k*(transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i)) ) )^2 );
 % %     end
-% %     
+% % % %     
 % %     obj.eta_k_max = 0;
-% %     for i=1:obj.N_k_prior
+% %     for i=1:obj.N_k_predict
 % %         %obj.eta_k_hat = obj.eta_k_hat + (2*pi)^(-0.5*estimator.n_k) * det(estimator.V_k)^(-0.5) * exp( -0.5*obj.beta_k*( sqrt(estimator.n_k * (obj.M_k_prior-1) * obj.T_d /(obj.M_k_prior-params.m) )+ sqrt( (transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i))'*inv_Y_k*(transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i)) ) )^2 );
-% %         obj.eta_k_max = obj.eta_k_max + (2*pi)^(-0.5*estimator.n_k) * det(estimator.V_k)^(-0.5) * exp( -0.5*( max(0,sqrt( (transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i))'*inv_V_k*(transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i)) )-sqrt(obj.beta_k*estimator.n_k * (obj.M_k_prior-1) * obj.T_d /(obj.M_k_prior-params.m) )) )^2 );
+% %         %obj.eta_k_max = obj.eta_k_max + (2*pi)^(-0.5*estimator.n_k) * det(estimator.V_k)^(-0.5) * exp( -0.5*( max(0,sqrt( (transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i))'*inv_V_k*(transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i)) )-sqrt(obj.beta_k*estimator.n_k * (obj.M_k_prior-1) * obj.T_d /(obj.M_k_prior-params.m) )) )^2 );
+% %         obj.eta_k_max = obj.eta_k_max + (2*pi)^(-0.5*estimator.n_k) * det(estimator.V_k)^(-0.5) * exp( -0.5*( max(0,sqrt( (transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i))'*inv_V_k*(transpose(mean(estimator.h_k_i'))-estimator.h_k_i(:, i)) )-sqrt(obj.beta_k*estimator.n_k * (obj.N_k_predict-1) * obj.T_d /(obj.N_k_predict-params.m) )) )^2 );
 % %     end
     
     

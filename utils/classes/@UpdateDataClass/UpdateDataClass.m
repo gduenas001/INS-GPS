@@ -50,21 +50,22 @@ classdef UpdateDataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function store(obj, epoch, estimator, time)
-            obj.XX(:,epoch)= estimator.XX(1:15);
-            obj.PX(:,epoch)= diag( estimator.PX(1:15,1:15) ); % store only variances
+        function store(obj, epoch, estimator, time, params)
+            obj.XX(:,epoch)= estimator.XX(1:params.m);
+            obj.PX(:,epoch)= diag( estimator.PX(1:params.m,1:params.m) ); % store only variances
             obj.time(epoch)= time;
             obj.num_associated_lms(epoch)= estimator.num_associated_lms;
         end
         % ----------------------------------------------
         % ----------------------------------------------
         function store_sim(obj, epoch, estimator, time, params)
-            obj.error(:,epoch)= estimator.XX - estimator.x_true;
-            obj.XX(:,epoch)= estimator.XX;
-            obj.PX(:,epoch)= diag( estimator.PX ); % store only variances
+            obj.error(:,epoch)= estimator.XX(1:params.m) - estimator.x_true;
+            obj.x_true(:,epoch)= estimator.x_true(1:params.m);
+            obj.XX(:,epoch)= estimator.XX(1:params.m);
+            obj.PX(:,epoch)= diag( estimator.PX(1:params.m,1:params.m) ); % store only variances
             obj.time(epoch)= time;
-            obj.miss_associations(epoch)= sum( boolean(...
-                (estimator.association ~= estimator.association_true) .* estimator.association) );
+            %obj.miss_associations(epoch)= sum( boolean(...
+            %    (estimator.association ~= estimator.association_true) .* estimator.association) );
             obj.num_associated_lms(epoch)= estimator.num_associated_lms;
             obj.num_of_extracted_features(epoch)= estimator.num_of_extracted_features;
         end

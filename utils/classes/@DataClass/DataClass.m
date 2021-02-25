@@ -35,8 +35,8 @@ classdef DataClass < handle
         end
         % ----------------------------------------------
         % ----------------------------------------------
-        function epoch= store_update(obj, epoch, estimator, time)
-            obj.update.store(epoch, estimator, time);
+        function epoch= store_update(obj, epoch, estimator, time, params)
+            obj.update.store(epoch, estimator, time, params);
             
             % increase counter
             epoch= epoch + 1;
@@ -123,13 +123,21 @@ classdef DataClass < handle
         plot_map_localization_fg(obj, estimator, params)
         % ----------------------------------------------
         % ----------------------------------------------
+        lm_map= plot_map_ekf_slam(obj, estimator, params)
+        % ----------------------------------------------
+        % ----------------------------------------------
         function plot_detector(obj, params)
             % plot the detector value Vs. the detector threshold to see if 
             % an alarm has been triggered
             
             figure; hold on; grid on;
-            set(gca,'FontSize',12)
-            if params.SWITCH_SIM
+            %set(gca,'FontSize',12)
+            if params.SWITCH_PF
+                plot(obj.im.time, obj.im.detector, 'linewidth', 2)
+                plot(obj.im.time, obj.im.detector_threshold, 'linewidth', 2)
+                xlabel('Time (s)')
+                legend({'Fault detector, q_k','Detector threshold, T_k'})
+            elseif params.SWITCH_SIM
                 %plot(obj.im.time * params.velocity_sim, obj.im.detector, 'linewidth', 2)
                 %plot(obj.im.time * params.velocity_sim, obj.im.detector_threshold, 'linewidth', 2)
                 plot(obj.update.XX(1,:), obj.update.q_d, 'b-', 'linewidth', 2)
@@ -140,7 +148,7 @@ classdef DataClass < handle
                 plot(obj.im.time, obj.im.detector_threshold, 'linewidth', 2)
                 xlabel('time [s]')
             end
-            legend({'Fault detector', 'Detector threshold'},'Fontsize', 12)
+           % legend({'Fault detector', 'Detector threshold'},'Fontsize', 12)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -231,8 +239,8 @@ classdef DataClass < handle
 %             plot(obj.update.time, -obj.update.sig_state_interest(:),'r--','linewidth',2);
             
 %             legend({'$\delta \hat{x}$', '$\hat{\sigma}$'},'interpreter', 'latex','fontsize', 15)
-            xlabel('time [s]','interpreter', 'latex','fontsize', 15)
-            ylabel('error [m]','interpreter', 'latex','fontsize', 15)
+            %xlabel('time [s]','interpreter', 'latex','fontsize', 15)
+            %ylabel('error [m]','interpreter', 'latex','fontsize', 15)
         end
         % ----------------------------------------------
         % ----------------------------------------------
@@ -289,10 +297,10 @@ classdef DataClass < handle
                 %plot(obj.update.x_true(1,:), obj.im.p_hmi, 'b-', 'linewidth', 2)
                 %xlabel('Time [s]','interpreter', 'latex','fontsize', 10)
                 %xlabel('X [m]','Fontsize', 12)
-                xlabel('Time [s]','Fontsize', 12)
-                xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
-                ylabel('Integrity risk','Fontsize', 12)
-                set(gca, 'YScale', 'log','FontSize',12)
+                %xlabel('Time [s]','Fontsize', 12)
+                %xlim([obj.im.time(1), obj.im.time(end)]) % reset the x-axis (otherwise it moves)
+                %ylabel('Integrity risk','Fontsize', 12)
+                set(gca, 'YScale', 'log')
                 ylim([params.I_H*1e-1,1]);
             elseif params.SWITCH_SIM
                 plot(obj.im.time, obj.im.p_hmi, 'b-', 'linewidth', 2)
@@ -354,7 +362,7 @@ classdef DataClass < handle
                 %plot(obj.update.time * params.velocity_sim, obj.update.num_associated_lms, 'g-', 'linewidth', 2)
 %                 plot(obj.im.time * params.velocity_sim, obj.update.miss_associations, 'r*')
 %                 plot(obj.update.time * params.velocity_sim, obj.update.num_of_extracted_features, 'k-', 'linewidth', 2)
-                xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
+                %xlabel({'x [m]'},'interpreter', 'latex','fontsize', 15)
                 %legend({'$n^{F^(M)}$', '$n^F$'},...
                 %    'interpreter', 'latex','fontsize', 15);
             else

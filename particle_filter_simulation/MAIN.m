@@ -7,9 +7,9 @@ addpath('../utils/classes')
 
 figure; hold on; grid on;
 
-lm_dens= 0.002; % 0.002;
+lm_dens= 0.006; % 0.002;
 
-seed= 7;
+seed= 0;
 rng(seed);
 
 % create objects

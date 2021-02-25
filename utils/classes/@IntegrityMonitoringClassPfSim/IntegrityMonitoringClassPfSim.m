@@ -207,18 +207,24 @@ classdef IntegrityMonitoringClassPfSim < handle
             %M_k_inv = inv( 0.5*estimator.H_k'*inv_V_k*estimator.H_k + inv_Cov_k_pp );
             %D_k = 0.5*estimator.H_k*M_k_inv*(estimator.H_k'*inv_V_k) - eye(estimator.n_k);
             
-            E_E = inf * ones(params.m, obj.N_k_predict);
-            EXP_E = inf * ones(obj.N_k_predict,1);
+            %E_E = inf * ones(params.m, obj.N_k_predict);
+            %EXP_E = inf * ones(obj.N_k_predict,1);
+            E_E = inf * ones(params.m, obj.N_k_prior);
+            E_Cov_1 = inf * ones(params.m, obj.N_k_prior);
+            EXP_E = inf * ones(obj.N_k_prior,1);
+            EXP_Cov_1 = inf * ones(obj.N_k_prior,1);
             %E_E = inf * ones(params.m, obj.N_k_predict);
             %EXP_E = inf * ones(obj.N_k_predict,1);
             %gamma_k_i = inf * ones(params.m,obj.N_k_predict);
             %f_k_p_i = inf*ones(params.m,obj.N_k_prior);
             %Cov_k_p_i = inf*ones(params.m,obj.N_k_prior*params.m);
             %M_k_i = inf*ones(params.m,obj.N_k_prior*params.m);
-            Sum_M_k_i_EXP_E_i = zeros(params.m);
+            Sum_inv_M_k_i_EXP_E_i = zeros(params.m);
+            Sum_inv_B_k_i_EXP_Cov_1_i = zeros(params.m);
             E_z_minus_Avg_h_x_i = f_k_h;
             Var_z_minus_Avg_h_x_i = estimator.V_k;
-            for i = 1 : obj.N_k_predict%obj.N_k_predict
+            %for i = 1 : obj.N_k_predict%obj.N_k_predict
+            for i = 1 : obj.N_k_prior
                 G_k_i = estimator.G_k_particles(:,params.m*(i-1)+1:params.m*i);
                 F_k_i = estimator.F_k_particles(params.m*(i-1)+1:params.m*i,:);
                 H_k_i = estimator.H_k_particles(:,params.m*(i-1)+1:params.m*i);
@@ -228,12 +234,27 @@ classdef IntegrityMonitoringClassPfSim < handle
                 Cov_k_p_i = G_k_i*Cov_prior_hat*G_k_i' + F_k_i*params.W_odometry_sim*F_k_i';
                 inv_Cov_k_p_i = inv(Cov_k_p_i);
                 M_k_i = 0.5*H_k_i'*inv_V_k*H_k_i + inv_Cov_k_p_i;
-                E_E(:,i) = M_k_i\(Cov_k_p_i\f_k_p_i - 0.5*H_k_i'*inv_V_k*f_k_h);
-                EXP_E(i) = exp(-0.5*( (f_k_h'*(0.5*inv_V_k - 0.25*inv_V_k*(H_k_i/M_k_i)*H_k_i'*inv_V_k)*f_k_h) + (f_k_p_i' *(inv_Cov_k_p_i - (inv_Cov_k_p_i/M_k_i)*inv_Cov_k_p_i)* f_k_p_i) ))/sqrt(det(Cov_k_p_i*M_k_i));
-                Sum_M_k_i_EXP_E_i = Sum_M_k_i_EXP_E_i + M_k_i*EXP_E(i);
+                inv_M_k_i = inv(M_k_i);
+                C_k_i = inv_M_k_i* [ inv_Cov_k_p_i , -0.5*H_k_i'*inv_V_k ];
+                M_k_i_cup = [ inv_Cov_k_p_i , zeros(params.m,estimator.n_k); zeros(estimator.n_k, params.m), 0.5*inv_V_k ] - C_k_i'*M_k_i*C_k_i;
+                f_k_i_cup = [f_k_p_i; f_k_h];
+                %E_E(:,i) = M_k_i\(Cov_k_p_i\f_k_p_i - 0.5*H_k_i'*inv_V_k*f_k_h);
+                E_E(:,i) = C_k_i*f_k_i_cup;
+                %EXP_E(i) = exp(-0.5*( (f_k_h'*(0.5*inv_V_k - 0.25*inv_V_k*(H_k_i/M_k_i)*H_k_i'*inv_V_k)*f_k_h) + (f_k_p_i' *(inv_Cov_k_p_i - (inv_Cov_k_p_i/M_k_i)*inv_Cov_k_p_i)* f_k_p_i) ))/sqrt(det(Cov_k_p_i*M_k_i));
+                EXP_E(i) = exp(-0.5*f_k_i_cup'*M_k_i_cup*f_k_i_cup)/sqrt(det(Cov_k_p_i*M_k_i));
+                %Sum_M_k_i_EXP_E_i = Sum_M_k_i_EXP_E_i + M_k_i*EXP_E(i);
+                Sum_inv_M_k_i_EXP_E_i = Sum_inv_M_k_i_EXP_E_i + inv_M_k_i*EXP_E(i);
                 
                 E_z_minus_Avg_h_x_i = E_z_minus_Avg_h_x_i + (H_k_i*f_k_p_i/obj.N_k_predict);
                 Var_z_minus_Avg_h_x_i = Var_z_minus_Avg_h_x_i + ( 1/(obj.N_k_predict^2) * H_k_i * Cov_k_p_i * H_k_i');
+                
+                B_k_i = (2/3) * H_k_i'*inv_V_k*H_k_i + inv_Cov_k_p_i;
+                inv_B_k_i = inv(B_k_i);
+                L_k_i = [inv_Cov_k_p_i, -(2/3)* H_k_i'*inv_V_k ];
+                B_k_i_cup = [inv_Cov_k_p_i, zeros(params.m,estimator.n_k); zeros(estimator.n_k,params.m), (2/3)*inv_V_k] - L_k_i'*inv_B_k_i*L_k_i;
+                E_Cov_1(:,i) = inv_B_k_i*L_k_i*f_k_i_cup;
+                EXP_Cov_1(i) = exp(-0.5*f_k_i_cup'*B_k_i_cup*f_k_i_cup)/sqrt(det(Cov_k_p_i*B_k_i));
+                Sum_inv_B_k_i_EXP_Cov_1_i = Sum_inv_B_k_i_EXP_Cov_1_i + inv_B_k_i*EXP_Cov_1(i);
                 %gamma_k_i(:,i) = 0.5*(estimator.H_k'*inv_V_k)*(estimator.H_k*estimator.XX_predict - estimator.h_k + estimator.h_k_i(:, i) - f_k_h) + inv_Cov_k_pp*(estimator.XX_predict + f_k_pp);
                 %E_E(:,i) = M_k_inv*gamma_k_i(:,i) - estimator.XX_particles_predict(i,:)'; 
                 %E_E(:,i) = estimator.XX_predict - estimator.XX_particles_predict(i,:)' + M_k_inv * ( 0.5 * (estimator.H_k'/estimator.V_k) * ( estimator.h_k_i(:, i) - estimator.h_k - f_k_h ) + inv_Cov_k_pp*f_k_pp );
@@ -268,8 +289,50 @@ classdef IntegrityMonitoringClassPfSim < handle
             %Cov_k_hat = ( M_k_inv*sum(EXP_E) + (E_E-E_x_hat_k) * diag(EXP_E) * (E_E-E_x_hat_k)' )/(obj.eta_k_hat*(2*pi)^(0.5*estimator.n_k) * det(2*estimator.V_k)^(0.5)*det(Cov_k_pp*M_k)^(0.5));
             % %Cov_k_hat = (Sum_M_k_i_EXP_E_i + (E_E-E_x_hat_k) * diag(EXP_E) * (E_E-E_x_hat_k)')/((2*pi)^(0.5*estimator.n_k) * det(2*estimator.V_k)^(0.5));
             % %Cov_k_hat = Cov_k_hat/obj.eta_k_max;
-            Cov_k_hat = (Sum_M_k_i_EXP_E_i + (E_E-E_x_hat_k) * diag(EXP_E) * (E_E-E_x_hat_k)')/sum(EXP_E);
+            Cov_k_hat = (Sum_inv_M_k_i_EXP_E_i + E_E * diag(EXP_E) * E_E' - E_x_hat_k*E_x_hat_k'*sum(EXP_E))/sum(EXP_E);
             
+            Cov_j_o_k = Sum_inv_B_k_i_EXP_Cov_1_i + E_Cov_1 * diag(EXP_Cov_1) * E_Cov_1' - E_x_hat_k*E_x_hat_k'*sum(EXP_Cov_1);
+            
+            EXP_Cov_2_sum=0;
+            E_EXP_Cov_2_sum=0;
+            for i = 1 : obj.N_k_prior
+                G_k_i = estimator.G_k_particles(:,params.m*(i-1)+1:params.m*i);
+                F_k_i = estimator.F_k_particles(params.m*(i-1)+1:params.m*i,:);
+                H_k_i = estimator.H_k_particles(:,params.m*(i-1)+1:params.m*i);
+                h_k_i = estimator.h_k_i(:, i);
+                Cov_k_p_i = G_k_i*Cov_prior_hat*G_k_i' + F_k_i*params.W_odometry_sim*F_k_i';
+                inv_Cov_k_p_i = inv(Cov_k_p_i);
+                f_k_p_i = F_k_i*(estimator.odometry_k-estimator.Control_for_each_particle(:,i)) + G_k_i*(estimator.XX_prior-estimator.XX_particles_prior(i,:)'+f_prior_hat);
+                for r = 1 : obj.N_k_prior
+                    if i == r
+                        continue;
+                    end
+                    G_k_r = estimator.G_k_particles(:,params.m*(r-1)+1:params.m*r);
+                    F_k_r = estimator.F_k_particles(params.m*(r-1)+1:params.m*r,:);
+                    H_k_r = estimator.H_k_particles(:,params.m*(r-1)+1:params.m*r);
+                    h_k_r = estimator.h_k_i(:, r);
+                    Cov_k_p_r = G_k_r*Cov_prior_hat*G_k_r' + F_k_r*params.W_odometry_sim*F_k_r';
+                    inv_Cov_k_p_r = inv(Cov_k_p_r);
+                    f_k_p_r = F_k_r*(estimator.odometry_k-estimator.Control_for_each_particle(:,r)) + G_k_r*(estimator.XX_prior-estimator.XX_particles_prior(r,:)'+f_prior_hat);
+                    A_k_r = (1/6)*H_k_r'*inv_V_k*H_k_r+inv_Cov_k_p_r;
+                    inv_A_k_r = inv(A_k_r);
+                    D_k_i_r = (1/6)*H_k_i'*inv_V_k*H_k_i-(1/36)*H_k_i'*inv_V_k*H_k_r*inv_A_k_r*H_k_r'*inv_V_k*H_k_i+inv_Cov_k_p_i;
+                    inv_D_k_i_r = inv(D_k_i_r);
+                    U_k_i_r = (1/6)*H_k_i'*inv_V_k*H_k_r*inv_A_k_r;
+                    Q_k_r = eye(estimator.n_k) - (1/6)*H_k_r*inv_A_k_r*H_k_r'*inv_V_k;
+                    O_k_i_r = [inv_Cov_k_p_i, -(1/6)*H_k_i'*inv_V_k*H_k_r*inv_A_k_r*inv_Cov_k_p_r, -(1/3)*H_k_i'*inv_V_k*Q_k_r];
+                    R_k_r = inv_A_k_r * [zeros(params.m), inv_Cov_k_p_r, -(1/3)*H_k_r'*inv_V_k];
+                    f_k_i_r_tilde = [ f_k_p_i ; f_k_p_r ; f_k_h ];
+                    J_k_i_r = -(O_k_i_r'*inv_D_k_i_r)*O_k_i_r + [inv_Cov_k_p_i, zeros(params.m,params.m), zeros(params.m, estimator.n_k); zeros(params.m, params.m), inv_Cov_k_p_r, zeros(params.m, estimator.n_k); zeros(estimator.n_k, params.m), zeros(estimator.n_k, params.m), (2/3)*inv_V_k] - [zeros(params.m, params.m), inv_Cov_k_p_r, -(1/3)*H_k_r'*inv_V_k]'*inv_A_k_r*[zeros(params.m, params.m), inv_Cov_k_p_r, -(1/3)*H_k_r'*inv_V_k];
+                    EXP_Cov_2= exp(-0.5*(0.5*(h_k_i-h_k_r))'*(2*inv_V_k)*(0.5*(h_k_i-h_k_r)))*exp(-0.5*(f_k_i_r_tilde)'*J_k_i_r*(f_k_i_r_tilde))/sqrt(det(Cov_k_p_i*D_k_i_r*Cov_k_p_r*A_k_r));
+                    EXP_Cov_2_sum= EXP_Cov_2_sum + EXP_Cov_2;
+                    E_EXP_Cov_2 = inv_D_k_i_r*(-U_k_i_r+O_k_i_r*f_k_i_r_tilde*f_k_i_r_tilde'*(R_k_r'-O_k_i_r'*inv_D_k_i_r*U_k_i_r)-D_k_i_r*E_x_hat_k*E_x_hat_k')*EXP_Cov_2;
+                    E_EXP_Cov_2_sum = E_EXP_Cov_2_sum + E_EXP_Cov_2;
+                end
+            end
+            
+            Cov_j_o_k = (Cov_j_o_k + E_EXP_Cov_2_sum)/(sum(EXP_Cov_1) + EXP_Cov_2_sum);
+            rho_k = (obj.alpha'*Cov_j_o_k*obj.alpha)/(obj.alpha'*Cov_k_hat*obj.alpha);
             %lambda_k_h = (obj.M_k_prior-params.m)/(2*estimator.n_k) * (E_z_minus_Avg_h_x_i)'/(Var_z_minus_Avg_h_x_i)*(E_z_minus_Avg_h_x_i);
             lambda_k_h = (obj.N_k_predict-params.m)/(2*estimator.n_k) * (E_z_minus_Avg_h_x_i)'/(Var_z_minus_Avg_h_x_i)*(E_z_minus_Avg_h_x_i);
             %mu_k_h = obj.alpha'*E_x_hat_k / sqrt( (obj.N_r_2_update/(obj.N_k_update^2)) * obj.alpha' * Cov_k_hat * obj.alpha );
