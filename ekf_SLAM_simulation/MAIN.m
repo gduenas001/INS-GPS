@@ -12,7 +12,7 @@ rng(map_i)
 
 % create objects
 params= ParametersClass("simulation_kf_SLAM",lm_dens);
-%im= IntegrityMonitoringClassEkfSLAMSim(params);
+im= IntegrityMonitoringClassEkfSLAMSim(params);
 estimator= EstimatorClassEkfSLAMSim(params);
 data_obj= DataClass(params.num_epochs_sim, params.num_epochs_sim, params);
 counters= CountersClass([], [], params);
@@ -72,7 +72,7 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
 %         end
 
         % Evaluate the probability of mis-associations
-        %im.prob_of_MA( estimator, params);
+        % im.prob_of_MA( estimator, params);
         %im.P_MA_k(:)= 0;
         %estimator.association_no_zeros= estimator.association( estimator.association ~= 0);
         
@@ -83,17 +83,17 @@ while ~estimator.goal_is_reached && epoch <= params.num_epochs_sim
         estimator.addNewLM( z_lidar(estimator.association' == -1,:), params.R_lidar );
         
         % integrity monitoring
-        %im.monitor_integrity(estimator, counters, data_obj, params);
+        im.monitor_integrity(estimator, counters, data_obj, params);
         
         % Add current msmts in Nav-frame
         data_obj.store_msmts( body2nav_2D(z_lidar, estimator.XX, estimator.XX(3)) ); 
         
         % Store data
-        counters.k_update= data_obj.store_update_sim(counters.k_update, estimator, counters.time_sim, params);
+        counters.k_update= data_obj.store_update_SLAM_sim(counters.k_update, estimator, counters.time_sim, params);
         %counters.k_update=data_obj.store_update_fg(counters.k_update, estimator, counters.time_sim, params);
         
         % increase integrity counter
-        %counters.increase_integrity_monitoring_counter();
+        counters.increase_integrity_monitoring_counter();
     end
     % -----------------------------------------
     
@@ -119,7 +119,7 @@ landmark_map= data_obj.plot_map_ekf_slam( estimator, params );
 data_obj.plot_number_of_landmarks(params);
 % data_obj.plot_number_epochs_in_preceding_horizon(params);
 % data_obj.plot_estimates();
-%data_obj.plot_integrity_risk(params);
+data_obj.plot_integrity_risk(params);
 % data_obj.plot_MA_probabilities();
 data_obj.plot_error(params);
 % data_obj.plot_P_H();

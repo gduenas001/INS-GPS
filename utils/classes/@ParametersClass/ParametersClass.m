@@ -43,7 +43,7 @@ classdef ParametersClass < handle
         %path_sim_kf= '../data/simulation/factor_graph/';
         path_sim_pf= '../data/simulation/particle_filter/';
         path_sim_kf= '../data/simulation/straight/';
-        path_sim_kf_SLAM=  '../data/simulation/factor_graph/';;
+        path_sim_kf_SLAM=  '../data/simulation/SLAM/';
 %         path_sim= '../data/simulation/square/';
         path_sim_fg= '../data/simulation/factor_graph/';
         path_exp_fg= '../data/vehicle/20190110/';

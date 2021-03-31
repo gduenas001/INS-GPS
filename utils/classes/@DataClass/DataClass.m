@@ -69,6 +69,12 @@ classdef DataClass < handle
             % increase counter
             epoch= epoch + 1;
         end
+        function epoch= store_update_SLAM_sim(obj, epoch, estimator, time, params)
+            obj.update.store_SLAM_sim(epoch, estimator, time, params);
+            
+            % increase counter
+            epoch= epoch + 1;
+        end
         % ----------------------------------------------
         % ----------------------------------------------
         function store_msmts(obj, msmts) % TODO: optimize this mess!!

@@ -9,8 +9,19 @@ spsi= sin(estimator.XX(params.ind_yaw));
 cpsi= cos(estimator.XX(params.ind_yaw));
 h_t= zeros(2,1);
 h_l= zeros(2,1);
-estimator.association_no_zeros= estimator.association( estimator.association ~= 0);
-obj.P_MA_k= ones(size(estimator.association_no_zeros)) * (-1);
+
+association = estimator.association;
+
+if all(association == -1)
+    obj.n_k=0;
+    return; 
+end
+
+% Eliminate the non-associated features
+ind_to_eliminate= association == -1 | association == 0;
+association(ind_to_eliminate) = [];
+
+obj.P_MA_k= ones(size(association)) * (-1);
 obj.P_MA_k_full= obj.P_MA_k;
 
 % compute kappa
@@ -37,9 +48,9 @@ end
 
 
 % loop through each associated landmark
-for t= 1:length(estimator.association_no_zeros)
+for t= 1:length(association)
     % take the landmark ID
-    lm_id_t= estimator.association_no_zeros(t);
+    lm_id_t= association(t);
     
     % initialize the P(MA)
     obj.P_MA_k(t)= length(estimator.FoV_landmarks_at_k) - 1;
@@ -52,9 +63,9 @@ for t= 1:length(estimator.association_no_zeros)
     h_t(2)= -dx*spsi + dy*cpsi;
     
     % loop through every possible landmark in the FoV (potential MA)
-    for l= 1:length(estimator.FoV_landmarks_at_k)
+    for l= 1:length(association)
         % take landmark ID
-        lm_id_l= estimator.FoV_landmarks_at_k(l);
+        lm_id_l= association(l);
         if lm_id_t ~= lm_id_l
             % extract the landmark
             landmark= estimator.landmark_map( lm_id_l ,: );
@@ -86,23 +97,23 @@ for t= 1:length(estimator.association_no_zeros)
     % store the P_MA for the full LMs
     obj.P_MA_k_full(t)= obj.P_MA_k(t);
     
-    % landmark selection
-    if params.SWITCH_LM_SELECTION
-        if obj.P_MA_k(t) > params.P_MA_max
-            obj.P_MA_k(t)= -1;
-            estimator.association_no_zeros(t)= -1;
-            estimator.association( estimator.association == lm_id_t )= 0;
-        end
-    end
+%     % landmark selection
+%     if params.SWITCH_LM_SELECTION
+%         if obj.P_MA_k(t) > params.P_MA_max
+%             obj.P_MA_k(t)= -1;
+%             association(t)= -1;
+%             estimator.association( estimator.association == lm_id_t )= 0;
+%         end
+%     end
     
     % not more than probability one
     if obj.P_MA_k(t) > 1, obj.P_MA_k(t)= 1; end
 end
 
-% remove non-associated ones
-if params.SWITCH_LM_SELECTION
-    obj.P_MA_k( obj.P_MA_k == -1 )= [];
-    estimator.association_no_zeros( estimator.association_no_zeros == -1 )= [];
-end
+% % remove non-associated ones
+% if params.SWITCH_LM_SELECTION
+%     obj.P_MA_k( obj.P_MA_k == -1 )= [];
+%     association( association == -1 )= [];
+% end
 
 end

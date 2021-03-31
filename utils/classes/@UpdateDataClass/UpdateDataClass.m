@@ -21,6 +21,8 @@ classdef UpdateDataClass < handle
         availability
         GPS_L_M
         M
+        PX_update
+        PX_prediction
     end
     
     methods
@@ -63,6 +65,20 @@ classdef UpdateDataClass < handle
             obj.x_true(:,epoch)= estimator.x_true(1:params.m);
             obj.XX(:,epoch)= estimator.XX(1:params.m);
             obj.PX(:,epoch)= diag( estimator.PX(1:params.m,1:params.m) ); % store only variances
+            obj.time(epoch)= time;
+            %obj.miss_associations(epoch)= sum( boolean(...
+            %    (estimator.association ~= estimator.association_true) .* estimator.association) );
+            obj.num_associated_lms(epoch)= estimator.num_associated_lms;
+            obj.num_of_extracted_features(epoch)= estimator.num_of_extracted_features;
+        end
+        % ----------------------------------------------
+        % ----------------------------------------------
+        function store_SLAM_sim(obj, epoch, estimator, time, params)
+            obj.error(:,epoch)= estimator.XX(1:params.m) - estimator.x_true;
+            obj.x_true(:,epoch)= estimator.x_true(1:params.m);
+            obj.XX(:,epoch)= estimator.XX(1:params.m);
+            obj.PX_update(:,epoch)= diag( estimator.PX_update(1:params.m,1:params.m) ); % store only variances
+            obj.PX_prediction(:,epoch)= diag( estimator.PX_prediction(1:params.m,1:params.m) ); % store only variances
             obj.time(epoch)= time;
             %obj.miss_associations(epoch)= sum( boolean(...
             %    (estimator.association ~= estimator.association_true) .* estimator.association) );

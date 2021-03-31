@@ -72,7 +72,7 @@ for i= 1:obj.num_of_extracted_features
 
         % covariance matrix
         % Y= H * obj.PX * H' + params.R_lidar;
-        Y= H * obj.PX([1:params.m,lm_ind],[1:params.m,lm_ind]) * H' + params.R_lidar;
+        Y= H * obj.PX_prediction([1:params.m,lm_ind],[1:params.m,lm_ind]) * H' + params.R_lidar;
         
         % IIN squared
         y2= gamma' / Y * gamma;

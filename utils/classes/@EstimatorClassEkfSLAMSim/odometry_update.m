@@ -34,7 +34,7 @@ if ~params.SWITCH_FACTOR_GRAPHS
     % predict covariance
     Phi_k= [obj.Phi_k, zeros(params.m,length(obj.XX)-params.m);
             zeros(length(obj.XX)-params.m,params.m), eye(length(obj.XX)-params.m)];
-    obj.PX= Phi_k * obj.PX * Phi_k' + [obj.D_bar, zeros(params.m,length(obj.XX)-params.m); zeros(length(obj.XX)-params.m,length(obj.XX))];
+    obj.PX_prediction= Phi_k * obj.PX_update * Phi_k' + [obj.D_bar, zeros(params.m,length(obj.XX)-params.m); zeros(length(obj.XX)-params.m,length(obj.XX))];
 end
 
 end

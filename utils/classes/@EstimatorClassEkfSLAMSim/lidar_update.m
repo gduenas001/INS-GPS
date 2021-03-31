@@ -16,7 +16,10 @@ obj.XX(params.ind_yaw)= pi_to_pi( obj.XX(params.ind_yaw) );
 
 association = obj.association;
 
-if all(association == -1), return; end
+if all(association == -1)
+    obj.n_k=0;
+    return; 
+end
 
 % Eliminate the non-associated features
 ind_to_eliminate= association == -1 | association == 0;
@@ -40,10 +43,11 @@ end
 % number of associated features
 %obj.n_k= length(obj.association_no_zeros) * params.m_F;
 obj.n_k= length(association) * params.m_F;
+obj.n_L_k= length(association);
 
 
 %Build Jacobian H
-R= kron( params.R_lidar, eye( obj.n_k / params.m_F ) );
+obj.R_k= kron( params.R_lidar, eye( obj.n_k / params.m_F ) );
 obj.H_k= zeros(obj.n_k, length(obj.XX));
 spsi= sin(obj.XX(params.ind_yaw));
 cpsi= cos(obj.XX(params.ind_yaw));
@@ -73,12 +77,12 @@ for i= 1:length(association)
 end
 
 % Update
-obj.Y_k= obj.H_k * obj.PX * obj.H_k' + R;
-obj.L_k= obj.PX * obj.H_k' / obj.Y_k;
+obj.Y_k= obj.H_k * obj.PX_prediction * obj.H_k' + obj.R_k;
+obj.L_k= obj.PX_prediction * obj.H_k' / obj.Y_k;
 zVector= z'; zVector= zVector(:);
 obj.gamma_k= zVector - zHat;
 obj.q_k= obj.gamma_k' / obj.Y_k * obj.gamma_k;
 obj.XX= obj.XX + obj.L_k * obj.gamma_k;
-obj.PX= obj.PX - obj.L_k * obj.H_k * obj.PX;
+obj.PX_update= obj.PX_prediction - obj.L_k * obj.H_k * obj.PX_prediction;
 obj.number_of_associated_LMs= length(association);
 end

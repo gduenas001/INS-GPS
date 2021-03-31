@@ -10,7 +10,8 @@ addpath('../utils/classes')
 %lm_dens=linspace(0.002,0.025,10);
 %lm_dens=[0.002,0.011,0.02];
 %lm_dens=0.001:0.0005:0.01;
-lm_dens=[0.001,0.0025,0.0065];
+%lm_dens=[0.001,0.0025,0.0065];
+lm_dens=0.003;
 computational_time = zeros(1,length(lm_dens));
 avg_n_L_M = zeros(1,length(lm_dens));
 avg_f_mag = zeros(1,length(lm_dens));

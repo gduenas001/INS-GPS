@@ -44,7 +44,7 @@ classdef IntegrityMonitoringClassEkfSLAMSim < handle
         % augmented (M) 
         M= 0  % size of the preceding horizon in epochs
         n_M   % num msmts in the preceding horizon (including k) -if FG ---> num abs msmts
-        n_L_M % num landmarks in the preceding horizon (including k)
+        n_L_M% num landmarks in the preceding horizon (including k)
         Phi_M
         q_M
         gamma_M
@@ -97,6 +97,13 @@ classdef IntegrityMonitoringClassEkfSLAMSim < handle
         counter_H=0
         p_hmi_elapsed_time=0
         f_avg=0
+        D_k
+        Delta_k
+        num_of_states_to_track
+        n_k
+        n_L_k
+        S_k
+        M_k
     end
     
     
@@ -130,7 +137,7 @@ classdef IntegrityMonitoringClassEkfSLAMSim < handle
         % ----------------------------------------------
         % ----------------------------------------------
         function neg_p_hmi= optimization_fn(obj, f_M_mag, fx_hat_dir, M_dir, sigma_hat, l, dof)
-            neg_p_hmi= - ( (1 - normcdf(l , f_M_mag * fx_hat_dir, sigma_hat) +...
+            neg_p_hmi= - ( (normcdf(l , f_M_mag * fx_hat_dir, sigma_hat, 'upper') +...
                 normcdf(-l , f_M_mag * fx_hat_dir, sigma_hat))...
                 * ncx2cdf(obj.T_d, dof, f_M_mag.^2 * M_dir ) );
         end
@@ -138,11 +145,12 @@ classdef IntegrityMonitoringClassEkfSLAMSim < handle
         % ----------------------------------------------
         function compute_E_matrix(obj, i, m_F)
             if sum(i) == 0 % E matrix for only previous state faults
-                obj.E= zeros( obj.m, obj.n_M + obj.m );
-                obj.E(:, end-obj.m + 1:end)= eye(obj.m);
+                obj.E= zeros( obj.m, obj.n_k + obj.num_of_states_to_track );
+                %obj.E(:, end-obj.num_of_states_to_track + 1:end)= eye(obj.num_of_states_to_track);
+                obj.E(:, obj.n_k + (1:obj.m))= eye(obj.m);
             else % E matrix with faults in the PH
-                obj.E= zeros( obj.m + m_F*length(i) , obj.n_M + obj.m );
-                obj.E( end-obj.m+1 : end , end-obj.m+1:end )= eye(obj.m); % previous bias
+                obj.E= zeros( obj.m + m_F*length(i) , obj.n_k + obj.num_of_states_to_track );
+                obj.E( end-obj.m+1:end , obj.n_k + (1:obj.m) )= eye(obj.m); % previous bias
                 for j= 1:length(i)
                     obj.E( m_F*(j-1)+1 : m_F*j , (i(j)-1)*m_F + 1 : i(j)*m_F )= eye(m_F); % landmark i(j) faulted
                 end

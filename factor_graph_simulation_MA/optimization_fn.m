@@ -1,0 +1,6 @@
+function neg_p_hmi= optimization_fn(f_h_mag, mu_alphat_delta_k_dir, lambda_k_dir, sigma_hat, l, dof, T_k)
+    neg_p_hmi= - ( (normcdf(l , f_h_mag * mu_alphat_delta_k_dir, sigma_hat,'upper') +...
+        normcdf(-l , f_h_mag * mu_alphat_delta_k_dir, sigma_hat))...
+        * ncx2cdf(T_k, dof, f_h_mag.^2 * lambda_k_dir ) );
+end
+

@@ -1,0 +1,8 @@
+IMU data structure:
+
+PC (Master) clock |  Gyro X (Deg/Sec) | Gyro Y (Deg/Sec) | Gyro Z (Deg/Sec) | Gyro Status | Accel X (g0) | Accel Y (g0) | Accel Z (g0) | Accel Status | Incli X (g0) | Incli Y (g0) | Incli Z (g0) | Incli Status | Counter ([0, 255]) | Latency (µSec)
+
+
+g0 = 9.80665 m/s^2 --by manufacturer
+
+Gyro/Accel/Incli Status = 0 Normal / 1 Abnormal

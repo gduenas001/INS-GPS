@@ -29,10 +29,10 @@ for i= 1:n_L
     J_V = [cpsi, -spsi;
            spsi,  cpsi];
     
-    Y= J_X * obj.PX(1:3,1:3) * J_X' + J_V * R * J_V';
+    Y= J_X * obj.PX_prediction(1:3,1:3) * J_X' + J_V * R * J_V';
     
-    obj.PX(end+1:end+2, end+1:end+2)= Y;
-    %obj.PX(end-1:end, 1:3)= J_X * obj.PX(1:3,1:3);
-    %obj.PX(1:3, end-1:end)= obj.PX(1:3,1:3) * J_X';
+    obj.PX_update(end+1:end+2, end+1:end+2)= Y;
+    %obj.PX_update(end-1:end, 1:3)= J_X * obj.PX_prediction(1:3,1:3);
+    %obj.PX_update(1:3, end-1:end)= obj.PX_prediction(1:3,1:3) * J_X';
 end
 end
